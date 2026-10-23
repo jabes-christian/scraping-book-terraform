@@ -1,0 +1,60 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ===== Variáveis de ambiente / segredos =====
+.env
+.env.*
+!.env.example
+
+# ===== Terraform =====
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+*.tfplan
+
+# ===== Credenciais GCP =====
+*.json.key
+*-sa-key.json
+credentials*.json
+gcp-key*.json
+
+# ===== Docker / dados locais =====
+data/
+pgdata/
+docker-compose.override.yml
+
+# ===== Saídas do robô =====
+logs/
+*.log
+screenshots/
+output/
+
+# ===== IDE / SO =====
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# ===== Claude Code =====
+.claude/settings.local.json
