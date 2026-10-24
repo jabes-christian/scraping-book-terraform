@@ -26,13 +26,21 @@
 - **Date**: 2026-10-23
 - **Status**: active
 
+### AD-004
+- **Decision**: A execução é dividida em 10 fases, cada uma em uma branch criada da `main` após o merge da anterior (merge sem squash, um commit por task); tasks operacionais (apply, VM, billing, destroy) não geram commit e exigem OK explícito; `docs/` é escrito antes da validação ao vivo.
+- **Reason**: PRs pequenos e revisáveis; nada com custo ou efeito externo roda sem aprovação; os runbooks são validados na prática (fase 10).
+- **Trade-off**: Mais branches e merges manuais; correções da validação ao vivo viram commits extras na fase 10.
+- **Scope**: `tasks.md` e todo o Execute.
+- **Date**: 2026-10-24
+- **Status**: active
+
 ## Handoff
 
 - **Feature**: .specs/features/book-price-monitor
-- **Phase / Task**: Design concluído, aguardando aprovação
-- **Completed**: none
+- **Phase / Task**: Tasks gerado (56 tasks, 10 fases), aguardando aprovação
+- **Completed**: PRD, Spec e Design aprovados; `tasks.md` criado; rastreabilidade da Spec atualizada (71/71 requisitos mapeados)
 - **In-progress** (file:line): none
-- **Next step**: Após aprovação do design, criar `tasks.md`
+- **Next step**: Após aprovação das Tasks e merge de `docs/sdd-planning` na `main`, criar `feat/robot-foundation` e iniciar a T1. Ligar o Docker Desktop antes da fase 3
 - **Blockers**: none
-- **Uncommitted files**: prd.md, spec.md, design.md, STATE.md
+- **Uncommitted files**: `.specs/features/book-price-monitor/tasks.md`, `spec.md` (coluna Tasks), `design.md` (status), `STATE.md`
 - **Branch**: docs/sdd-planning

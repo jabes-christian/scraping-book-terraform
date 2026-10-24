@@ -1,7 +1,7 @@
 # Book Price Monitor Design
 
 **Spec**: `.specs/features/book-price-monitor/spec.md`
-**Status**: Draft (aguardando aprovação)
+**Status**: aprovado (2026-10-24)
 
 Pesquisa feita em 2026-10-23: Context7 (provider Google v7.46.1, Terraform, Selenium, psycopg 3), docs oficiais do Free Tier e Docker Hub (tags `python:3.13-slim-bookworm` e `postgres:17-alpine` existem e têm amd64). Nada do que segue foi inventado; pontos não verificados estão marcados em **Riscos**.
 

@@ -29,7 +29,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 ## Assumptions & Open Questions
 
 | Assumption / decision | Chosen default | Rationale | Confirmed? |
-| --- | --- | --- | --- |
+| --- | --- | --- | --- | --- |
 | Moeda dos preços | Armazenar valor em `NUMERIC(10,2)` + coluna `currency` = `GBP` | O site exibe £; guardar a moeda evita ambiguidade futura | y (PRD) |
 | Chave natural do livro | URL absoluta da página do livro | Estável e única no site; título pode repetir | n |
 | Granularidade do histórico | 1 linha em `price_history` por livro por execução (inclui execuções sem mudança de preço) | Simples, consulta direta; ~1.000 linhas/dia ≈ 365 mil/ano, dezenas de MB | n |
@@ -259,81 +259,81 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 
 ## Requirement Traceability
 
-| Requirement ID | Story | Phase | Status |
-| --- | --- | --- | --- |
-| SCR-01 | P1: Coletar categorias e livros | Design | Pending |
-| SCR-02 | P1: Coletar categorias e livros | Design | Pending |
-| SCR-03 | P1: Coletar categorias e livros | Design | Pending |
-| SCR-04 | P1: Coletar categorias e livros | Design | Pending |
-| SCR-05 | P1: Coletar categorias e livros | Design | Pending |
-| SCR-06 | P1: Coletar categorias e livros | Design | Pending |
-| SCR-07 | P1: Coletar categorias e livros | Design | Pending |
-| SCR-08 | P1: Coletar categorias e livros | Design | Pending |
-| SCR-09 | P1: Coletar categorias e livros | Design | Pending |
-| DB-01 | P1: Persistir histórico | Design | Pending |
-| DB-02 | P1: Persistir histórico | Design | Pending |
-| DB-03 | P1: Persistir histórico | Design | Pending |
-| DB-04 | P1: Persistir histórico | Design | Pending |
-| DB-05 | P1: Persistir histórico | Design | Pending |
-| DB-06 | P1: Persistir histórico | Design | Pending |
-| DB-07 | P1: Persistir histórico | Design | Pending |
-| DB-08 | P1: Persistir histórico | Design | Pending |
-| DB-09 | P1: Persistir histórico | Design | Pending |
-| CFG-01 | P1: Configuração e agnóstico de nuvem | Design | Pending |
-| CFG-02 | P1: Configuração e agnóstico de nuvem | Design | Pending |
-| CFG-03 | P1: Configuração e agnóstico de nuvem | Design | Pending |
-| CFG-04 | P1: Configuração e agnóstico de nuvem | Design | Pending |
-| CFG-05 | P1: Configuração e agnóstico de nuvem | Design | Pending |
-| CFG-06 | P1: Configuração e agnóstico de nuvem | Design | Pending |
-| CFG-07 | P1: Configuração e agnóstico de nuvem | Design | Pending |
-| LOC-01 | P1: Ambiente local Docker Compose | Design | Pending |
-| LOC-02 | P1: Ambiente local Docker Compose | Design | Pending |
-| LOC-03 | P1: Ambiente local Docker Compose | Design | Pending |
-| LOC-04 | P1: Ambiente local Docker Compose | Design | Pending |
-| LOC-05 | P1: Ambiente local Docker Compose | Design | Pending |
-| LOC-06 | P1: Ambiente local Docker Compose | Design | Pending |
-| TFB-01 | P1: Bootstrap do remote state | Design | Pending |
-| TFB-02 | P1: Bootstrap do remote state | Design | Pending |
-| TFB-03 | P1: Bootstrap do remote state | Design | Pending |
-| TFB-04 | P1: Bootstrap do remote state | Design | Pending |
-| TFB-05 | P1: Bootstrap do remote state | Design | Pending |
-| TFP-01 | P1: Infraestrutura de produção | Design | Pending |
-| TFP-02 | P1: Infraestrutura de produção | Design | Pending |
-| TFP-03 | P1: Infraestrutura de produção | Design | Pending |
-| TFP-04 | P1: Infraestrutura de produção | Design | Pending |
-| TFP-05 | P1: Infraestrutura de produção | Design | Pending |
-| TFP-06 | P1: Infraestrutura de produção | Design | Pending |
-| TFP-07 | P1: Infraestrutura de produção | Design | Pending |
-| TFP-08 | P1: Infraestrutura de produção | Design | Pending |
-| TFP-09 | P1: Infraestrutura de produção | Design | Pending |
-| TFP-10 | P1: Infraestrutura de produção | Design | Pending |
-| TFP-11 | P1: Infraestrutura de produção | Design | Pending |
-| TFP-12 | P1: Infraestrutura de produção | Design | Pending |
-| TFP-13 | P1: Infraestrutura de produção | Design | Pending |
-| VM-01 | P1: Runtime da VM | Design | Pending |
-| VM-02 | P1: Runtime da VM | Design | Pending |
-| VM-03 | P1: Runtime da VM | Design | Pending |
-| VM-04 | P1: Runtime da VM | Design | Pending |
-| VM-05 | P1: Runtime da VM | Design | Pending |
-| VM-06 | P1: Runtime da VM | Design | Pending |
-| VM-07 | P1: Runtime da VM | Design | Pending |
-| VM-08 | P1: Runtime da VM | Design | Pending |
-| VM-09 | P1: Runtime da VM | Design | Pending |
-| VM-10 | P1: Runtime da VM | Design | Pending |
-| OPS-01 | P2: Operação, custo e destruição | Design | Pending |
-| OPS-02 | P2: Operação, custo e destruição | Design | Pending |
-| OPS-03 | P2: Operação, custo e destruição | Design | Pending |
-| OPS-04 | P2: Operação, custo e destruição | Design | Pending |
-| OPS-05 | P2: Operação, custo e destruição | Design | Pending |
-| OPS-06 | P2: Operação, custo e destruição | Design | Pending |
-| AZR-01 | P3: Reaproveitamento para Azure | - | Pending |
-| EDG-01 | Edge Cases | Design | Pending |
-| EDG-02 | Edge Cases | Design | Pending |
-| EDG-03 | Edge Cases | Design | Pending |
-| EDG-04 | Edge Cases | Design | Pending |
-| EDG-05 | Edge Cases | Design | Pending |
+| Requirement ID | Story | Phase | Tasks | Status |
+| --- | --- | --- | --- | --- |
+| SCR-01 | P1: Coletar categorias e livros | Tasks | T9, T12 | Planned |
+| SCR-02 | P1: Coletar categorias e livros | Tasks | T10, T12 | Planned |
+| SCR-03 | P1: Coletar categorias e livros | Tasks | T3, T10 | Planned |
+| SCR-04 | P1: Coletar categorias e livros | Tasks | T10, T12 | Planned |
+| SCR-05 | P1: Coletar categorias e livros | Tasks | T12 | Planned |
+| SCR-06 | P1: Coletar categorias e livros | Tasks | T6, T11, T12 | Planned |
+| SCR-07 | P1: Coletar categorias e livros | Tasks | T8, T10 | Planned |
+| SCR-08 | P1: Coletar categorias e livros | Tasks | T12 | Planned |
+| SCR-09 | P1: Coletar categorias e livros | Tasks | T11, T21, T53 | Planned |
+| DB-01 | P1: Persistir histórico | Tasks | T17, T18 | Planned |
+| DB-02 | P1: Persistir histórico | Tasks | T19 | Planned |
+| DB-03 | P1: Persistir histórico | Tasks | T19 | Planned |
+| DB-04 | P1: Persistir histórico | Tasks | T19 | Planned |
+| DB-05 | P1: Persistir histórico | Tasks | T19, T20 | Planned |
+| DB-06 | P1: Persistir histórico | Tasks | T18 | Planned |
+| DB-07 | P1: Persistir histórico | Tasks | T18, T20 | Planned |
+| DB-08 | P1: Persistir histórico | Tasks | T15, T21, T54 | Planned |
+| DB-09 | P1: Persistir histórico | Tasks | T8, T17, T19 | Planned |
+| CFG-01 | P1: Configuração e agnóstico de nuvem | Tasks | T4 | Planned |
+| CFG-02 | P1: Configuração e agnóstico de nuvem | Tasks | T4, T20 | Planned |
+| CFG-03 | P1: Configuração e agnóstico de nuvem | Tasks | T5, T20 | Planned |
+| CFG-04 | P1: Configuração e agnóstico de nuvem | Tasks | T4 | Planned |
+| CFG-05 | P1: Configuração e agnóstico de nuvem | Tasks | T20 | Planned |
+| CFG-06 | P1: Configuração e agnóstico de nuvem | Tasks | T5 | Planned |
+| CFG-07 | P1: Configuração e agnóstico de nuvem | Tasks | T1 | Planned |
+| LOC-01 | P1: Ambiente local Docker Compose | Tasks | T15, T21, T48 | Planned |
+| LOC-02 | P1: Ambiente local Docker Compose | Tasks | T13, T21 | Planned |
+| LOC-03 | P1: Ambiente local Docker Compose | Tasks | T15 | Planned |
+| LOC-04 | P1: Ambiente local Docker Compose | Tasks | T15 | Planned |
+| LOC-05 | P1: Ambiente local Docker Compose | Tasks | T14, T15, T48 | Planned |
+| LOC-06 | P1: Ambiente local Docker Compose | Tasks | T11, T21 | Planned |
+| TFB-01 | P1: Bootstrap do remote state | Tasks | T22, T24, T26 | Planned |
+| TFB-02 | P1: Bootstrap do remote state | Tasks | T24, T26 | Planned |
+| TFB-03 | P1: Bootstrap do remote state | Tasks | T23 | Planned |
+| TFB-04 | P1: Bootstrap do remote state | Tasks | T25, T26 | Planned |
+| TFB-05 | P1: Bootstrap do remote state | Tasks | T23 | Planned |
+| TFP-01 | P1: Infraestrutura de produção | Tasks | T27, T39, T42, T51 | Planned |
+| TFP-02 | P1: Infraestrutura de produção | Tasks | T37, T41, T42 | Planned |
+| TFP-03 | P1: Infraestrutura de produção | Tasks | T28, T39, T51 | Planned |
+| TFP-04 | P1: Infraestrutura de produção | Tasks | T28, T39, T51 | Planned |
+| TFP-05 | P1: Infraestrutura de produção | Tasks | T28, T38 | Planned |
+| TFP-06 | P1: Infraestrutura de produção | Tasks | T29, T39, T51 | Planned |
+| TFP-07 | P1: Infraestrutura de produção | Tasks | T31, T35, T39, T51 | Planned |
+| TFP-08 | P1: Infraestrutura de produção | Tasks | T35, T39, T42 | Planned |
+| TFP-09 | P1: Infraestrutura de produção | Tasks | T30, T39, T51, T55 | Planned |
+| TFP-10 | P1: Infraestrutura de produção | Tasks | T31, T38, T41 | Planned |
+| TFP-11 | P1: Infraestrutura de produção | Tasks | T36, T40, T51 | Planned |
+| TFP-12 | P1: Infraestrutura de produção | Tasks | T27-T31, T35, T36, T39, T49 | Planned |
+| TFP-13 | P1: Infraestrutura de produção | Tasks | T22, T24, T27, T37, T39 | Planned |
+| VM-01 | P1: Runtime da VM | Tasks | T32, T33, T52 | Planned |
+| VM-02 | P1: Runtime da VM | Tasks | T32, T52 | Planned |
+| VM-03 | P1: Runtime da VM | Tasks | T34, T52, T54 | Planned |
+| VM-04 | P1: Runtime da VM | Tasks | T34, T54 | Planned |
+| VM-05 | P1: Runtime da VM | Tasks | T33, T34, T54 | Planned |
+| VM-06 | P1: Runtime da VM | Tasks | T15, T52, T54 | Planned |
+| VM-07 | P1: Runtime da VM | Tasks | T34, T52 | Planned |
+| VM-08 | P1: Runtime da VM | Tasks | T53 | Planned |
+| VM-09 | P1: Runtime da VM | Tasks | T33, T54 | Planned |
+| VM-10 | P1: Runtime da VM | Tasks | T33, T54 | Planned |
+| OPS-01 | P2: Operação, custo e destruição | Tasks | T44, T50, T56 | Planned |
+| OPS-02 | P2: Operação, custo e destruição | Tasks | T45, T50, T55 | Planned |
+| OPS-03 | P2: Operação, custo e destruição | Tasks | T45, T50 | Planned |
+| OPS-04 | P2: Operação, custo e destruição | Tasks | T43, T50 | Planned |
+| OPS-05 | P2: Operação, custo e destruição | Tasks | T41, T43 | Planned |
+| OPS-06 | P2: Operação, custo e destruição | Tasks | T46, T50 | Planned |
+| AZR-01 | P3: Reaproveitamento para Azure | Tasks | T47, T49, T50 | Planned |
+| EDG-01 | Edge Cases | Tasks | T10, T12 | Planned |
+| EDG-02 | Edge Cases | Tasks | T12 | Planned |
+| EDG-03 | Edge Cases | Tasks | T10, T19 | Planned |
+| EDG-04 | Edge Cases | Tasks | T19, T20 | Planned |
+| EDG-05 | Edge Cases | Tasks | T45 | Planned |
 
-**Coverage:** 71 total, 0 mapped to tasks, 71 unmapped ⚠️ (esperado: tasks ainda não existem)
+**Coverage:** 71 total, 71 mapped to tasks, 0 unmapped ✅
 
 ---
 
