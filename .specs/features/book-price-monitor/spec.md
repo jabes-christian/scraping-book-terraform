@@ -172,7 +172,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 9. The system SHALL criar um budget alert de R$ 5 (moeda da conta) filtrado pelo projeto, com notificação por e-mail aos destinatários IAM padrão da conta de faturamento em 50%, 90% e 100%, sem Pub/Sub <!-- TFP-09 -->
 10. The system SHALL receber `project_id`, `billing_account_id`, `allowed_ssh_cidr`, `repo_url`, `repo_ref` (padrão `main`) e a senha do banco por variáveis, com `sensitive = true` na senha, e fornecer `terraform.tfvars.example` sem valores reais <!-- TFP-10 -->
 11. WHEN o `apply` termina THEN the system SHALL expor em `outputs` o nome da VM, a zona e o comando `gcloud compute ssh` pronto <!-- TFP-11 -->
-12. The system SHALL organizar o código em `modules/` reutilizáveis (rede, compute, iam, budget, apis) e `envs/prod` que apenas os compõe <!-- TFP-12 -->
+12. The system SHALL organizar o código em `modules/` reutilizáveis (`apis`, `network`, `identity`, `compute_vm`, `budget`) e `envs/prod` que apenas os compõe <!-- TFP-12 -->
 13. The system SHALL definir `disable_on_destroy = false` nos `google_project_service` <!-- TFP-13 -->
 
 **Independent Test**: `terraform plan` em `envs/prod` lista somente os recursos esperados; `terraform apply` termina sem erro; `gcloud compute instances list` mostra uma e2-micro.

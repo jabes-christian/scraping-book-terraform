@@ -8,7 +8,12 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 
 Regras do projeto que valem em toda a execução (do autor):
 
-- **Git:** o agente NÃO executa comandos git. Ao fim de cada task, entrega os comandos exatos de `git add`/`git commit` (Conventional Commits, inglês) para o autor rodar. A task é marcada como concluída neste arquivo (e a rastreabilidade da Spec é atualizada) **antes** do commit, e esses arquivos entram no mesmo commit da task.
+- **Git:** o agente NÃO executa comandos git. Ao fim de cada task, entrega os comandos exatos de `git add`/`git commit` para o autor rodar. A task é marcada como concluída neste arquivo (e a rastreabilidade da Spec é atualizada) **antes** do commit, e esses arquivos entram no mesmo commit da task.
+- **Idioma dos commits:** tipo e escopo do Conventional Commits em inglês e a descrição em português (ex.: `feat(robot): adiciona modelos de domínio`). Código, logs e nomes técnicos continuam em inglês.
+- **Tasks operacionais:** cada task [OPERACIONAL] tem um commit próprio na branch da fase, só com a atualização de `tasks.md` (ex.: `docs(tasks): registra apply do bootstrap (T26)`), feito antes do merge da fase.
+- **Sem sub-agentes:** toda a execução, inclusive a verificação final, fica com o agente principal, task a task.
+- **Ferramentas:** apenas o MCP Context7; nenhum outro MCP nem skill adicional.
+- **Merge de fase:** pelo `gh` ou pelo site do GitHub (Pull Request com merge commit, sem squash).
 - **Python:** Windows, Python 3.13; sempre `.venv\Scripts\python.exe` e `.venv\Scripts\python.exe -m pip`. Nunca instalar no Python global.
 - **Custo:** `terraform apply`, `destroy` ou qualquer ação com custo ou efeito externo só com OK explícito do autor (tasks marcadas **[OPERACIONAL]**).
 - **Segurança:** nenhum segredo hardcoded; nenhuma chave de service account versionada.
@@ -18,7 +23,7 @@ Regras do projeto que valem em toda a execução (do autor):
 
 **Design**: `.specs/features/book-price-monitor/design.md`
 **Spec**: `.specs/features/book-price-monitor/spec.md`
-**Status**: Draft (aguardando aprovação)
+**Status**: Approved (2026-10-24)
 
 ---
 
@@ -167,7 +172,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: unit
 **Gate**: quick
-**Commit**: `build(deps): pin runtime and dev requirements`
+**Commit**: `build(deps): fixa versões das dependências de runtime e dev`
 
 ---
 
@@ -192,7 +197,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: none
 **Gate**: quick
-**Commit**: `chore(tooling): configure pytest markers and ruff`
+**Commit**: `chore(tooling): configura markers do pytest e o ruff`
 
 ---
 
@@ -218,7 +223,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: unit
 **Gate**: quick
-**Commit**: `feat(robot): add domain models`
+**Commit**: `feat(robot): adiciona modelos de domínio`
 
 ---
 
@@ -245,7 +250,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: unit
 **Gate**: quick
-**Commit**: `feat(robot): load and validate settings from environment`
+**Commit**: `feat(robot): carrega e valida configurações do ambiente`
 
 ---
 
@@ -272,7 +277,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: unit
 **Gate**: quick
-**Commit**: `feat(robot): add JSON logging with secret redaction`
+**Commit**: `feat(robot): adiciona logs JSON com redação de segredos`
 
 ---
 
@@ -298,7 +303,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: unit
 **Gate**: quick
-**Commit**: `feat(robot): add retry with exponential backoff`
+**Commit**: `feat(robot): adiciona retry com backoff exponencial`
 
 ---
 
@@ -324,7 +329,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: none
 **Gate**: quick
-**Commit**: `test(robot): add real HTML fixtures from books.toscrape.com`
+**Commit**: `test(robot): adiciona fixtures HTML reais do books.toscrape.com`
 
 ---
 
@@ -349,7 +354,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: unit
 **Gate**: quick
-**Commit**: `feat(robot): parse price text into Decimal`
+**Commit**: `feat(robot): converte texto de preço em Decimal`
 
 ---
 
@@ -375,7 +380,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: unit
 **Gate**: quick
-**Commit**: `feat(robot): parse category list from home page`
+**Commit**: `feat(robot): extrai a lista de categorias da home`
 
 ---
 
@@ -402,7 +407,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: unit
 **Gate**: quick
-**Commit**: `feat(robot): parse listing pages into book items`
+**Commit**: `feat(robot): extrai livros das páginas de listagem`
 
 ---
 
@@ -428,7 +433,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: unit
 **Gate**: quick
-**Commit**: `feat(robot): add headless Chromium browser session`
+**Commit**: `feat(robot): adiciona sessão do Chromium headless`
 
 ---
 
@@ -455,7 +460,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: unit
 **Gate**: quick
-**Commit**: `feat(robot): orchestrate category and pagination scraping`
+**Commit**: `feat(robot): orquestra a coleta por categoria e paginação`
 
 ---
 
@@ -483,7 +488,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: integration (marker `docker`)
 **Gate**: docker
-**Commit**: `build(docker): add robot image with Chromium`
+**Commit**: `build(docker): adiciona imagem do robô com Chromium`
 
 ---
 
@@ -509,7 +514,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: unit
 **Gate**: quick
-**Commit**: `chore(env): add .env.example without secrets`
+**Commit**: `chore(env): adiciona .env.example sem segredos`
 
 ---
 
@@ -535,7 +540,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: integration (marker `docker`)
 **Gate**: docker
-**Commit**: `feat(docker): add compose stack with postgres and robot`
+**Commit**: `feat(docker): adiciona stack Compose com postgres e robô`
 
 ---
 
@@ -559,7 +564,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: none
 **Gate**: docker
-**Commit**: `chore(docker): add local compose override example`
+**Commit**: `chore(docker): adiciona exemplo de override local do Compose`
 
 ---
 
@@ -587,7 +592,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: integration
 **Gate**: full
-**Commit**: `feat(db): add idempotent schema`
+**Commit**: `feat(db): adiciona schema idempotente`
 
 ---
 
@@ -614,7 +619,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: integration
 **Gate**: full
-**Commit**: `feat(db): add connection retry, schema bootstrap and stale execution cleanup`
+**Commit**: `feat(db): adiciona reconexão, criação do schema e limpeza de execuções abandonadas`
 
 ---
 
@@ -641,7 +646,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: integration
 **Gate**: full
-**Commit**: `feat(db): add execution lifecycle and transactional price persistence`
+**Commit**: `feat(db): adiciona ciclo de vida da execução e gravação transacional de preços`
 
 ---
 
@@ -668,7 +673,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: integration
 **Gate**: full
-**Commit**: `feat(robot): wire runner and entrypoint with exit codes`
+**Commit**: `feat(robot): liga runner e entrypoint com códigos de saída`
 
 ---
 
@@ -695,7 +700,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: integration (marker `e2e`)
 **Gate**: full
-**Commit**: `test(e2e): verify local compose run end to end`
+**Commit**: `test(e2e): verifica a execução local via Compose de ponta a ponta`
 
 ---
 
@@ -722,7 +727,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: none
 **Gate**: infra
-**Commit**: `feat(tf-bootstrap): add provider and version constraints`
+**Commit**: `feat(tf-bootstrap): adiciona provider e restrições de versão`
 
 ---
 
@@ -748,7 +753,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: infra-test
 **Gate**: infra
-**Commit**: `feat(tf-bootstrap): add validated input variables`
+**Commit**: `feat(tf-bootstrap): adiciona variáveis de entrada validadas`
 
 ---
 
@@ -774,7 +779,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: infra-test
 **Gate**: infra
-**Commit**: `feat(tf-bootstrap): add versioned tfstate bucket`
+**Commit**: `feat(tf-bootstrap): adiciona bucket versionado do tfstate`
 
 ---
 
@@ -799,7 +804,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: infra-test
 **Gate**: infra
-**Commit**: `feat(tf-bootstrap): expose bucket name and backend snippet`
+**Commit**: `feat(tf-bootstrap): expõe nome do bucket e trecho do backend`
 
 ---
 
@@ -821,11 +826,11 @@ T51 → T52 → T53 → T54 → T55 → T56
 - [ ] Plano mostrado e aprovado pelo autor; plano contém exatamente 2 recursos (API Storage e bucket)
 - [ ] Após o apply: bucket em `US-CENTRAL1`, versionamento habilitado, acesso público bloqueado (saída do `gcloud` registrada); `terraform output` entrega o nome do bucket
 - [ ] `backend.hcl` real criado localmente (gitignored) a partir do snippet
-- [ ] Sem commit próprio: a conclusão é marcada em `tasks.md` e vai no commit da T27
+- [ ] Conclusão marcada em `tasks.md` e commit próprio contendo somente esse arquivo (mensagem abaixo)
 
 **Tests**: none
 **Gate**: infra
-**Commit**: none (operacional)
+**Commit**: `docs(tasks): registra apply do bootstrap (T26)` (só `tasks.md`, na própria branch da fase, antes do merge)
 
 ---
 
@@ -852,7 +857,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: infra-test
 **Gate**: infra
-**Commit**: `feat(tf-modules): add apis module`
+**Commit**: `feat(tf-modules): adiciona módulo apis`
 
 ---
 
@@ -878,7 +883,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: infra-test
 **Gate**: infra
-**Commit**: `feat(tf-modules): add network module with restricted SSH`
+**Commit**: `feat(tf-modules): adiciona módulo network com SSH restrito`
 
 ---
 
@@ -903,7 +908,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: infra-test
 **Gate**: infra
-**Commit**: `feat(tf-modules): add keyless service account module`
+**Commit**: `feat(tf-modules): adiciona módulo identity com service account sem chave`
 
 ---
 
@@ -928,7 +933,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: infra-test
 **Gate**: infra
-**Commit**: `feat(tf-modules): add billing budget module`
+**Commit**: `feat(tf-modules): adiciona módulo budget`
 
 ---
 
@@ -956,7 +961,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: infra-test
 **Gate**: infra
-**Commit**: `feat(tf-modules): add compute_vm inputs with free tier guards`
+**Commit**: `feat(tf-modules): adiciona entradas do compute_vm com guardas do Free Tier`
 
 ---
 
@@ -982,7 +987,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: infra-test
 **Gate**: infra
-**Commit**: `feat(tf-compute-vm): add startup script swap and docker setup`
+**Commit**: `feat(tf-compute-vm): adiciona swap e instalação do Docker ao startup script`
 
 ---
 
@@ -1008,7 +1013,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: infra-test
 **Gate**: infra
-**Commit**: `feat(tf-compute-vm): add startup code sync, env file and build`
+**Commit**: `feat(tf-compute-vm): adiciona sincronização do código, .env e build ao startup script`
 
 ---
 
@@ -1034,7 +1039,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: infra-test
 **Gate**: infra
-**Commit**: `feat(tf-compute-vm): add cron schedule and log rotation to startup`
+**Commit**: `feat(tf-compute-vm): adiciona cron e rotação de logs ao startup script`
 
 ---
 
@@ -1060,7 +1065,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: infra-test
 **Gate**: infra
-**Commit**: `feat(tf-compute-vm): add free tier e2-micro instance`
+**Commit**: `feat(tf-compute-vm): adiciona instância e2-micro dentro do Free Tier`
 
 ---
 
@@ -1085,7 +1090,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: infra-test
 **Gate**: infra
-**Commit**: `feat(tf-compute-vm): expose instance name, zone and ssh command`
+**Commit**: `feat(tf-compute-vm): expõe nome da instância, zona e comando SSH`
 
 ---
 
@@ -1112,7 +1117,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: none
 **Gate**: infra
-**Commit**: `feat(tf-prod): add providers and partial gcs backend`
+**Commit**: `feat(tf-prod): adiciona providers e backend gcs parcial`
 
 ---
 
@@ -1137,7 +1142,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: infra-test
 **Gate**: infra
-**Commit**: `feat(tf-prod): add input variables with validations`
+**Commit**: `feat(tf-prod): adiciona variáveis de entrada com validações`
 
 ---
 
@@ -1163,7 +1168,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: infra-test
 **Gate**: infra
-**Commit**: `feat(tf-prod): compose modules into prod environment`
+**Commit**: `feat(tf-prod): compõe os módulos no ambiente prod`
 
 ---
 
@@ -1188,7 +1193,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: infra-test
 **Gate**: infra
-**Commit**: `feat(tf-prod): expose ssh command and instance outputs`
+**Commit**: `feat(tf-prod): expõe comando SSH e outputs da instância`
 
 ---
 
@@ -1214,7 +1219,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: unit
 **Gate**: quick
-**Commit**: `chore(tf-prod): add tfvars and backend examples with repo hygiene test`
+**Commit**: `chore(tf-prod): adiciona exemplos de tfvars e backend com teste de higiene do repositório`
 
 ---
 
@@ -1235,11 +1240,11 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 - [ ] Autor deu OK para o `init`/`plan` (acessam o bucket e a API GCP em modo leitura)
 - [ ] O plano lista somente os recursos esperados (3 APIs, rede, subnet, firewall, SA, 1 e2-micro, budget); nenhum recurso proibido; senha não aparece em texto no plano
-- [ ] Sem commit próprio: conclusão marcada em `tasks.md` e incluída no commit da T43
+- [ ] Conclusão marcada em `tasks.md` e commit próprio contendo somente esse arquivo (mensagem abaixo)
 
 **Tests**: none
 **Gate**: infra
-**Commit**: none (operacional)
+**Commit**: `docs(tasks): registra plan real de envs/prod (T42)` (só `tasks.md`, na própria branch da fase, antes do merge)
 
 ---
 
@@ -1265,7 +1270,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: none
 **Gate**: quick
-**Commit**: `docs(ops): add GCP setup and ADC runbook`
+**Commit**: `docs(ops): adiciona runbook de preparação do GCP e ADC`
 
 ---
 
@@ -1289,7 +1294,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: none
 **Gate**: quick
-**Commit**: `docs(ops): add terraform destroy runbook`
+**Commit**: `docs(ops): adiciona runbook de terraform destroy`
 
 ---
 
@@ -1313,7 +1318,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: none
 **Gate**: quick
-**Commit**: `docs(ops): add cost and billing verification guide`
+**Commit**: `docs(ops): adiciona guia de custo e verificação de billing`
 
 ---
 
@@ -1337,7 +1342,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: none
 **Gate**: quick
-**Commit**: `docs(ops): add code update runbook`
+**Commit**: `docs(ops): adiciona runbook de atualização do código`
 
 ---
 
@@ -1361,7 +1366,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: none
 **Gate**: quick
-**Commit**: `docs(azure): map gcp modules to azure equivalents`
+**Commit**: `docs(azure): mapeia módulos GCP para equivalentes no Azure`
 
 ---
 
@@ -1385,7 +1390,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: none
 **Gate**: quick
-**Commit**: `docs(local): add local development guide`
+**Commit**: `docs(local): adiciona guia de desenvolvimento local`
 
 ---
 
@@ -1409,7 +1414,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: none
 **Gate**: quick
-**Commit**: `docs(terraform): add infrastructure README`
+**Commit**: `docs(terraform): adiciona README de infraestrutura`
 
 ---
 
@@ -1435,13 +1440,13 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Tests**: unit
 **Gate**: build
-**Commit**: `docs(readme): add project overview and doc link check`
+**Commit**: `docs(readme): adiciona visão geral do projeto e teste de links`
 
 ---
 
 ### Phase 10: Live validation (`docs/live-run-fixes`)
 
-Tarefas operacionais: todas exigem OK explícito do autor antes de agir. Correções de documentação ou de código descobertas aqui viram commits `docs:`/`fix:` na branch `docs/live-run-fixes` (ou em branch própria, se mexer em código) e re-executam o gate da camada afetada.
+Tarefas operacionais: todas exigem OK explícito do autor antes de agir. Correções de documentação ou de código descobertas aqui viram commits `docs:`/`fix:` (descrição em português) na branch `docs/live-run-fixes` (ou em branch própria, se mexer em código) e re-executam o gate da camada afetada. Cada task operacional tem seu próprio commit só com `tasks.md`.
 
 #### T51: [OPERACIONAL] Apply de `envs/prod`
 
@@ -1460,11 +1465,11 @@ Tarefas operacionais: todas exigem OK explícito do autor antes de agir. Correç
 
 - [ ] Apply termina sem erro (reexecutar uma vez se 403 transitório de API recém-habilitada); `gcloud compute instances list` mostra 1 e2-micro `pd-standard` em `us-central1-a`
 - [ ] `gcloud billing budgets describe` confirma R$ 5 e thresholds 50/90/100%; outputs exibem o comando SSH
-- [ ] Evidência registrada no relatório; sem commit próprio
+- [ ] Conclusão marcada em `tasks.md` e commit próprio contendo somente esse arquivo (mensagem abaixo)
 
 **Tests**: none
 **Gate**: infra
-**Commit**: none (operacional)
+**Commit**: `docs(tasks): registra apply de envs/prod (T51)` (só `tasks.md`, na própria branch da fase, antes do merge)
 
 ---
 
@@ -1488,7 +1493,7 @@ Tarefas operacionais: todas exigem OK explícito do autor antes de agir. Correç
 
 **Tests**: none
 **Gate**: infra
-**Commit**: none (operacional)
+**Commit**: `docs(tasks): registra verificação do boot da VM (T52)` (só `tasks.md`, na própria branch da fase, antes do merge)
 
 ---
 
@@ -1508,11 +1513,11 @@ Tarefas operacionais: todas exigem OK explícito do autor antes de agir. Correç
 **Done when**:
 
 - [ ] Execução termina com `SUCCESS` e 1.000 itens; `dmesg | grep -i "out of memory"` vazio; pico de memória registrado
-- [ ] Se houve OOM: ajuste aplicado em `docker-compose.yml`/swap com commit e nova execução bem-sucedida (o gate Docker volta a passar)
+- [ ] Se houve OOM: ajuste aplicado em `docker-compose.yml`/swap em commit separado (`fix(docker): ajusta limites de memória`) e nova execução bem-sucedida (o gate Docker volta a passar)
 
 **Tests**: none
 **Gate**: docker
-**Commit**: none (operacional; commit `fix(docker): ...` apenas se houver ajuste)
+**Commit**: `docs(tasks): registra execução manual do robô e checagem de OOM (T53)` (só `tasks.md`, na própria branch da fase, antes do merge)
 
 ---
 
@@ -1533,11 +1538,11 @@ Tarefas operacionais: todas exigem OK explícito do autor antes de agir. Correç
 
 - [ ] `executions` mostra linha `SUCCESS` do cron; `run.log` presente; execução concorrente simulada é pulada por `flock`
 - [ ] Após reboot: dados e `.env` intactos, cron único, `postgres` ativo; startup atualiza o código (VM-09)
-- [ ] Evidência registrada; sem commit próprio
+- [ ] Conclusão marcada em `tasks.md` e commit próprio contendo somente esse arquivo (mensagem abaixo)
 
 **Tests**: none
 **Gate**: infra
-**Commit**: none (operacional)
+**Commit**: `docs(tasks): registra validação de cron, reboot e atualização (T54)` (só `tasks.md`, na própria branch da fase, antes do merge)
 
 ---
 
@@ -1561,7 +1566,7 @@ Tarefas operacionais: todas exigem OK explícito do autor antes de agir. Correç
 
 **Tests**: none
 **Gate**: quick
-**Commit**: `docs(ops): record billing verification results`
+**Commit**: `docs(ops): registra resultado da verificação de billing (T55)`
 
 ---
 
@@ -1581,11 +1586,11 @@ Tarefas operacionais: todas exigem OK explícito do autor antes de agir. Correç
 **Done when**:
 
 - [ ] Destroy conclui sem erro; `gcloud compute instances list` e `gcloud storage buckets list` não mostram recursos do projeto; APIs `cloudresourcemanager` e `serviceusage` continuam habilitadas
-- [ ] Runbook corrigido onde divergiu da prática; commit `docs(ops): ...` quando houver ajuste
+- [ ] Runbook corrigido onde divergiu da prática, em commit separado (`docs(ops): corrige runbook de destruição`) quando houver ajuste
 
 **Tests**: none
 **Gate**: infra
-**Commit**: none (operacional; `docs(ops): fix destroy runbook` se houver ajuste)
+**Commit**: `docs(tasks): registra teste de destruição (T56)` (só `tasks.md`, na própria branch da fase, antes do merge)
 
 ---
 
@@ -1595,7 +1600,7 @@ Tarefas operacionais: todas exigem OK explícito do autor antes de agir. Correç
 Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 7 → Phase 8 → Phase 9 → Phase 10
 ```
 
-Execution is strictly sequential - there is no intra-phase parallelism. Cada fase corresponde a uma branch criada da `main` após o merge da anterior. Mais de 8 tasks no total: na execução, oferecer sub-agentes por lote (~7 tasks, fases inteiras); as tasks **[OPERACIONAL]** (T26, T42, T51-T56) ficam sempre com o agente principal, porque exigem OK explícito do autor.
+Execution is strictly sequential - there is no intra-phase parallelism. Cada fase corresponde a uma branch criada da `main` após o merge da anterior. **Sem sub-agentes** (decisão do autor): toda a execução fica com o agente principal, task a task; não oferecer lotes de sub-agentes. O Verifier final do skill roda inline, como passada independente (`validate.md`), e não em sub-agente. As tasks **[OPERACIONAL]** (T26, T42, T51-T56) exigem OK explícito do autor antes de agir.
 
 ---
 

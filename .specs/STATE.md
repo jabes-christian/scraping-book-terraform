@@ -27,20 +27,28 @@
 - **Status**: active
 
 ### AD-004
-- **Decision**: A execução é dividida em 10 fases, cada uma em uma branch criada da `main` após o merge da anterior (merge sem squash, um commit por task); tasks operacionais (apply, VM, billing, destroy) não geram commit e exigem OK explícito; `docs/` é escrito antes da validação ao vivo.
+- **Decision**: A execução é dividida em 10 fases, cada uma em uma branch criada da `main` após o merge da anterior (merge sem squash, um commit por task); tasks operacionais (apply, VM, billing, destroy) exigem OK explícito e têm commit próprio, só com `tasks.md`, na branch da fase antes do merge (ex.: `docs(tasks): registra apply do bootstrap (T26)`); `docs/` é escrito antes da validação ao vivo.
 - **Reason**: PRs pequenos e revisáveis; nada com custo ou efeito externo roda sem aprovação; os runbooks são validados na prática (fase 10).
 - **Trade-off**: Mais branches e merges manuais; correções da validação ao vivo viram commits extras na fase 10.
 - **Scope**: `tasks.md` e todo o Execute.
 - **Date**: 2026-10-24
 - **Status**: active
 
+### AD-005
+- **Decision**: Commits com tipo e escopo do Conventional Commits em inglês e descrição em português (ex.: `feat(robot): adiciona modelos de domínio`); código, logs e nomes técnicos seguem em inglês. A execução não usa sub-agentes (tudo no agente principal, task a task, incluindo o Verifier inline); o único MCP é o Context7, sem skills adicionais; o merge de fase pode ser feito pelo `gh` ou pelo site do GitHub.
+- **Reason**: Preferência do autor; o `gh` pode não estar instalado.
+- **Trade-off**: Execução mais lenta e com mais contexto no agente principal; a descrição em português substitui a regra "commits em inglês" do PRD §9.
+- **Scope**: Todos os commits e a forma de executar `tasks.md`.
+- **Date**: 2026-10-24
+- **Status**: active
+
 ## Handoff
 
 - **Feature**: .specs/features/book-price-monitor
-- **Phase / Task**: Tasks gerado (56 tasks, 10 fases), aguardando aprovação
-- **Completed**: PRD, Spec e Design aprovados; `tasks.md` criado; rastreabilidade da Spec atualizada (71/71 requisitos mapeados)
+- **Phase / Task**: Tasks aprovado (56 tasks, 10 fases); execução ainda não iniciada
+- **Completed**: PRD, Spec, Design e Tasks aprovados; rastreabilidade da Spec atualizada (71/71 requisitos mapeados); `.gitattributes` com `*.tftpl`, `*.sql`, `*.hcl`
 - **In-progress** (file:line): none
-- **Next step**: Após aprovação das Tasks e merge de `docs/sdd-planning` na `main`, criar `feat/robot-foundation` e iniciar a T1. Ligar o Docker Desktop antes da fase 3
+- **Next step**: Merge de `docs/sdd-planning` na `main`, criar `feat/robot-foundation` e iniciar a T1. Ligar o Docker Desktop antes da fase 3
 - **Blockers**: none
-- **Uncommitted files**: `.specs/features/book-price-monitor/tasks.md`, `spec.md` (coluna Tasks), `design.md` (status), `STATE.md`
+- **Uncommitted files**: `.specs/features/book-price-monitor/tasks.md`, `spec.md` (TFP-12), `STATE.md`, `.gitattributes` (se ainda não commitado)
 - **Branch**: docs/sdd-planning
