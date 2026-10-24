@@ -1,6 +1,6 @@
 # Book Price Monitor Specification
 
-Fonte: [prd.md](prd.md) (aprovado). Escopo: **Complex** (domínio novo: Terraform + GCP, restrição de Free Tier, hardware mínimo).
+Status: **aprovada** (2026-10-23, com ajustes) · Fonte: [prd.md](prd.md) (aprovado). Escopo: **Complex** (domínio novo: Terraform + GCP, restrição de Free Tier, hardware mínimo).
 
 ## Problem Statement
 
@@ -34,19 +34,19 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | Chave natural do livro | URL absoluta da página do livro | Estável e única no site; título pode repetir | n |
 | Granularidade do histórico | 1 linha em `price_history` por livro por execução (inclui execuções sem mudança de preço) | Simples, consulta direta; ~1.000 linhas/dia ≈ 365 mil/ano, dezenas de MB | n |
 | Atomicidade da execução | Linhas de preço gravadas em uma única transação ao fim da coleta; falha = nenhuma linha de preço da execução | Evita histórico parcial inconsistente; 1.000 itens cabem na memória | n |
-| Retry de rede | Até 3 tentativas por requisição, espera de 2 s, 4 s e 8 s | Valores concretos e testáveis; `SCRAPE_MAX_RETRIES` configurável | n |
+| Retry de rede | Até 3 repetições após a falha inicial (4 tentativas no total), com espera de 2 s, 4 s e 8 s antes de cada repetição | Valores concretos e testáveis; `SCRAPE_MAX_RETRIES` (padrão 3) configurável | n |
 | Intervalo entre requisições | 0,5 s (`SCRAPE_DELAY_SECONDS`) | Cortesia com o site e menor pico de CPU na e2-micro | n |
 | Horário do cron | 06:00 UTC diário (`cron_schedule` variável) | Horário calmo; fuso da VM em UTC | n |
 | Execução abandonada | Execução `RUNNING` há mais de 2 h é marcada `FAILED` (erro `abandoned`) no início da próxima | Cobre OOM-kill/reboot no meio da coleta, sem job externo | n |
 | Retenção dos dados | Indefinida (sem expurgo) | 30 GB sobram por muitos anos; não precisa de TTL | n |
-| Entrega da imagem do robô na VM | Startup script clona o repositório via HTTPS e roda `docker compose build` na VM | Artifact Registry é pago acima de 0,5 GB e a imagem com Chromium passa disso; Docker Hub público expõe a imagem. **Exige repositório público** ou outra forma de entrega | **n — depende do autor** |
-| Papel da service account da VM | Somente `roles/logging.writer`; sem outras roles de projeto | Menor privilégio; a VM não chama APIs GCP | n |
-| Entrega de e-mail do budget | Canal de notificação por e-mail (Cloud Monitoring) com `budget_alert_email` | Evita Pub/Sub; o Design valida via Context7 | n |
+| Entrega da imagem do robô na VM | Startup script clona o repositório via HTTPS (`repo_url`, `repo_ref` padrão `main`) e roda `docker compose build` na VM; a cada boot atualiza o código e reconstrói | Artifact Registry é pago acima de 0,5 GB e a imagem com Chromium passa disso. Repositório público, sem segredos no código | y |
+| Papel da service account da VM | Nenhuma role de projeto (SA dedicada e sem permissões) | Os logs ficam em arquivo na VM (VM-07) e a VM não chama APIs GCP; evita a SA Compute padrão, que tem papel Editor | y (Design) |
+| Entrega de e-mail do budget | Destinatários IAM padrão da conta de faturamento (administradores e usuários da conta), sem canal do Cloud Monitoring | Mais simples: sem `google_monitoring_notification_channel`, sem API Monitoring, sem variável de e-mail; funciona com ADC | y (Design) |
 | `disable_on_destroy` das APIs | `false` em todos os `google_project_service` | `cloudresourcemanager`/`serviceusage` foram habilitadas fora do Terraform; destruir não deve desligar APIs | n |
 | Versão do robô local x VM | Mesmo `Dockerfile` e mesmo Compose, diferenças só em variáveis de ambiente | Reprodutibilidade; paridade dev/prod | y |
 | Idioma | Código, logs e commits em inglês; docs em português | PRD | y |
 
-**Open questions:** none - all resolved or logged above. A linha "Entrega da imagem" aguarda confirmação do autor antes do Design.
+**Open questions:** none - all resolved or logged above.
 
 ---
 
@@ -65,7 +65,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 3. WHEN uma página de listagem é lida THEN the system SHALL extrair, para cada livro, categoria, título completo (atributo `title` do link, não o texto truncado), preço numérico, disponibilidade em texto e URL absoluta <!-- SCR-03 -->
 4. WHEN a coleta de uma categoria termina THEN the system SHALL comparar a quantidade coletada com o total "N results" exibido pelo site <!-- SCR-04 -->
 5. IF a quantidade coletada de uma categoria diverge do total exibido pelo site THEN the system SHALL falhar a execução com o erro `count mismatch` e o nome da categoria <!-- SCR-05 -->
-6. IF uma requisição falha por timeout ou HTTP 5xx THEN the system SHALL repetir até 3 tentativas com espera de 2 s, 4 s e 8 s antes de falhar a execução <!-- SCR-06 -->
+6. IF o carregamento de uma página falha por timeout (30 s) ou a página não contém a estrutura esperada (por exemplo, resposta HTTP 5xx) THEN the system SHALL repetir até 3 vezes após a falha inicial, com espera de 2 s, 4 s e 8 s antes de cada repetição, e falhar a execução se todas falharem <!-- SCR-06 -->
 7. IF o preço de um livro não pode ser convertido em número THEN the system SHALL falhar a execução com o erro contendo a URL do livro <!-- SCR-07 -->
 8. The system SHALL esperar `SCRAPE_DELAY_SECONDS` (padrão 0,5 s) entre requisições de páginas consecutivas <!-- SCR-08 -->
 9. The system SHALL usar Chrome headless via Selenium para carregar as páginas <!-- SCR-09 -->
@@ -145,7 +145,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 
 1. WHEN o autor executa `terraform apply` na stack de bootstrap THEN the system SHALL habilitar a API `storage.googleapis.com` e criar um bucket GCS em `us-central1` <!-- TFB-01 -->
 2. The system SHALL criar o bucket com versionamento ligado, acesso uniforme e prevenção de acesso público <!-- TFB-02 -->
-3. The system SHALL receber `project_id` e `billing_account_id` (quando aplicável) e o nome do bucket por variáveis, sem valores reais versionados <!-- TFB-03 -->
+3. The system SHALL receber `project_id` e o nome do bucket (opcional) por variáveis, sem valores reais versionados <!-- TFB-03 -->
 4. WHEN o bootstrap termina THEN the system SHALL exibir em `outputs` o nome do bucket para uso no backend de `envs/prod` <!-- TFB-04 -->
 5. IF o `project_id` não é informado THEN the system SHALL falhar na validação de variáveis antes de qualquer chamada à API <!-- TFB-05 -->
 
@@ -161,16 +161,16 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 
 **Acceptance Criteria**:
 
-1. WHEN o autor executa `terraform apply` em `envs/prod` THEN the system SHALL habilitar via `google_project_service` as APIs `compute.googleapis.com`, `billingbudgets.googleapis.com` e as demais necessárias, antes de criar os recursos que dependem delas <!-- TFP-01 -->
-2. The system SHALL usar o bucket de bootstrap como backend remoto do state, com o nome informado na configuração do backend <!-- TFP-02 -->
+1. WHEN o autor executa `terraform apply` em `envs/prod` THEN the system SHALL habilitar via `google_project_service` as APIs `compute.googleapis.com`, `iam.googleapis.com`, `billingbudgets.googleapis.com` e as demais necessárias, antes de criar os recursos que dependem delas <!-- TFP-01 -->
+2. The system SHALL declarar `backend "gcs"` com configuração parcial (sem variáveis) e receber o nome do bucket por `backend.hcl` via `terraform init -backend-config=backend.hcl`, versionando apenas `backend.hcl.example` <!-- TFP-02 -->
 3. The system SHALL criar uma VPC customizada e uma subnet em `us-central1` <!-- TFP-03 -->
 4. The system SHALL criar regras de firewall que permitem ingress somente TCP 22 a partir de `allowed_ssh_cidr` <!-- TFP-04 -->
 5. IF `allowed_ssh_cidr` é `0.0.0.0/0` THEN the system SHALL falhar a validação da variável <!-- TFP-05 -->
-6. The system SHALL criar uma service account dedicada para a VM com apenas `roles/logging.writer` e sem chave JSON <!-- TFP-06 -->
+6. The system SHALL criar uma service account dedicada para a VM, sem nenhuma role de projeto e sem chave JSON <!-- TFP-06 -->
 7. The system SHALL criar exatamente uma VM `e2-micro` não-preemptível em `us-central1-a`, com disco de boot `pd-standard` de no máximo 30 GB <!-- TFP-07 -->
 8. The system SHALL NOT criar Cloud NAT, load balancer, IP estático reservado, snapshot, Cloud SQL, Pub/Sub, Artifact Registry nem Secret Manager <!-- TFP-08 -->
-9. The system SHALL criar um budget alert de R$ 5 (moeda da conta) com notificação por e-mail em 50%, 90% e 100%, sem Pub/Sub <!-- TFP-09 -->
-10. The system SHALL receber `project_id`, `billing_account_id`, `allowed_ssh_cidr`, `budget_alert_email` e a senha do banco por variáveis, com `sensitive = true` na senha, e fornecer `terraform.tfvars.example` sem valores reais <!-- TFP-10 -->
+9. The system SHALL criar um budget alert de R$ 5 (moeda da conta) filtrado pelo projeto, com notificação por e-mail aos destinatários IAM padrão da conta de faturamento em 50%, 90% e 100%, sem Pub/Sub <!-- TFP-09 -->
+10. The system SHALL receber `project_id`, `billing_account_id`, `allowed_ssh_cidr`, `repo_url`, `repo_ref` (padrão `main`) e a senha do banco por variáveis, com `sensitive = true` na senha, e fornecer `terraform.tfvars.example` sem valores reais <!-- TFP-10 -->
 11. WHEN o `apply` termina THEN the system SHALL expor em `outputs` o nome da VM, a zona e o comando `gcloud compute ssh` pronto <!-- TFP-11 -->
 12. The system SHALL organizar o código em `modules/` reutilizáveis (rede, compute, iam, budget, apis) e `envs/prod` que apenas os compõe <!-- TFP-12 -->
 13. The system SHALL definir `disable_on_destroy = false` nos `google_project_service` <!-- TFP-13 -->
@@ -187,7 +187,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 
 **Acceptance Criteria**:
 
-1. WHEN a VM é criada THEN the system SHALL executar o startup script que instala Docker e o plugin Compose, cria o swap file, obtém o código, escreve o `.env` (permissão 600) a partir da metadata e sobe o `postgres` <!-- VM-01 -->
+1. WHEN a VM é criada THEN the system SHALL executar o startup script que instala Docker e o plugin Compose, cria o swap file, clona `repo_url` em `repo_ref` via HTTPS, constrói a imagem do robô, escreve o `.env` (permissão 600) a partir da metadata e sobe o `postgres` <!-- VM-01 -->
 2. The system SHALL configurar um swap file de 1 GB e `vm.swappiness` documentado antes de qualquer build ou execução do robô <!-- VM-02 -->
 3. The system SHALL registrar uma entrada de cron diária (`cron_schedule`, padrão `0 6 * * *` UTC) que executa `docker compose run --rm robo` <!-- VM-03 -->
 4. IF a execução anterior do cron ainda está rodando THEN the system SHALL pular a nova execução sem iniciar um segundo robô (uso de `flock`) <!-- VM-04 -->
@@ -195,6 +195,8 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 6. WHEN a VM reinicia THEN the system SHALL religar o container `postgres` automaticamente (`restart: unless-stopped`) <!-- VM-06 -->
 7. The system SHALL gravar a saída de cada execução em arquivo de log na VM, com rotação diária de 7 arquivos <!-- VM-07 -->
 8. WHILE o robô está em execução na e2-micro THE system SHALL concluir a coleta completa sem ser encerrado por falta de memória (nenhuma ocorrência de OOM kill no log do kernel) <!-- VM-08 -->
+9. WHEN a VM faz boot THEN the system SHALL atualizar o código para `repo_ref` (equivalente a `git pull`) e reconstruir a imagem do robô antes de subir a stack, mantendo o volume do banco e o `.env` <!-- VM-09 -->
+10. IF a atualização do código falha no boot (por exemplo, GitHub inacessível) e já existe um checkout local THEN the system SHALL registrar o erro no log do startup e continuar com o código existente <!-- VM-10 -->
 
 **Independent Test**: Após o `apply`, `gcloud compute ssh` na VM e `docker compose run --rm robo` manual termina com `SUCCESS`; no dia seguinte `executions` tem uma linha criada pelo cron.
 
@@ -212,7 +214,8 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 2. The system SHALL documentar como verificar o Billing Report para confirmar a cobrança (ou não) do IPv4 externo <!-- OPS-02 -->
 3. The system SHALL documentar que o budget alert apenas notifica e não limita gastos <!-- OPS-03 -->
 4. The system SHALL documentar o pré-requisito de ADC (`gcloud auth application-default login`) e o uso de `billing_project` com `user_project_override` quando exigido <!-- OPS-04 -->
-5. The system SHALL versionar apenas `*.tfvars.example`, `.env.example` e nenhuma chave de service account <!-- OPS-05 -->
+5. The system SHALL versionar apenas `*.tfvars.example`, `backend.hcl.example`, `.env.example` e nenhuma chave de service account <!-- OPS-05 -->
+6. The system SHALL documentar o fluxo manual de atualização do código via `gcloud compute ssh` (`git fetch`, rebuild e verificação) e a troca de `repo_ref` por `terraform apply` <!-- OPS-06 -->
 
 **Independent Test**: Seguir o README do zero em outro projeto de teste sem consultar nada externo.
 
@@ -315,11 +318,14 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | VM-06 | P1: Runtime da VM | Design | Pending |
 | VM-07 | P1: Runtime da VM | Design | Pending |
 | VM-08 | P1: Runtime da VM | Design | Pending |
+| VM-09 | P1: Runtime da VM | Design | Pending |
+| VM-10 | P1: Runtime da VM | Design | Pending |
 | OPS-01 | P2: Operação, custo e destruição | Design | Pending |
 | OPS-02 | P2: Operação, custo e destruição | Design | Pending |
 | OPS-03 | P2: Operação, custo e destruição | Design | Pending |
 | OPS-04 | P2: Operação, custo e destruição | Design | Pending |
 | OPS-05 | P2: Operação, custo e destruição | Design | Pending |
+| OPS-06 | P2: Operação, custo e destruição | Design | Pending |
 | AZR-01 | P3: Reaproveitamento para Azure | - | Pending |
 | EDG-01 | Edge Cases | Design | Pending |
 | EDG-02 | Edge Cases | Design | Pending |
@@ -327,7 +333,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | EDG-04 | Edge Cases | Design | Pending |
 | EDG-05 | Edge Cases | Design | Pending |
 
-**Coverage:** 68 total, 0 mapped to tasks, 68 unmapped ⚠️ (esperado: tasks ainda não existem)
+**Coverage:** 71 total, 0 mapped to tasks, 71 unmapped ⚠️ (esperado: tasks ainda não existem)
 
 ---
 
