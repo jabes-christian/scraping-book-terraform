@@ -31,6 +31,7 @@ override.tf.json
 .terraformrc
 terraform.rc
 *.tfplan
+backend.hcl
 
 # ===== Credenciais GCP =====
 *.json.key
