@@ -165,14 +165,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `.venv\Scripts\python.exe -m pip install -r requirements-dev.txt` conclui sem erro e `.venv\Scripts\python.exe -m pip check` não acusa conflito (se alguma versão não existir no PyPI, parar e reportar antes de alterar o pin)
-- [ ] Teste unit: toda linha de pacote em ambos os arquivos usa `==` (ou `-r`), e o dev inclui `-r requirements.txt`
-- [ ] Gate check passes: Quick
-- [ ] Test count: ≥ 2 testes passam
+- [x] `.venv\Scripts\python.exe -m pip install -r requirements-dev.txt` conclui sem erro e `.venv\Scripts\python.exe -m pip check` não acusa conflito (se alguma versão não existir no PyPI, parar e reportar antes de alterar o pin)
+- [x] Teste unit: toda linha de pacote em ambos os arquivos usa `==` (ou `-r`), e o dev inclui `-r requirements.txt`
+- [x] Gate check passes: Quick
+- [x] Test count: ≥ 2 testes passam
 
 **Tests**: unit
 **Gate**: quick
 **Commit**: `build(deps): fixa versões das dependências de runtime e dev`
+**Status**: ✅ Concluída (3 testes)
 
 ---
 
