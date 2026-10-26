@@ -236,7 +236,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 **Where**: `src/book_monitor/config.py`
 **Depends on**: T3
 **Reuses**: Lista de variáveis e padrões do Design (`BASE_URL`, `PAGE_TIMEOUT_SECONDS`, `CHROME_RECYCLE_PAGES` etc.)
-**Requirement**: CFG-01, CFG-02, CFG-04
+**Requirement**: CFG-01, CFG-02, CFG-04, CFG-08
 
 **Tools**:
 
@@ -245,15 +245,17 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Cada variável obrigatória ausente (`DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`) levanta `ConfigError` cujo texto cita o nome da variável (um teste por variável, valor vazio incluso)
-- [ ] Padrões corretos quando opcionais ausentes (`DB_PORT=5432`, `SCRAPE_DELAY_SECONDS=0.5`, `SCRAPE_MAX_RETRIES=3`, `LOG_LEVEL=INFO` etc.); valor numérico inválido levanta `ConfigError`
-- [ ] Teste de varredura (AST) garante que nenhum arquivo de `src/` importa SDK de nuvem (`google.cloud`, `boto3`, `azure` etc.) - CFG-04; reexecutado em todo gate seguinte
-- [ ] Gate check passes: Quick
-- [ ] Test count: ≥ 10 testes passam
+- [x] Cada variável obrigatória ausente (`DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`) levanta `ConfigError` cujo texto cita o nome da variável (um teste por variável, valor vazio incluso)
+- [x] Padrões corretos quando opcionais ausentes (`DB_PORT=5432`, `SCRAPE_DELAY_SECONDS=0.5`, `SCRAPE_MAX_RETRIES=3`, `LOG_LEVEL=INFO` etc.); valor numérico inválido levanta `ConfigError`
+- [x] Faixas validadas (CFG-08): `DB_PORT` 1-65535; `SCRAPE_MAX_RETRIES` ≥ 0; `SCRAPE_DELAY_SECONDS` ≥ 0; `PAGE_TIMEOUT_SECONDS`, `DB_CONNECT_TIMEOUT_SECONDS` e `STALE_AFTER_HOURS` > 0; `CHROME_RECYCLE_PAGES` ≥ 1; fora da faixa levanta `ConfigError` citando a variável e o valor esperado; um teste de limite inválido e um de limite válido por faixa (ex.: retries -1 falha, 0 passa)
+- [x] Teste de varredura (AST) garante que nenhum arquivo de `src/` importa SDK de nuvem (`google.cloud`, `boto3`, `azure` etc.) - CFG-04; reexecutado em todo gate seguinte
+- [x] Gate check passes: Quick
+- [x] Test count: ≥ 10 testes passam
 
 **Tests**: unit
 **Gate**: quick
 **Commit**: `feat(robot): carrega e valida configurações do ambiente`
+**Status**: ✅ Concluída (35 testes novos; 42 no total)
 
 ---
 
@@ -1646,7 +1648,7 @@ Execution is strictly sequential - there is no intra-phase parallelism. Cada fas
 | TFB-02 | T24, T26 | EDG-03 | T10, T19 |
 | TFB-03 | T23 | EDG-04 | T19, T20 |
 | TFB-04 | T25, T26 | EDG-05 | T45 |
-| TFB-05 | T23 | | |
+| TFB-05 | T23 | CFG-08 | T4 |
 
 ---
 

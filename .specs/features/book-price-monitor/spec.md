@@ -111,6 +111,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 5. WHEN a execução termina THEN the system SHALL encerrar com código de saída 0 se `SUCCESS` e 1 se `FAILED` <!-- CFG-05 -->
 6. The system SHALL emitir logs em formato JSON, uma linha por evento, na saída padrão <!-- CFG-06 -->
 7. The system SHALL declarar dependências Python com versões pinadas em `requirements.txt` (e `requirements-dev.txt` para ferramentas de teste) <!-- CFG-07 -->
+8. IF um valor numérico de configuração está fora da faixa válida (`DB_PORT` 1-65535; `SCRAPE_MAX_RETRIES` ≥ 0; `SCRAPE_DELAY_SECONDS` ≥ 0; `PAGE_TIMEOUT_SECONDS`, `DB_CONNECT_TIMEOUT_SECONDS` e `STALE_AFTER_HOURS` > 0; `CHROME_RECYCLE_PAGES` ≥ 1) THEN the system SHALL rejeitar a configuração como erro de configuração (mesmo tratamento do CFG-02), com mensagem que cita a variável e o valor esperado <!-- CFG-08 -->
 
 **Independent Test**: Rodar com `DB_PASSWORD` removida e ver exit code 2 citando a variável; fazer `grep` do valor da senha nos logs de uma execução completa e não encontrar nada.
 
@@ -245,7 +246,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 
 | Dimensão | Resolução |
 | --- | --- |
-| Validação de entrada e limites | CFG-02, TFP-05, TFB-05, DB-05 (truncar erro em 2.000 caracteres), SCR-07 |
+| Validação de entrada e limites | CFG-02, CFG-08, TFP-05, TFB-05, DB-05 (truncar erro em 2.000 caracteres), SCR-07 |
 | Falha / falha parcial | DB-05, DB-06, SCR-05, SCR-07, EDG-02 |
 | Idempotência / retry / duplicata | SCR-06, DB-03 (upsert por URL), VM-04, VM-05, EDG-02, EDG-04 |
 | Auth e rate limit | TFP-04..06 (SSH restrito, SA mínima); rate limit de saída: SCR-08 |
@@ -279,13 +280,14 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | DB-07 | P1: Persistir histórico | Tasks | T18, T20 | Planned |
 | DB-08 | P1: Persistir histórico | Tasks | T15, T21, T54 | Planned |
 | DB-09 | P1: Persistir histórico | Tasks | T8, T17, T19 | Planned |
-| CFG-01 | P1: Configuração e agnóstico de nuvem | Tasks | T4 | Planned |
-| CFG-02 | P1: Configuração e agnóstico de nuvem | Tasks | T4, T20 | Planned |
+| CFG-01 | P1: Configuração e agnóstico de nuvem | Tasks | T4 | Implemented |
+| CFG-02 | P1: Configuração e agnóstico de nuvem | Tasks | T4, T20 | In progress (T4) |
 | CFG-03 | P1: Configuração e agnóstico de nuvem | Tasks | T5, T20 | Planned |
-| CFG-04 | P1: Configuração e agnóstico de nuvem | Tasks | T4 | Planned |
+| CFG-04 | P1: Configuração e agnóstico de nuvem | Tasks | T4 | Implemented |
 | CFG-05 | P1: Configuração e agnóstico de nuvem | Tasks | T20 | Planned |
 | CFG-06 | P1: Configuração e agnóstico de nuvem | Tasks | T5 | Planned |
 | CFG-07 | P1: Configuração e agnóstico de nuvem | Tasks | T1 | Implemented |
+| CFG-08 | P1: Configuração e agnóstico de nuvem | Tasks | T4 | Implemented |
 | LOC-01 | P1: Ambiente local Docker Compose | Tasks | T15, T21, T48 | Planned |
 | LOC-02 | P1: Ambiente local Docker Compose | Tasks | T13, T21 | Planned |
 | LOC-03 | P1: Ambiente local Docker Compose | Tasks | T15 | Planned |
@@ -333,7 +335,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | EDG-04 | Edge Cases | Tasks | T19, T20 | Planned |
 | EDG-05 | Edge Cases | Tasks | T45 | Planned |
 
-**Coverage:** 71 total, 71 mapped to tasks, 0 unmapped ✅
+**Coverage:** 72 total, 72 mapped to tasks, 0 unmapped ✅
 
 ---
 
