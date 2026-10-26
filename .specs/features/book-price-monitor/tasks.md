@@ -218,14 +218,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `BookItem` é imutável (atribuição levanta `FrozenInstanceError`) e guarda `price` como `Decimal`
-- [ ] `Status` expõe exatamente `RUNNING`, `SUCCESS`, `FAILED`
-- [ ] Gate check passes: Quick
-- [ ] Test count: ≥ 3 testes passam
+- [x] `BookItem` é imutável (atribuição levanta `FrozenInstanceError`) e guarda `price` como `Decimal`
+- [x] `Status` expõe exatamente `RUNNING`, `SUCCESS`, `FAILED`
+- [x] Gate check passes: Quick
+- [x] Test count: ≥ 3 testes passam
 
 **Tests**: unit
 **Gate**: quick
 **Commit**: `feat(robot): adiciona modelos de domínio`
+**Status**: ✅ Concluída (4 testes novos; 7 no total)
 
 ---
 

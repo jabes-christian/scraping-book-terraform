@@ -263,7 +263,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | --- | --- | --- | --- | --- |
 | SCR-01 | P1: Coletar categorias e livros | Tasks | T9, T12 | Planned |
 | SCR-02 | P1: Coletar categorias e livros | Tasks | T10, T12 | Planned |
-| SCR-03 | P1: Coletar categorias e livros | Tasks | T3, T10 | Planned |
+| SCR-03 | P1: Coletar categorias e livros | Tasks | T3, T10 | In progress (T3) |
 | SCR-04 | P1: Coletar categorias e livros | Tasks | T10, T12 | Planned |
 | SCR-05 | P1: Coletar categorias e livros | Tasks | T12 | Planned |
 | SCR-06 | P1: Coletar categorias e livros | Tasks | T6, T11, T12 | Planned |
