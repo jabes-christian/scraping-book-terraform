@@ -192,13 +192,14 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `.venv\Scripts\python.exe -m pytest --collect-only` roda sem erro (0 testes coletados aceitável aqui, ou os do T1) e rejeita marker desconhecido
-- [ ] `.venv\Scripts\python.exe -m ruff check .` passa
-- [ ] Gate check passes: Quick
+- [x] `.venv\Scripts\python.exe -m pytest --collect-only` roda sem erro (0 testes coletados aceitável aqui, ou os do T1) e rejeita marker desconhecido
+- [x] `.venv\Scripts\python.exe -m ruff check .` passa
+- [x] Gate check passes: Quick
 
 **Tests**: none
 **Gate**: quick
 **Commit**: `chore(tooling): configura markers do pytest e o ruff`
+**Status**: ✅ Concluída (3 testes do T1 seguem passando)
 
 ---
 
