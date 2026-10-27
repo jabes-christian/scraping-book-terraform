@@ -98,7 +98,7 @@ Nada existe ainda além de `.gitignore`, `.gitattributes`, `README.md` e `.specs
 
 | Módulo | Propósito | Interface | Requisitos |
 | --- | --- | --- | --- |
-| `config.py` | Ler e validar variáveis de ambiente | `Settings.from_env(env: Mapping) -> Settings`; levanta `ConfigError(var)` | CFG-01, CFG-02, CFG-04 |
+| `config.py` | Ler e validar variáveis de ambiente | `Settings.from_env(env: Mapping) -> Settings`; levanta `ConfigError(var)` para variável obrigatória ausente ou vazia, número inválido e valor fora da faixa ou do conjunto válido | CFG-01, CFG-02, CFG-04, CFG-08 |
 | `logging_setup.py` | Logs JSON em stdout e redação de segredos | `configure(level, secrets) -> None`; `redact(text, secrets) -> str` | CFG-03, CFG-06 |
 | `models.py` | Dataclasses imutáveis | `BookItem(category, title, price: Decimal, availability, url)`; `Status` enum | SCR-03 |
 | `parsing.py` | Funções puras sobre HTML | `parse_categories(html, base_url) -> list[Category]`; `parse_listing(html, page_url, category) -> Listing(items, total_results, next_url)`; `parse_price(text) -> Decimal` | SCR-01..05, SCR-07, EDG-03 |
@@ -112,6 +112,18 @@ Nada existe ainda além de `.gitignore`, `.gitattributes`, `README.md` e `.specs
 **Dependências pinadas** (`requirements.txt`, versões consultadas no PyPI em 2026-10-23): `selenium==4.51.0`, `psycopg[binary]==3.3.6`, `beautifulsoup4==4.15.0`. `requirements-dev.txt`: `-r requirements.txt`, `pytest==9.1.1`, `ruff==0.17.2`. Sem `python-dotenv` (Compose injeta o ambiente) e sem biblioteca de log (formatter JSON próprio, ~20 linhas).
 
 **Variáveis de ambiente** (além das da Spec): `BASE_URL` (padrão `https://books.toscrape.com/`), `PAGE_TIMEOUT_SECONDS` (30), `CHROME_RECYCLE_PAGES` (25), `STALE_AFTER_HOURS` (2), `DB_CONNECT_TIMEOUT_SECONDS` (60), `CHROME_BIN` (`/usr/bin/chromium`), `CHROMEDRIVER_PATH` (`/usr/bin/chromedriver`).
+
+**Faixas válidas (CFG-08)**, validadas em `Settings.from_env`; fora delas levanta `ConfigError` citando a variável e o valor esperado:
+
+| Variável | Válido |
+| --- | --- |
+| `DB_PORT` | 1-65535 |
+| `SCRAPE_MAX_RETRIES`, `SCRAPE_DELAY_SECONDS` | ≥ 0 |
+| `PAGE_TIMEOUT_SECONDS`, `DB_CONNECT_TIMEOUT_SECONDS`, `STALE_AFTER_HOURS` | > 0 |
+| `CHROME_RECYCLE_PAGES` | ≥ 1 |
+| `LOG_LEVEL` | `DEBUG`, `INFO`, `WARNING`, `ERROR` ou `CRITICAL`; minúsculas são aceitas e normalizadas para maiúsculas |
+
+Valor vazio ou só com espaços conta como ausente: variável obrigatória levanta `ConfigError` e opcional assume o padrão. `DB_PASSWORD` fica fora do `repr` de `Settings`.
 
 **Chrome (LOC-06)**, validado no Context7 (`--headless=new` é a forma recomendada; `page_load_strategy = 'eager'` documentada): `--headless=new`, `--no-sandbox`, `--disable-dev-shm-usage`, `--disable-gpu`, `--disable-extensions`, `--blink-settings=imagesEnabled=false`, `--window-size=800,600`, `--renderer-process-limit=1`, `page_load_strategy='eager'`. `binary_location=CHROME_BIN` e `Service(executable_path=CHROMEDRIVER_PATH)` evitam o Selenium Manager.
 
@@ -252,7 +264,7 @@ Roda como root a cada boot e é idempotente. Variáveis do template não incluem
 | --- | --- |
 | SCR-01..09, EDG-01..03 | `parsing.py`, `browser.py`, `scraper.py`, `retry.py` |
 | DB-01..09, EDG-04 | `schema.sql`, `db.py`, `runner.py`, volume `pgdata` |
-| CFG-01..07 | `config.py`, `logging_setup.py`, `runner.py`, `requirements*.txt` |
+| CFG-01..08 | `config.py`, `logging_setup.py`, `runner.py`, `requirements*.txt` |
 | LOC-01..06 | `Dockerfile`, `docker-compose.yml`, `.env.example`, `browser.py` |
 | TFB-01..05 | `terraform/bootstrap` |
 | TFP-01..13 | `terraform/envs/prod` + módulos |
