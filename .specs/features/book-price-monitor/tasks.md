@@ -303,14 +303,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Com `retries=3` e falha persistente: 4 chamadas no total, esperas exatamente [2, 4, 8] s, e a última exceção é propagada
-- [ ] Sucesso na 3ª tentativa devolve o resultado sem esperas extras; exceção que não é `RetryableError` não é repetida
-- [ ] Gate check passes: Quick
-- [ ] Test count: ≥ 5 testes passam
+- [x] Com `retries=3` e falha persistente: 4 chamadas no total, esperas exatamente [2, 4, 8] s, e a última exceção é propagada
+- [x] Sucesso na 3ª tentativa devolve o resultado sem esperas extras; exceção que não é `RetryableError` não é repetida
+- [x] Gate check passes: Quick
+- [x] Test count: ≥ 5 testes passam
 
 **Tests**: unit
 **Gate**: quick
 **Commit**: `feat(robot): adiciona retry com backoff exponencial`
+**Status**: ✅ Concluída (5 testes novos; 65 no total)
 
 ---
 
