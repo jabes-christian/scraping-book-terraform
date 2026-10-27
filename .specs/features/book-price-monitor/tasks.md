@@ -274,15 +274,16 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Cada registro emitido é uma linha JSON válida contendo ao menos `ts`, `level`, `message`
-- [ ] `redact` troca toda ocorrência do segredo por `***`, inclusive em mensagem de exceção; segredo vazio não corrompe o texto
-- [ ] Um log emitido com a senha na mensagem não a contém na saída capturada
-- [ ] Gate check passes: Quick
-- [ ] Test count: ≥ 6 testes passam
+- [x] Cada registro emitido é uma linha JSON válida contendo ao menos `ts`, `level`, `message`
+- [x] `redact` troca toda ocorrência do segredo por `***`, inclusive em mensagem de exceção; segredo vazio não corrompe o texto
+- [x] Um log emitido com a senha na mensagem não a contém na saída capturada
+- [x] Gate check passes: Quick
+- [x] Test count: ≥ 6 testes passam
 
 **Tests**: unit
 **Gate**: quick
 **Commit**: `feat(robot): adiciona logs JSON com redação de segredos`
+**Status**: ✅ Concluída (8 testes novos; 50 no total)
 
 ---
 

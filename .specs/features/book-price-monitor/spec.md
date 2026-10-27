@@ -282,10 +282,10 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | DB-09 | P1: Persistir histórico | Tasks | T8, T17, T19 | Planned |
 | CFG-01 | P1: Configuração e agnóstico de nuvem | Tasks | T4 | Implemented |
 | CFG-02 | P1: Configuração e agnóstico de nuvem | Tasks | T4, T20 | In progress (T4) |
-| CFG-03 | P1: Configuração e agnóstico de nuvem | Tasks | T5, T20 | Planned |
+| CFG-03 | P1: Configuração e agnóstico de nuvem | Tasks | T5, T20 | In progress (T5) |
 | CFG-04 | P1: Configuração e agnóstico de nuvem | Tasks | T4 | Implemented |
 | CFG-05 | P1: Configuração e agnóstico de nuvem | Tasks | T20 | Planned |
-| CFG-06 | P1: Configuração e agnóstico de nuvem | Tasks | T5 | Planned |
+| CFG-06 | P1: Configuração e agnóstico de nuvem | Tasks | T5 | Implemented |
 | CFG-07 | P1: Configuração e agnóstico de nuvem | Tasks | T1 | Implemented |
 | CFG-08 | P1: Configuração e agnóstico de nuvem | Tasks | T4 | Implemented |
 | LOC-01 | P1: Ambiente local Docker Compose | Tasks | T15, T21, T48 | Planned |
