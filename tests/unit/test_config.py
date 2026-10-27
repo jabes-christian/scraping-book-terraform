@@ -149,6 +149,30 @@ def test_boundary_value_inside_range_is_accepted(var, value, attr, parsed):
     assert getattr(s, attr) == parsed
 
 
+@pytest.mark.parametrize("value", ["VERBOSE", "WARN", "TRACE"])
+def test_invalid_log_level_raises_config_error_naming_variable_and_accepted_values(value):
+    with pytest.raises(ConfigError) as exc:
+        Settings.from_env({**REQUIRED, "LOG_LEVEL": value})
+    assert "LOG_LEVEL" in str(exc.value)
+    assert "DEBUG, INFO, WARNING, ERROR, CRITICAL" in str(exc.value)
+
+
+@pytest.mark.parametrize(
+    ("value", "normalized"),
+    [
+        ("DEBUG", "DEBUG"),
+        ("INFO", "INFO"),
+        ("WARNING", "WARNING"),
+        ("ERROR", "ERROR"),
+        ("CRITICAL", "CRITICAL"),
+        ("debug", "DEBUG"),
+        ("Warning", "WARNING"),
+    ],
+)
+def test_valid_log_level_is_accepted_and_normalized_to_uppercase(value, normalized):
+    assert Settings.from_env({**REQUIRED, "LOG_LEVEL": value}).log_level == normalized
+
+
 def test_src_does_not_import_cloud_provider_sdks():
     offenders = {}
     for path in SRC.rglob("*.py"):

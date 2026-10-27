@@ -111,7 +111,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 5. WHEN a execução termina THEN the system SHALL encerrar com código de saída 0 se `SUCCESS` e 1 se `FAILED` <!-- CFG-05 -->
 6. The system SHALL emitir logs em formato JSON, uma linha por evento, na saída padrão <!-- CFG-06 -->
 7. The system SHALL declarar dependências Python com versões pinadas em `requirements.txt` (e `requirements-dev.txt` para ferramentas de teste) <!-- CFG-07 -->
-8. IF um valor numérico de configuração está fora da faixa válida (`DB_PORT` 1-65535; `SCRAPE_MAX_RETRIES` ≥ 0; `SCRAPE_DELAY_SECONDS` ≥ 0; `PAGE_TIMEOUT_SECONDS`, `DB_CONNECT_TIMEOUT_SECONDS` e `STALE_AFTER_HOURS` > 0; `CHROME_RECYCLE_PAGES` ≥ 1) THEN the system SHALL rejeitar a configuração como erro de configuração (mesmo tratamento do CFG-02), com mensagem que cita a variável e o valor esperado <!-- CFG-08 -->
+8. IF um valor de configuração está fora da faixa ou do conjunto válido (`DB_PORT` 1-65535; `SCRAPE_MAX_RETRIES` ≥ 0; `SCRAPE_DELAY_SECONDS` ≥ 0; `PAGE_TIMEOUT_SECONDS`, `DB_CONNECT_TIMEOUT_SECONDS` e `STALE_AFTER_HOURS` > 0; `CHROME_RECYCLE_PAGES` ≥ 1; `LOG_LEVEL` em {`DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`}, aceitando minúsculas e normalizando para maiúsculas) THEN the system SHALL rejeitar a configuração como erro de configuração (mesmo tratamento do CFG-02), com mensagem que cita a variável e o valor esperado <!-- CFG-08 -->
 
 **Independent Test**: Rodar com `DB_PASSWORD` removida e ver exit code 2 citando a variável; fazer `grep` do valor da senha nos logs de uma execução completa e não encontrar nada.
 

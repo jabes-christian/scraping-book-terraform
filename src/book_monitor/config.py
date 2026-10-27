@@ -1,6 +1,8 @@
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 
+LOG_LEVELS = ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
+
 
 class ConfigError(Exception):
     def __init__(self, var: str, message: str):
@@ -74,7 +76,14 @@ class Settings:
             scrape_max_retries=_optional(
                 env, "SCRAPE_MAX_RETRIES", 3, int, lambda v: v >= 0, ">= 0"
             ),
-            log_level=_optional(env, "LOG_LEVEL", "INFO", str),
+            log_level=_optional(
+                env,
+                "LOG_LEVEL",
+                "INFO",
+                str.upper,
+                lambda v: v in LOG_LEVELS,
+                f"one of {', '.join(LOG_LEVELS)}",
+            ),
             base_url=_optional(env, "BASE_URL", "https://books.toscrape.com/", str),
             page_timeout_seconds=_optional(
                 env, "PAGE_TIMEOUT_SECONDS", 30, int, lambda v: v > 0, "> 0"

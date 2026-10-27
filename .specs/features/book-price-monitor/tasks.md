@@ -248,6 +248,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 - [x] Cada variável obrigatória ausente (`DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`) levanta `ConfigError` cujo texto cita o nome da variável (um teste por variável, valor vazio incluso)
 - [x] Padrões corretos quando opcionais ausentes (`DB_PORT=5432`, `SCRAPE_DELAY_SECONDS=0.5`, `SCRAPE_MAX_RETRIES=3`, `LOG_LEVEL=INFO` etc.); valor numérico inválido levanta `ConfigError`
 - [x] Faixas validadas (CFG-08): `DB_PORT` 1-65535; `SCRAPE_MAX_RETRIES` ≥ 0; `SCRAPE_DELAY_SECONDS` ≥ 0; `PAGE_TIMEOUT_SECONDS`, `DB_CONNECT_TIMEOUT_SECONDS` e `STALE_AFTER_HOURS` > 0; `CHROME_RECYCLE_PAGES` ≥ 1; fora da faixa levanta `ConfigError` citando a variável e o valor esperado; um teste de limite inválido e um de limite válido por faixa (ex.: retries -1 falha, 0 passa)
+- [x] `LOG_LEVEL` fora de {`DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`} levanta `ConfigError` citando a variável e os valores aceitos; minúsculas são aceitas e normalizadas para maiúsculas (CFG-08, extensão)
 - [x] Teste de varredura (AST) garante que nenhum arquivo de `src/` importa SDK de nuvem (`google.cloud`, `boto3`, `azure` etc.) - CFG-04; reexecutado em todo gate seguinte
 - [x] Gate check passes: Quick
 - [x] Test count: ≥ 10 testes passam
@@ -255,7 +256,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 **Tests**: unit
 **Gate**: quick
 **Commit**: `feat(robot): carrega e valida configurações do ambiente`
-**Status**: ✅ Concluída (35 testes novos; 42 no total)
+**Status**: ✅ Concluída (35 testes novos; 42 no total; extensão do CFG-08 com `LOG_LEVEL` em commit separado, +9 testes)
 
 ---
 
