@@ -1,0 +1,17 @@
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "--strict-markers"
+markers = [
+    "integration: exige PostgreSQL do Compose (Docker Desktop ligado)",
+    "docker: exige build da imagem e Docker Desktop ligado",
+    "infra: testes de renderização do startup script e de Terraform",
+    "e2e: execução ponta a ponta contra o site real (minutos)",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]

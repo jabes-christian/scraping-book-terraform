@@ -45,10 +45,10 @@
 ## Handoff
 
 - **Feature**: .specs/features/book-price-monitor
-- **Phase / Task**: Tasks aprovado (56 tasks, 10 fases); execução ainda não iniciada
-- **Completed**: PRD, Spec, Design e Tasks aprovados; rastreabilidade da Spec atualizada (71/71 requisitos mapeados); `.gitattributes` com `*.tftpl`, `*.sql`, `*.hcl`
+- **Phase / Task**: Fase 1 concluída (T1-T6, 65 testes unit; gate Build verde); Fase 2 (T7-T12) ainda não iniciada
+- **Completed**: PRD, Spec, Design e Tasks aprovados; Fase 1 implementada (dependências pinadas, pytest/ruff, `models`, `config`, `logging_setup`, `retry`); CFG-08 (validação de faixa e de `LOG_LEVEL`) adicionado à Spec e refletido no Design; rastreabilidade da Spec em 72/72 requisitos mapeados
 - **In-progress** (file:line): none
-- **Next step**: Merge de `docs/sdd-planning` na `main`, criar `feat/robot-foundation` e iniciar a T1. Ligar o Docker Desktop antes da fase 3
+- **Next step**: Após o merge de `feat/robot-foundation` na `main`, atualizar a `main` local, criar `feat/robot-scraping` e iniciar a T7 (fixtures HTML reais do books.toscrape.com; só GET de leitura). Ligar o Docker Desktop antes da fase 3
 - **Blockers**: none
-- **Uncommitted files**: `.specs/features/book-price-monitor/tasks.md`, `spec.md` (TFP-12), `STATE.md`, `.gitattributes` (se ainda não commitado)
-- **Branch**: docs/sdd-planning
+- **Uncommitted files**: `.specs/features/book-price-monitor/design.md`, `.specs/STATE.md`
+- **Branch**: feat/robot-foundation

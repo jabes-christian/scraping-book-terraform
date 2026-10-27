@@ -165,14 +165,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `.venv\Scripts\python.exe -m pip install -r requirements-dev.txt` conclui sem erro e `.venv\Scripts\python.exe -m pip check` não acusa conflito (se alguma versão não existir no PyPI, parar e reportar antes de alterar o pin)
-- [ ] Teste unit: toda linha de pacote em ambos os arquivos usa `==` (ou `-r`), e o dev inclui `-r requirements.txt`
-- [ ] Gate check passes: Quick
-- [ ] Test count: ≥ 2 testes passam
+- [x] `.venv\Scripts\python.exe -m pip install -r requirements-dev.txt` conclui sem erro e `.venv\Scripts\python.exe -m pip check` não acusa conflito (se alguma versão não existir no PyPI, parar e reportar antes de alterar o pin)
+- [x] Teste unit: toda linha de pacote em ambos os arquivos usa `==` (ou `-r`), e o dev inclui `-r requirements.txt`
+- [x] Gate check passes: Quick
+- [x] Test count: ≥ 2 testes passam
 
 **Tests**: unit
 **Gate**: quick
 **Commit**: `build(deps): fixa versões das dependências de runtime e dev`
+**Status**: ✅ Concluída (3 testes)
 
 ---
 
@@ -191,13 +192,14 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `.venv\Scripts\python.exe -m pytest --collect-only` roda sem erro (0 testes coletados aceitável aqui, ou os do T1) e rejeita marker desconhecido
-- [ ] `.venv\Scripts\python.exe -m ruff check .` passa
-- [ ] Gate check passes: Quick
+- [x] `.venv\Scripts\python.exe -m pytest --collect-only` roda sem erro (0 testes coletados aceitável aqui, ou os do T1) e rejeita marker desconhecido
+- [x] `.venv\Scripts\python.exe -m ruff check .` passa
+- [x] Gate check passes: Quick
 
 **Tests**: none
 **Gate**: quick
 **Commit**: `chore(tooling): configura markers do pytest e o ruff`
+**Status**: ✅ Concluída (3 testes do T1 seguem passando)
 
 ---
 
@@ -216,14 +218,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `BookItem` é imutável (atribuição levanta `FrozenInstanceError`) e guarda `price` como `Decimal`
-- [ ] `Status` expõe exatamente `RUNNING`, `SUCCESS`, `FAILED`
-- [ ] Gate check passes: Quick
-- [ ] Test count: ≥ 3 testes passam
+- [x] `BookItem` é imutável (atribuição levanta `FrozenInstanceError`) e guarda `price` como `Decimal`
+- [x] `Status` expõe exatamente `RUNNING`, `SUCCESS`, `FAILED`
+- [x] Gate check passes: Quick
+- [x] Test count: ≥ 3 testes passam
 
 **Tests**: unit
 **Gate**: quick
 **Commit**: `feat(robot): adiciona modelos de domínio`
+**Status**: ✅ Concluída (4 testes novos; 7 no total)
 
 ---
 
@@ -233,7 +236,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 **Where**: `src/book_monitor/config.py`
 **Depends on**: T3
 **Reuses**: Lista de variáveis e padrões do Design (`BASE_URL`, `PAGE_TIMEOUT_SECONDS`, `CHROME_RECYCLE_PAGES` etc.)
-**Requirement**: CFG-01, CFG-02, CFG-04
+**Requirement**: CFG-01, CFG-02, CFG-04, CFG-08
 
 **Tools**:
 
@@ -242,15 +245,18 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Cada variável obrigatória ausente (`DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`) levanta `ConfigError` cujo texto cita o nome da variável (um teste por variável, valor vazio incluso)
-- [ ] Padrões corretos quando opcionais ausentes (`DB_PORT=5432`, `SCRAPE_DELAY_SECONDS=0.5`, `SCRAPE_MAX_RETRIES=3`, `LOG_LEVEL=INFO` etc.); valor numérico inválido levanta `ConfigError`
-- [ ] Teste de varredura (AST) garante que nenhum arquivo de `src/` importa SDK de nuvem (`google.cloud`, `boto3`, `azure` etc.) - CFG-04; reexecutado em todo gate seguinte
-- [ ] Gate check passes: Quick
-- [ ] Test count: ≥ 10 testes passam
+- [x] Cada variável obrigatória ausente (`DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`) levanta `ConfigError` cujo texto cita o nome da variável (um teste por variável, valor vazio incluso)
+- [x] Padrões corretos quando opcionais ausentes (`DB_PORT=5432`, `SCRAPE_DELAY_SECONDS=0.5`, `SCRAPE_MAX_RETRIES=3`, `LOG_LEVEL=INFO` etc.); valor numérico inválido levanta `ConfigError`
+- [x] Faixas validadas (CFG-08): `DB_PORT` 1-65535; `SCRAPE_MAX_RETRIES` ≥ 0; `SCRAPE_DELAY_SECONDS` ≥ 0; `PAGE_TIMEOUT_SECONDS`, `DB_CONNECT_TIMEOUT_SECONDS` e `STALE_AFTER_HOURS` > 0; `CHROME_RECYCLE_PAGES` ≥ 1; fora da faixa levanta `ConfigError` citando a variável e o valor esperado; um teste de limite inválido e um de limite válido por faixa (ex.: retries -1 falha, 0 passa)
+- [x] `LOG_LEVEL` fora de {`DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`} levanta `ConfigError` citando a variável e os valores aceitos; minúsculas são aceitas e normalizadas para maiúsculas (CFG-08, extensão)
+- [x] Teste de varredura (AST) garante que nenhum arquivo de `src/` importa SDK de nuvem (`google.cloud`, `boto3`, `azure` etc.) - CFG-04; reexecutado em todo gate seguinte
+- [x] Gate check passes: Quick
+- [x] Test count: ≥ 10 testes passam
 
 **Tests**: unit
 **Gate**: quick
 **Commit**: `feat(robot): carrega e valida configurações do ambiente`
+**Status**: ✅ Concluída (35 testes novos; 42 no total; extensão do CFG-08 com `LOG_LEVEL` em commit separado, +9 testes)
 
 ---
 
@@ -269,15 +275,16 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Cada registro emitido é uma linha JSON válida contendo ao menos `ts`, `level`, `message`
-- [ ] `redact` troca toda ocorrência do segredo por `***`, inclusive em mensagem de exceção; segredo vazio não corrompe o texto
-- [ ] Um log emitido com a senha na mensagem não a contém na saída capturada
-- [ ] Gate check passes: Quick
-- [ ] Test count: ≥ 6 testes passam
+- [x] Cada registro emitido é uma linha JSON válida contendo ao menos `ts`, `level`, `message`
+- [x] `redact` troca toda ocorrência do segredo por `***`, inclusive em mensagem de exceção; segredo vazio não corrompe o texto
+- [x] Um log emitido com a senha na mensagem não a contém na saída capturada
+- [x] Gate check passes: Quick
+- [x] Test count: ≥ 6 testes passam
 
 **Tests**: unit
 **Gate**: quick
 **Commit**: `feat(robot): adiciona logs JSON com redação de segredos`
+**Status**: ✅ Concluída (8 testes novos; 50 no total)
 
 ---
 
@@ -296,14 +303,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Com `retries=3` e falha persistente: 4 chamadas no total, esperas exatamente [2, 4, 8] s, e a última exceção é propagada
-- [ ] Sucesso na 3ª tentativa devolve o resultado sem esperas extras; exceção que não é `RetryableError` não é repetida
-- [ ] Gate check passes: Quick
-- [ ] Test count: ≥ 5 testes passam
+- [x] Com `retries=3` e falha persistente: 4 chamadas no total, esperas exatamente [2, 4, 8] s, e a última exceção é propagada
+- [x] Sucesso na 3ª tentativa devolve o resultado sem esperas extras; exceção que não é `RetryableError` não é repetida
+- [x] Gate check passes: Quick
+- [x] Test count: ≥ 5 testes passam
 
 **Tests**: unit
 **Gate**: quick
 **Commit**: `feat(robot): adiciona retry com backoff exponencial`
+**Status**: ✅ Concluída (5 testes novos; 65 no total)
 
 ---
 
@@ -1643,7 +1651,7 @@ Execution is strictly sequential - there is no intra-phase parallelism. Cada fas
 | TFB-02 | T24, T26 | EDG-03 | T10, T19 |
 | TFB-03 | T23 | EDG-04 | T19, T20 |
 | TFB-04 | T25, T26 | EDG-05 | T45 |
-| TFB-05 | T23 | | |
+| TFB-05 | T23 | CFG-08 | T4 |
 
 ---
 
