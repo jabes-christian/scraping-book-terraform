@@ -262,14 +262,14 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 
 | Requirement ID | Story | Phase | Tasks | Status |
 | --- | --- | --- | --- | --- |
-| SCR-01 | P1: Coletar categorias e livros | Tasks | T9, T12 | In progress (T9) |
-| SCR-02 | P1: Coletar categorias e livros | Tasks | T10, T12 | In progress (T10) |
+| SCR-01 | P1: Coletar categorias e livros | Tasks | T9, T12 | Implemented |
+| SCR-02 | P1: Coletar categorias e livros | Tasks | T10, T12 | Implemented |
 | SCR-03 | P1: Coletar categorias e livros | Tasks | T3, T10 | Implemented |
-| SCR-04 | P1: Coletar categorias e livros | Tasks | T10, T12 | In progress (T10) |
-| SCR-05 | P1: Coletar categorias e livros | Tasks | T12 | Planned |
-| SCR-06 | P1: Coletar categorias e livros | Tasks | T6, T11, T12 | In progress (T6, T11) |
+| SCR-04 | P1: Coletar categorias e livros | Tasks | T10, T12 | Implemented |
+| SCR-05 | P1: Coletar categorias e livros | Tasks | T12 | Implemented |
+| SCR-06 | P1: Coletar categorias e livros | Tasks | T6, T11, T12 | Implemented |
 | SCR-07 | P1: Coletar categorias e livros | Tasks | T8, T10 | Implemented |
-| SCR-08 | P1: Coletar categorias e livros | Tasks | T12 | Planned |
+| SCR-08 | P1: Coletar categorias e livros | Tasks | T12 | Implemented |
 | SCR-09 | P1: Coletar categorias e livros | Tasks | T11, T21, T53 | In progress (T11) |
 | DB-01 | P1: Persistir histórico | Tasks | T17, T18 | Planned |
 | DB-02 | P1: Persistir histórico | Tasks | T19 | Planned |
@@ -329,8 +329,8 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | OPS-05 | P2: Operação, custo e destruição | Tasks | T41, T43 | Planned |
 | OPS-06 | P2: Operação, custo e destruição | Tasks | T46, T50 | Planned |
 | AZR-01 | P3: Reaproveitamento para Azure | Tasks | T47, T49, T50 | Planned |
-| EDG-01 | Edge Cases | Tasks | T10, T12 | In progress (T10) |
-| EDG-02 | Edge Cases | Tasks | T12 | Planned |
+| EDG-01 | Edge Cases | Tasks | T10, T12 | Implemented |
+| EDG-02 | Edge Cases | Tasks | T12 | Implemented |
 | EDG-03 | Edge Cases | Tasks | T10, T19 | In progress (T10) |
 | EDG-04 | Edge Cases | Tasks | T19, T20 | Planned |
 | EDG-05 | Edge Cases | Tasks | T45 | Planned |

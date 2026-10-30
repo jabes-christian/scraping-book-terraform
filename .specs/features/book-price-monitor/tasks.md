@@ -465,15 +465,16 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Com sessão falsa servindo as fixtures: percorre todas as páginas até não haver "next" e a soma de itens bate com "N results"
-- [ ] Divergência de contagem falha com `count mismatch` e o nome da categoria; URL repetida falha com `duplicate url` e a URL; categoria com 0 itens segue sem falhar
-- [ ] Falha de página esgota 4 tentativas (esperas 2/4/8 s) e propaga o erro; `time.sleep` do delay é chamado com `SCRAPE_DELAY_SECONDS` entre páginas consecutivas
-- [ ] Gate check passes: Quick (suíte completa da fase)
-- [ ] Test count: ≥ 8 testes passam
+- [x] Com sessão falsa servindo as fixtures: percorre todas as páginas até não haver "next" e a soma de itens bate com "N results"
+- [x] Divergência de contagem falha com `count mismatch` e o nome da categoria; URL repetida falha com `duplicate url` e a URL; categoria com 0 itens segue sem falhar
+- [x] Falha de página esgota 4 tentativas (esperas 2/4/8 s) e propaga o erro; `time.sleep` do delay é chamado com `SCRAPE_DELAY_SECONDS` entre páginas consecutivas
+- [x] Gate check passes: Quick (suíte completa da fase)
+- [x] Test count: ≥ 8 testes passam
 
 **Tests**: unit
 **Gate**: quick
 **Commit**: `feat(robot): orquestra a coleta por categoria e paginação`
+**Status**: ✅ Concluída (8 testes novos; 105 no total). `scrape_all(session, settings, sleep=time.sleep)` e `ScrapeError` (`count mismatch: <categoria> (...)`, `duplicate url: <url>`). As fixtures cobrem as páginas únicas (Travel e Erotica); a paginação multipágina usa HTML sintético, porque só a primeira e a última página de Default foram capturadas na T7. Spec: SCR-01, 02, 04, 05, 06, 08, EDG-01 e EDG-02 viram `Implemented`; SCR-09 e EDG-03 seguem em andamento (T21/T53 e T19).
 
 ---
 
