@@ -267,10 +267,10 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | SCR-03 | P1: Coletar categorias e livros | Tasks | T3, T10 | Implemented |
 | SCR-04 | P1: Coletar categorias e livros | Tasks | T10, T12 | In progress (T10) |
 | SCR-05 | P1: Coletar categorias e livros | Tasks | T12 | Planned |
-| SCR-06 | P1: Coletar categorias e livros | Tasks | T6, T11, T12 | In progress (T6) |
+| SCR-06 | P1: Coletar categorias e livros | Tasks | T6, T11, T12 | In progress (T6, T11) |
 | SCR-07 | P1: Coletar categorias e livros | Tasks | T8, T10 | Implemented |
 | SCR-08 | P1: Coletar categorias e livros | Tasks | T12 | Planned |
-| SCR-09 | P1: Coletar categorias e livros | Tasks | T11, T21, T53 | Planned |
+| SCR-09 | P1: Coletar categorias e livros | Tasks | T11, T21, T53 | In progress (T11) |
 | DB-01 | P1: Persistir histórico | Tasks | T17, T18 | Planned |
 | DB-02 | P1: Persistir histórico | Tasks | T19 | Planned |
 | DB-03 | P1: Persistir histórico | Tasks | T19 | Planned |
@@ -293,7 +293,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | LOC-03 | P1: Ambiente local Docker Compose | Tasks | T15 | Planned |
 | LOC-04 | P1: Ambiente local Docker Compose | Tasks | T15 | Planned |
 | LOC-05 | P1: Ambiente local Docker Compose | Tasks | T14, T15, T48 | Planned |
-| LOC-06 | P1: Ambiente local Docker Compose | Tasks | T11, T21 | Planned |
+| LOC-06 | P1: Ambiente local Docker Compose | Tasks | T11, T21 | In progress (T11) |
 | TFB-01 | P1: Bootstrap do remote state | Tasks | T22, T24, T26 | Planned |
 | TFB-02 | P1: Bootstrap do remote state | Tasks | T24, T26 | Planned |
 | TFB-03 | P1: Bootstrap do remote state | Tasks | T23 | Planned |

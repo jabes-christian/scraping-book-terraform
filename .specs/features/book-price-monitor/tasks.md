@@ -438,14 +438,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Com driver falso: as opções contêm `--headless=new`, `--no-sandbox`, `--disable-dev-shm-usage`, `--disable-gpu`, `--blink-settings=imagesEnabled=false`, `binary_location` e `executable_path` vindos da config (nenhum download de driver)
-- [ ] O driver é recriado na 25ª página e após `WebDriverException`; página sem o marcador estrutural levanta `PageLoadError` (retentável) e timeout configurado em `PAGE_TIMEOUT_SECONDS`
-- [ ] Gate check passes: Quick
-- [ ] Test count: ≥ 6 testes passam
+- [x] Com driver falso: as opções contêm `--headless=new`, `--no-sandbox`, `--disable-dev-shm-usage`, `--disable-gpu`, `--blink-settings=imagesEnabled=false`, `binary_location` e `executable_path` vindos da config (nenhum download de driver)
+- [x] O driver é recriado na 25ª página e após `WebDriverException`; página sem o marcador estrutural levanta `PageLoadError` (retentável) e timeout configurado em `PAGE_TIMEOUT_SECONDS`
+- [x] Gate check passes: Quick
+- [x] Test count: ≥ 6 testes passam
 
 **Tests**: unit
 **Gate**: quick
 **Commit**: `feat(robot): adiciona sessão do Chromium headless`
+**Status**: ✅ Concluída (8 testes novos; 97 no total). `BrowserSession(settings, driver_factory=webdriver.Chrome)` com `get_html(url)` e `close()`; marcador estrutural `side_categories` (presente em todas as páginas reais, inclusive categoria de 1 item). `WebDriverException` (inclui `TimeoutException`) descarta o driver e vira `PageLoadError(RetryableError)`. Precisão da Spec: "recriado na 25ª página" foi lido como "o driver atende `CHROME_RECYCLE_PAGES` páginas e é descartado em seguida; a próxima página usa um driver novo". Falha no `quit()` do driver é registrada em log `warning` (`failed to quit browser driver: <mensagem da exceção>`) e ignorada. SCR-06 marcado `In progress (T6, T11)`; SCR-09 e LOC-06 `In progress (T11)`. O Chromium real só é exercitado no e2e (T21).
 
 ---
 
