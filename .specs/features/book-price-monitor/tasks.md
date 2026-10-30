@@ -410,15 +410,16 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Para cada livro: categoria, título completo vindo do atributo `title` (não o texto truncado), `Decimal`, disponibilidade em texto e URL absoluta
-- [ ] `total_results` extraído de "N results"; `next_url` absoluta quando há link "next" e `None` na última página; categoria com 0 results devolve 0 itens sem erro (HTML sintético)
-- [ ] Preço ilegível levanta erro cuja mensagem contém a URL do livro; título com aspas/acentos permanece íntegro
-- [ ] Gate check passes: Quick
-- [ ] Test count: ≥ 9 testes passam
+- [x] Para cada livro: categoria, título completo vindo do atributo `title` (não o texto truncado), `Decimal`, disponibilidade em texto e URL absoluta
+- [x] `total_results` extraído de "N results"; `next_url` absoluta quando há link "next" e `None` na última página; categoria com 0 results devolve 0 itens sem erro (HTML sintético)
+- [x] Preço ilegível levanta erro cuja mensagem contém a URL do livro; título com aspas/acentos permanece íntegro
+- [x] Gate check passes: Quick
+- [x] Test count: ≥ 9 testes passam
 
 **Tests**: unit
 **Gate**: quick
 **Commit**: `feat(robot): extrai livros das páginas de listagem`
+**Status**: ✅ Concluída (14 testes novos; 89 no total). `parse_listing` recebe o `Category` e grava `category.name` em cada `BookItem`. "N results" é lido pelo `<strong>` seguido de "result(s)" (cobre o singular "1 result."). SCR-03 e SCR-07 viram `Implemented`; SCR-02, SCR-04, EDG-01 e EDG-03 `In progress (T10)`.
 
 ---
 
