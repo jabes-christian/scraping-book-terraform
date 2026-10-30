@@ -268,7 +268,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | SCR-04 | P1: Coletar categorias e livros | Tasks | T10, T12 | Planned |
 | SCR-05 | P1: Coletar categorias e livros | Tasks | T12 | Planned |
 | SCR-06 | P1: Coletar categorias e livros | Tasks | T6, T11, T12 | In progress (T6) |
-| SCR-07 | P1: Coletar categorias e livros | Tasks | T8, T10 | Planned |
+| SCR-07 | P1: Coletar categorias e livros | Tasks | T8, T10 | In progress (T8) |
 | SCR-08 | P1: Coletar categorias e livros | Tasks | T12 | Planned |
 | SCR-09 | P1: Coletar categorias e livros | Tasks | T11, T21, T53 | Planned |
 | DB-01 | P1: Persistir histórico | Tasks | T17, T18 | Planned |
@@ -279,7 +279,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | DB-06 | P1: Persistir histórico | Tasks | T18 | Planned |
 | DB-07 | P1: Persistir histórico | Tasks | T18, T20 | Planned |
 | DB-08 | P1: Persistir histórico | Tasks | T15, T21, T54 | Planned |
-| DB-09 | P1: Persistir histórico | Tasks | T8, T17, T19 | Planned |
+| DB-09 | P1: Persistir histórico | Tasks | T8, T17, T19 | In progress (T8) |
 | CFG-01 | P1: Configuração e agnóstico de nuvem | Tasks | T4 | Implemented |
 | CFG-02 | P1: Configuração e agnóstico de nuvem | Tasks | T4, T20 | In progress (T4) |
 | CFG-03 | P1: Configuração e agnóstico de nuvem | Tasks | T5, T20 | In progress (T5) |

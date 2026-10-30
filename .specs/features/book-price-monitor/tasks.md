@@ -357,13 +357,14 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `"£51.77"` → `Decimal("51.77")`; entradas inválidas (`""`, `"abc"`, `"£"`) levantam erro de parsing
-- [ ] Gate check passes: Quick
-- [ ] Test count: ≥ 4 testes passam
+- [x] `"£51.77"` → `Decimal("51.77")`; entradas inválidas (`""`, `"abc"`, `"£"`) levantam erro de parsing
+- [x] Gate check passes: Quick
+- [x] Test count: ≥ 4 testes passam
 
 **Tests**: unit
 **Gate**: quick
 **Commit**: `feat(robot): converte texto de preço em Decimal`
+**Status**: ✅ Concluída (5 testes novos; 70 no total). `ParseError(ValueError)` criado em `parsing.py` para os próximos parsers. SCR-07 e DB-09 marcados `In progress (T8)` na rastreabilidade da Spec (completam na T10 e na T17/T19).
 
 ---
 
