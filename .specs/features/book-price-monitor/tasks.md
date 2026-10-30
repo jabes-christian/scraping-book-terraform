@@ -383,14 +383,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Sobre a fixture da home retorna as 50 categorias (excluindo o item "Books" agregador, conforme a estrutura real confirmada no T7) com URLs absolutas
-- [ ] HTML sem a estrutura esperada levanta erro de parsing
-- [ ] Gate check passes: Quick
-- [ ] Test count: ≥ 3 testes passam
+- [x] Sobre a fixture da home retorna as 50 categorias (excluindo o item "Books" agregador, conforme a estrutura real confirmada no T7) com URLs absolutas
+- [x] HTML sem a estrutura esperada levanta erro de parsing
+- [x] Gate check passes: Quick
+- [x] Test count: ≥ 3 testes passam
 
 **Tests**: unit
 **Gate**: quick
 **Commit**: `feat(robot): extrai a lista de categorias da home`
+**Status**: ✅ Concluída (5 testes novos; 75 no total). Seletor `div.side_categories ul ul li a` (o "Books" agregador fica no `ul` externo e sai sem filtro por nome). SCR-01 marcado `In progress (T9)` na Spec (completa na T12).
 
 ---
 
