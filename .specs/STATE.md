@@ -45,10 +45,10 @@
 ## Handoff
 
 - **Feature**: .specs/features/book-price-monitor
-- **Phase / Task**: Fase 1 concluída (T1-T6, 65 testes unit; gate Build verde); Fase 2 (T7-T12) ainda não iniciada
-- **Completed**: PRD, Spec, Design e Tasks aprovados; Fase 1 implementada (dependências pinadas, pytest/ruff, `models`, `config`, `logging_setup`, `retry`); CFG-08 (validação de faixa e de `LOG_LEVEL`) adicionado à Spec e refletido no Design; rastreabilidade da Spec em 72/72 requisitos mapeados
+- **Phase / Task**: Fase 2 concluída (T7-T12, 105 testes unit; gate Build verde: Quick; Full/Docker/Infra e `terraform fmt` não se aplicam à fase, pois não há Docker nem `terraform/` ainda); Fase 3 (T13-T16) ainda não iniciada
+- **Completed**: Fase 1 (T1-T6) mergeada; Fase 2 implementada (fixtures reais em `tests/fixtures/`, `parsing`: `parse_price`/`parse_categories`/`parse_listing`/`ParseError`, `browser`: `BrowserSession`/`PageLoadError`, `scraper`: `scrape_all`/`ScrapeError`); regex de "N results" corrigida para `results?` no Design (o site usa "1 result."); rastreabilidade da Spec acumula tasks (ex.: `In progress (T6, T11)`) e marca `Implemented` quando todas as tasks do requisito terminam
 - **In-progress** (file:line): none
-- **Next step**: Após o merge de `feat/robot-foundation` na `main`, atualizar a `main` local, criar `feat/robot-scraping` e iniciar a T7 (fixtures HTML reais do books.toscrape.com; só GET de leitura). Ligar o Docker Desktop antes da fase 3
+- **Next step**: Após o merge de `feat/robot-scraping` na `main`, atualizar a `main` local, criar `feat/docker-local` e iniciar a T13 (Dockerfile). Ligar o Docker Desktop antes (fases 3 e 4). Interpretação aprovada da reciclagem do driver: descarta após `CHROME_RECYCLE_PAGES` páginas, a seguinte usa driver novo
 - **Blockers**: none
-- **Uncommitted files**: `.specs/features/book-price-monitor/design.md`, `.specs/STATE.md`
-- **Branch**: feat/robot-foundation
+- **Uncommitted files**: `.specs/STATE.md` (e o commit da T12, se ainda não feito)
+- **Branch**: feat/robot-scraping

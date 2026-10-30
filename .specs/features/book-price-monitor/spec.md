@@ -262,15 +262,15 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 
 | Requirement ID | Story | Phase | Tasks | Status |
 | --- | --- | --- | --- | --- |
-| SCR-01 | P1: Coletar categorias e livros | Tasks | T9, T12 | Planned |
-| SCR-02 | P1: Coletar categorias e livros | Tasks | T10, T12 | Planned |
-| SCR-03 | P1: Coletar categorias e livros | Tasks | T3, T10 | In progress (T3) |
-| SCR-04 | P1: Coletar categorias e livros | Tasks | T10, T12 | Planned |
-| SCR-05 | P1: Coletar categorias e livros | Tasks | T12 | Planned |
-| SCR-06 | P1: Coletar categorias e livros | Tasks | T6, T11, T12 | In progress (T6) |
-| SCR-07 | P1: Coletar categorias e livros | Tasks | T8, T10 | Planned |
-| SCR-08 | P1: Coletar categorias e livros | Tasks | T12 | Planned |
-| SCR-09 | P1: Coletar categorias e livros | Tasks | T11, T21, T53 | Planned |
+| SCR-01 | P1: Coletar categorias e livros | Tasks | T9, T12 | Implemented |
+| SCR-02 | P1: Coletar categorias e livros | Tasks | T10, T12 | Implemented |
+| SCR-03 | P1: Coletar categorias e livros | Tasks | T3, T10 | Implemented |
+| SCR-04 | P1: Coletar categorias e livros | Tasks | T10, T12 | Implemented |
+| SCR-05 | P1: Coletar categorias e livros | Tasks | T12 | Implemented |
+| SCR-06 | P1: Coletar categorias e livros | Tasks | T6, T11, T12 | Implemented |
+| SCR-07 | P1: Coletar categorias e livros | Tasks | T8, T10 | Implemented |
+| SCR-08 | P1: Coletar categorias e livros | Tasks | T12 | Implemented |
+| SCR-09 | P1: Coletar categorias e livros | Tasks | T11, T21, T53 | In progress (T11) |
 | DB-01 | P1: Persistir histórico | Tasks | T17, T18 | Planned |
 | DB-02 | P1: Persistir histórico | Tasks | T19 | Planned |
 | DB-03 | P1: Persistir histórico | Tasks | T19 | Planned |
@@ -279,7 +279,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | DB-06 | P1: Persistir histórico | Tasks | T18 | Planned |
 | DB-07 | P1: Persistir histórico | Tasks | T18, T20 | Planned |
 | DB-08 | P1: Persistir histórico | Tasks | T15, T21, T54 | Planned |
-| DB-09 | P1: Persistir histórico | Tasks | T8, T17, T19 | Planned |
+| DB-09 | P1: Persistir histórico | Tasks | T8, T17, T19 | In progress (T8) |
 | CFG-01 | P1: Configuração e agnóstico de nuvem | Tasks | T4 | Implemented |
 | CFG-02 | P1: Configuração e agnóstico de nuvem | Tasks | T4, T20 | In progress (T4) |
 | CFG-03 | P1: Configuração e agnóstico de nuvem | Tasks | T5, T20 | In progress (T5) |
@@ -293,7 +293,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | LOC-03 | P1: Ambiente local Docker Compose | Tasks | T15 | Planned |
 | LOC-04 | P1: Ambiente local Docker Compose | Tasks | T15 | Planned |
 | LOC-05 | P1: Ambiente local Docker Compose | Tasks | T14, T15, T48 | Planned |
-| LOC-06 | P1: Ambiente local Docker Compose | Tasks | T11, T21 | Planned |
+| LOC-06 | P1: Ambiente local Docker Compose | Tasks | T11, T21 | In progress (T11) |
 | TFB-01 | P1: Bootstrap do remote state | Tasks | T22, T24, T26 | Planned |
 | TFB-02 | P1: Bootstrap do remote state | Tasks | T24, T26 | Planned |
 | TFB-03 | P1: Bootstrap do remote state | Tasks | T23 | Planned |
@@ -329,9 +329,9 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | OPS-05 | P2: Operação, custo e destruição | Tasks | T41, T43 | Planned |
 | OPS-06 | P2: Operação, custo e destruição | Tasks | T46, T50 | Planned |
 | AZR-01 | P3: Reaproveitamento para Azure | Tasks | T47, T49, T50 | Planned |
-| EDG-01 | Edge Cases | Tasks | T10, T12 | Planned |
-| EDG-02 | Edge Cases | Tasks | T12 | Planned |
-| EDG-03 | Edge Cases | Tasks | T10, T19 | Planned |
+| EDG-01 | Edge Cases | Tasks | T10, T12 | Implemented |
+| EDG-02 | Edge Cases | Tasks | T12 | Implemented |
+| EDG-03 | Edge Cases | Tasks | T10, T19 | In progress (T10) |
 | EDG-04 | Edge Cases | Tasks | T19, T20 | Planned |
 | EDG-05 | Edge Cases | Tasks | T45 | Planned |
 

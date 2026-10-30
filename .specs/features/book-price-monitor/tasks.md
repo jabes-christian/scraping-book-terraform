@@ -332,12 +332,13 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Fixtures versionáveis salvas em UTF-8 e listadas no relatório da task, com os seletores confirmados (ou corrigidos, com a correção registrada)
-- [ ] Gate check passes: Quick (os testes anteriores continuam passando)
+- [x] Fixtures versionáveis salvas em UTF-8 e listadas no relatório da task, com os seletores confirmados (ou corrigidos, com a correção registrada)
+- [x] Gate check passes: Quick (os testes anteriores continuam passando)
 
 **Tests**: none
 **Gate**: quick
 **Commit**: `test(robot): adiciona fixtures HTML reais do books.toscrape.com`
+**Status**: ✅ Concluída (65 testes seguem passando). Fixtures em `tests/fixtures/` (UTF-8, GET de leitura em 2026-10-30): `home.html` (50 categorias + "Books", 1000 results, link next), `category_multi_first.html` (Default, 152 results, 20 itens, next), `category_multi_last.html` (Default `page-8`, 12 itens, só previous), `category_single.html` (Travel, 11 results, página única, 7 títulos truncados com "..."), `category_one_result.html` (Erotica, 1 item). Seletores confirmados: `article.product_pod`, `p.price_color` (texto `£45.17`), `li.next a` (href relativo, ex. `page-2.html`), `div.side_categories` (primeiro `li` é "Books" agregador, 50 categorias abaixo), `p.availability` (texto com espaços em volta, "In stock"), título completo no atributo `title` do `h3 a`. Correção: o site usa o singular "1 result." (a regex do Design era `results`; virou `results?`, registrado no `design.md`) e o número fica em `<strong>`, então a regex roda sobre o texto. Categoria com 0 results não existe no site (T10 usa HTML sintético).
 
 ---
 
@@ -356,13 +357,14 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `"£51.77"` → `Decimal("51.77")`; entradas inválidas (`""`, `"abc"`, `"£"`) levantam erro de parsing
-- [ ] Gate check passes: Quick
-- [ ] Test count: ≥ 4 testes passam
+- [x] `"£51.77"` → `Decimal("51.77")`; entradas inválidas (`""`, `"abc"`, `"£"`) levantam erro de parsing
+- [x] Gate check passes: Quick
+- [x] Test count: ≥ 4 testes passam
 
 **Tests**: unit
 **Gate**: quick
 **Commit**: `feat(robot): converte texto de preço em Decimal`
+**Status**: ✅ Concluída (5 testes novos; 70 no total). `ParseError(ValueError)` criado em `parsing.py` para os próximos parsers. SCR-07 e DB-09 marcados `In progress (T8)` na rastreabilidade da Spec (completam na T10 e na T17/T19).
 
 ---
 
@@ -381,14 +383,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Sobre a fixture da home retorna as 50 categorias (excluindo o item "Books" agregador, conforme a estrutura real confirmada no T7) com URLs absolutas
-- [ ] HTML sem a estrutura esperada levanta erro de parsing
-- [ ] Gate check passes: Quick
-- [ ] Test count: ≥ 3 testes passam
+- [x] Sobre a fixture da home retorna as 50 categorias (excluindo o item "Books" agregador, conforme a estrutura real confirmada no T7) com URLs absolutas
+- [x] HTML sem a estrutura esperada levanta erro de parsing
+- [x] Gate check passes: Quick
+- [x] Test count: ≥ 3 testes passam
 
 **Tests**: unit
 **Gate**: quick
 **Commit**: `feat(robot): extrai a lista de categorias da home`
+**Status**: ✅ Concluída (5 testes novos; 75 no total). Seletor `div.side_categories ul ul li a` (o "Books" agregador fica no `ul` externo e sai sem filtro por nome). SCR-01 marcado `In progress (T9)` na Spec (completa na T12).
 
 ---
 
@@ -407,15 +410,16 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Para cada livro: categoria, título completo vindo do atributo `title` (não o texto truncado), `Decimal`, disponibilidade em texto e URL absoluta
-- [ ] `total_results` extraído de "N results"; `next_url` absoluta quando há link "next" e `None` na última página; categoria com 0 results devolve 0 itens sem erro (HTML sintético)
-- [ ] Preço ilegível levanta erro cuja mensagem contém a URL do livro; título com aspas/acentos permanece íntegro
-- [ ] Gate check passes: Quick
-- [ ] Test count: ≥ 9 testes passam
+- [x] Para cada livro: categoria, título completo vindo do atributo `title` (não o texto truncado), `Decimal`, disponibilidade em texto e URL absoluta
+- [x] `total_results` extraído de "N results"; `next_url` absoluta quando há link "next" e `None` na última página; categoria com 0 results devolve 0 itens sem erro (HTML sintético)
+- [x] Preço ilegível levanta erro cuja mensagem contém a URL do livro; título com aspas/acentos permanece íntegro
+- [x] Gate check passes: Quick
+- [x] Test count: ≥ 9 testes passam
 
 **Tests**: unit
 **Gate**: quick
 **Commit**: `feat(robot): extrai livros das páginas de listagem`
+**Status**: ✅ Concluída (14 testes novos; 89 no total). `parse_listing` recebe o `Category` e grava `category.name` em cada `BookItem`. "N results" é lido pelo `<strong>` seguido de "result(s)" (cobre o singular "1 result."). SCR-03 e SCR-07 viram `Implemented`; SCR-02, SCR-04, EDG-01 e EDG-03 `In progress (T10)`.
 
 ---
 
@@ -434,14 +438,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Com driver falso: as opções contêm `--headless=new`, `--no-sandbox`, `--disable-dev-shm-usage`, `--disable-gpu`, `--blink-settings=imagesEnabled=false`, `binary_location` e `executable_path` vindos da config (nenhum download de driver)
-- [ ] O driver é recriado na 25ª página e após `WebDriverException`; página sem o marcador estrutural levanta `PageLoadError` (retentável) e timeout configurado em `PAGE_TIMEOUT_SECONDS`
-- [ ] Gate check passes: Quick
-- [ ] Test count: ≥ 6 testes passam
+- [x] Com driver falso: as opções contêm `--headless=new`, `--no-sandbox`, `--disable-dev-shm-usage`, `--disable-gpu`, `--blink-settings=imagesEnabled=false`, `binary_location` e `executable_path` vindos da config (nenhum download de driver)
+- [x] O driver é recriado na 25ª página e após `WebDriverException`; página sem o marcador estrutural levanta `PageLoadError` (retentável) e timeout configurado em `PAGE_TIMEOUT_SECONDS`
+- [x] Gate check passes: Quick
+- [x] Test count: ≥ 6 testes passam
 
 **Tests**: unit
 **Gate**: quick
 **Commit**: `feat(robot): adiciona sessão do Chromium headless`
+**Status**: ✅ Concluída (8 testes novos; 97 no total). `BrowserSession(settings, driver_factory=webdriver.Chrome)` com `get_html(url)` e `close()`; marcador estrutural `side_categories` (presente em todas as páginas reais, inclusive categoria de 1 item). `WebDriverException` (inclui `TimeoutException`) descarta o driver e vira `PageLoadError(RetryableError)`. Precisão da Spec: "recriado na 25ª página" foi lido como "o driver atende `CHROME_RECYCLE_PAGES` páginas e é descartado em seguida; a próxima página usa um driver novo". Falha no `quit()` do driver é registrada em log `warning` (`failed to quit browser driver: <mensagem da exceção>`) e ignorada. SCR-06 marcado `In progress (T6, T11)`; SCR-09 e LOC-06 `In progress (T11)`. O Chromium real só é exercitado no e2e (T21).
 
 ---
 
@@ -460,15 +465,16 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Com sessão falsa servindo as fixtures: percorre todas as páginas até não haver "next" e a soma de itens bate com "N results"
-- [ ] Divergência de contagem falha com `count mismatch` e o nome da categoria; URL repetida falha com `duplicate url` e a URL; categoria com 0 itens segue sem falhar
-- [ ] Falha de página esgota 4 tentativas (esperas 2/4/8 s) e propaga o erro; `time.sleep` do delay é chamado com `SCRAPE_DELAY_SECONDS` entre páginas consecutivas
-- [ ] Gate check passes: Quick (suíte completa da fase)
-- [ ] Test count: ≥ 8 testes passam
+- [x] Com sessão falsa servindo as fixtures: percorre todas as páginas até não haver "next" e a soma de itens bate com "N results"
+- [x] Divergência de contagem falha com `count mismatch` e o nome da categoria; URL repetida falha com `duplicate url` e a URL; categoria com 0 itens segue sem falhar
+- [x] Falha de página esgota 4 tentativas (esperas 2/4/8 s) e propaga o erro; `time.sleep` do delay é chamado com `SCRAPE_DELAY_SECONDS` entre páginas consecutivas
+- [x] Gate check passes: Quick (suíte completa da fase)
+- [x] Test count: ≥ 8 testes passam
 
 **Tests**: unit
 **Gate**: quick
 **Commit**: `feat(robot): orquestra a coleta por categoria e paginação`
+**Status**: ✅ Concluída (8 testes novos; 105 no total). `scrape_all(session, settings, sleep=time.sleep)` e `ScrapeError` (`count mismatch: <categoria> (...)`, `duplicate url: <url>`). As fixtures cobrem as páginas únicas (Travel e Erotica); a paginação multipágina usa HTML sintético, porque só a primeira e a última página de Default foram capturadas na T7. Spec: SCR-01, 02, 04, 05, 06, 08, EDG-01 e EDG-02 viram `Implemented`; SCR-09 e EDG-03 seguem em andamento (T21/T53 e T19).
 
 ---
 
