@@ -332,12 +332,13 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Fixtures versionáveis salvas em UTF-8 e listadas no relatório da task, com os seletores confirmados (ou corrigidos, com a correção registrada)
-- [ ] Gate check passes: Quick (os testes anteriores continuam passando)
+- [x] Fixtures versionáveis salvas em UTF-8 e listadas no relatório da task, com os seletores confirmados (ou corrigidos, com a correção registrada)
+- [x] Gate check passes: Quick (os testes anteriores continuam passando)
 
 **Tests**: none
 **Gate**: quick
 **Commit**: `test(robot): adiciona fixtures HTML reais do books.toscrape.com`
+**Status**: ✅ Concluída (65 testes seguem passando). Fixtures em `tests/fixtures/` (UTF-8, GET de leitura em 2026-10-30): `home.html` (50 categorias + "Books", 1000 results, link next), `category_multi_first.html` (Default, 152 results, 20 itens, next), `category_multi_last.html` (Default `page-8`, 12 itens, só previous), `category_single.html` (Travel, 11 results, página única, 7 títulos truncados com "..."), `category_one_result.html` (Erotica, 1 item). Seletores confirmados: `article.product_pod`, `p.price_color` (texto `£45.17`), `li.next a` (href relativo, ex. `page-2.html`), `div.side_categories` (primeiro `li` é "Books" agregador, 50 categorias abaixo), `p.availability` (texto com espaços em volta, "In stock"), título completo no atributo `title` do `h3 a`. Correção: o site usa o singular "1 result." (a regex do Design era `results`; virou `results?`, registrado no `design.md`) e o número fica em `<strong>`, então a regex roda sobre o texto. Categoria com 0 results não existe no site (T10 usa HTML sintético).
 
 ---
 

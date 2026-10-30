@@ -128,7 +128,7 @@ Valor vazio ou só com espaços conta como ausente: variável obrigatória levan
 **Chrome (LOC-06)**, validado no Context7 (`--headless=new` é a forma recomendada; `page_load_strategy = 'eager'` documentada): `--headless=new`, `--no-sandbox`, `--disable-dev-shm-usage`, `--disable-gpu`, `--disable-extensions`, `--blink-settings=imagesEnabled=false`, `--window-size=800,600`, `--renderer-process-limit=1`, `page_load_strategy='eager'`. `binary_location=CHROME_BIN` e `Service(executable_path=CHROMEDRIVER_PATH)` evitam o Selenium Manager.
 
 **Decisões de comportamento resolvendo ambiguidades da Spec:**
-- "N results": regex `(\d+)\s+results` sobre o texto da página; a contagem só é conferida na última página da categoria (soma das páginas).
+- "N results": regex `(\d+)\s+results?` sobre o texto da página (o site escreve "1 result." no singular, confirmado na fixture `category_one_result.html`; o número vem em `<strong>`, então a regex roda sobre o texto, não sobre o HTML bruto); a contagem só é conferida na última página da categoria (soma das páginas).
 - Retry: `SCRAPE_MAX_RETRIES=3` repetições após a falha inicial (4 tentativas), conforme a Spec.
 - Execução `FAILED` por erro de configuração (exit 2) não toca o banco.
 - Segredos: `redact()` troca o valor de `DB_PASSWORD` por `***` em qualquer mensagem antes de logar ou gravar em `executions.error`.
