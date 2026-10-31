@@ -289,7 +289,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | CFG-07 | P1: Configuração e agnóstico de nuvem | Tasks | T1 | Implemented |
 | CFG-08 | P1: Configuração e agnóstico de nuvem | Tasks | T4 | Implemented |
 | LOC-01 | P1: Ambiente local Docker Compose | Tasks | T15, T21, T48 | Planned |
-| LOC-02 | P1: Ambiente local Docker Compose | Tasks | T13, T21 | Planned |
+| LOC-02 | P1: Ambiente local Docker Compose | Tasks | T13, T21 | In progress (T13) |
 | LOC-03 | P1: Ambiente local Docker Compose | Tasks | T15 | Planned |
 | LOC-04 | P1: Ambiente local Docker Compose | Tasks | T15 | Planned |
 | LOC-05 | P1: Ambiente local Docker Compose | Tasks | T14, T15, T48 | Planned |

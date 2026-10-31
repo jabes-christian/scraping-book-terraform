@@ -495,14 +495,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `docker compose build`/`docker build` conclui; teste docker: `id -u` ≠ 0, `chromium --version` e `chromedriver --version` respondem (override de entrypoint) e a versão major do driver coincide com a do Chromium
-- [ ] `.dockerignore` exclui `.venv`, `.git`, `.env`, `.specs`, `terraform`
-- [ ] Gate check passes: Docker
-- [ ] Test count: ≥ 3 testes passam
+- [x] `docker compose build`/`docker build` conclui; teste docker: `id -u` ≠ 0, `chromium --version` e `chromedriver --version` respondem (override de entrypoint) e a versão major do driver coincide com a do Chromium
+- [x] `.dockerignore` exclui `.venv`, `.git`, `.env`, `.specs`, `terraform`
+- [x] Gate check passes: Docker
+- [x] Test count: ≥ 3 testes passam
 
 **Tests**: integration (marker `docker`)
 **Gate**: docker
 **Commit**: `build(docker): adiciona imagem do robô com Chromium`
+**Status**: ✅ Concluída (6 testes docker novos; 105 unit seguem passando). Imagem `python:3.13-slim-bookworm` com Chromium 156 e chromedriver da mesma major (Debian 12), usuário `robo` uid 10001, `PYTHONPATH=/app/src` (o pacote não é instalado via pip), `CHROME_BIN`/`CHROMEDRIVER_PATH` como `ENV`. Como o Compose só nasce na T15, o gate usou `docker build -t book-monitor-robo:test .` (feito pela fixture do teste) no lugar de `docker compose build`. `.dockerignore` também exclui `tests`, caches e `.env.*` (menos `.env.example`). O `ENTRYPOINT` ainda não roda (o `__main__.py` vem na T20); os testes sobrescrevem o entrypoint.
 
 ---
 
