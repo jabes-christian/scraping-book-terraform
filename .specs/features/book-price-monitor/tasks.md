@@ -495,14 +495,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `docker compose build`/`docker build` conclui; teste docker: `id -u` ≠ 0, `chromium --version` e `chromedriver --version` respondem (override de entrypoint) e a versão major do driver coincide com a do Chromium
-- [ ] `.dockerignore` exclui `.venv`, `.git`, `.env`, `.specs`, `terraform`
-- [ ] Gate check passes: Docker
-- [ ] Test count: ≥ 3 testes passam
+- [x] `docker compose build`/`docker build` conclui; teste docker: `id -u` ≠ 0, `chromium --version` e `chromedriver --version` respondem (override de entrypoint) e a versão major do driver coincide com a do Chromium
+- [x] `.dockerignore` exclui `.venv`, `.git`, `.env`, `.specs`, `terraform`
+- [x] Gate check passes: Docker
+- [x] Test count: ≥ 3 testes passam
 
 **Tests**: integration (marker `docker`)
 **Gate**: docker
 **Commit**: `build(docker): adiciona imagem do robô com Chromium`
+**Status**: ✅ Concluída (6 testes docker novos; 105 unit seguem passando). Imagem `python:3.13-slim-bookworm` com Chromium 156 e chromedriver da mesma major (Debian 12), usuário `robo` uid 10001, `PYTHONPATH=/app/src` (o pacote não é instalado via pip), `CHROME_BIN`/`CHROMEDRIVER_PATH` como `ENV`. Como o Compose só nasce na T15, o gate usou `docker build -t book-monitor-robo:test .` (feito pela fixture do teste) no lugar de `docker compose build`. `.dockerignore` também exclui `tests`, caches e `.env.*` (menos `.env.example`). O `ENTRYPOINT` ainda não roda (o `__main__.py` vem na T20); os testes sobrescrevem o entrypoint.
 
 ---
 
@@ -521,14 +522,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Teste: `.env.example` contém as chaves esperadas, `DB_PASSWORD` é o placeholder `change-me` e nenhuma outra linha parece segredo
-- [ ] `git check-ignore .env` confirma `.env` ignorado e `.env.example` não (verificação de leitura; sem alterar o repositório)
-- [ ] Gate check passes: Quick
-- [ ] Test count: ≥ 2 testes passam
+- [x] Teste: `.env.example` contém as chaves esperadas, `DB_PASSWORD` é o placeholder `change-me` e nenhuma outra linha parece segredo
+- [x] `git check-ignore .env` confirma `.env` ignorado e `.env.example` não (verificação de leitura; sem alterar o repositório)
+- [x] Gate check passes: Quick
+- [x] Test count: ≥ 2 testes passam
 
 **Tests**: unit
 **Gate**: quick
 **Commit**: `chore(env): adiciona .env.example sem segredos`
+**Status**: ✅ Concluída (3 testes novos; 108 unit passam). `.env.example` com as 6 chaves (`DB_NAME=books`, `DB_USER=books`, `DB_PASSWORD=change-me`, `SCRAPE_DELAY_SECONDS=0.5`, `SCRAPE_MAX_RETRIES=3`, `LOG_LEVEL=INFO`). `.env` local criado a partir dele com senha aleatória (não exibida). `git check-ignore -q`: `.env` ignorado (exit 0) e `.env.example` não (exit 1). LOC-05 fica `In progress (T14)` (completa na T15).
 
 ---
 
@@ -547,14 +549,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Teste sobre `docker compose config --format json`: volume nomeado em `/var/lib/postgresql/data`, `restart` do postgres, `mem_limit` de ambos com soma ≤ 752 MB, healthcheck presente, `postgres` sem `ports`, `robo` com `depends_on.postgres.condition == service_healthy` e `init` true
-- [ ] `docker compose up -d --wait postgres` fica `healthy` e os dados sobrevivem a `docker compose up -d --force-recreate postgres` (tabela de teste criada e relida)
-- [ ] Gate check passes: Docker
-- [ ] Test count: ≥ 6 testes passam
+- [x] Teste sobre `docker compose config --format json`: volume nomeado em `/var/lib/postgresql/data`, `restart` do postgres, `mem_limit` de ambos com soma ≤ 752 MB, healthcheck presente, `postgres` sem `ports`, `robo` com `depends_on.postgres.condition == service_healthy` e `init` true
+- [x] `docker compose up -d --wait postgres` fica `healthy` e os dados sobrevivem a `docker compose up -d --force-recreate postgres` (tabela de teste criada e relida)
+- [x] Gate check passes: Docker
+- [x] Test count: ≥ 6 testes passam
 
 **Tests**: integration (marker `docker`)
 **Gate**: docker
 **Commit**: `feat(docker): adiciona stack Compose com postgres e robô`
+**Status**: ✅ Concluída (8 testes docker novos; 14 docker e 108 unit passam). `docker-compose.yml` com `postgres:17-alpine` (volume `pgdata`, 192m, tuning, healthcheck `pg_isready -h 127.0.0.1` para só ficar `healthy` depois da inicialização, sem `ports`) e `robo` (`build: .`, `image: book-monitor-robo`, 560m, `init`, `restart: "no"`, `DB_HOST=postgres`); soma dos limites = 752 MB. `docker compose config` entrega `mem_limit` como string de bytes, então o teste converte com `int()`. Os testes usam o projeto `bookmonitor_test` e senha de teste via ambiente, e fazem `down -v` no fim (não tocam no volume nem no `.env` de desenvolvimento). Persistência verificada com `up -d --wait` + `--force-recreate`. O `robo` exige o `.env` local (`env_file`). Spec: LOC-03 e LOC-04 `Implemented`; LOC-01, LOC-05, VM-06 e DB-08 `In progress`.
 
 ---
 
@@ -573,12 +576,13 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Com o override, `127.0.0.1:5432` aceita conexão TCP e sem o override a porta não é publicada; `git check-ignore docker-compose.override.yml` confirma o arquivo real ignorado
-- [ ] Gate check passes: Docker (testes anteriores continuam passando)
+- [x] Com o override, `127.0.0.1:5432` aceita conexão TCP e sem o override a porta não é publicada; `git check-ignore docker-compose.override.yml` confirma o arquivo real ignorado
+- [x] Gate check passes: Docker (testes anteriores continuam passando)
 
 **Tests**: none
 **Gate**: docker
 **Commit**: `chore(docker): adiciona exemplo de override local do Compose`
+**Status**: ✅ Concluída (sem testes novos; 14 docker e 108 unit passam). `docker-compose.override.yml.example` publica `127.0.0.1:5432:5432` do `postgres`; o `docker-compose.override.yml` local foi copiado dele. Verificado em projeto Compose descartável: sem o override a porta fica só `5432/tcp` (não publicada) e a conexão TCP do host é recusada; com o override aparece `127.0.0.1:5432->5432/tcp` e a conexão é aceita. `git check-ignore`: o override real é ignorado (exit 0) e o `.example` não (exit 1). Ajuste no `tests/docker/test_compose.py`: o helper passou a usar `-f docker-compose.yml`, pois o Compose carrega o override sozinho e o teste "postgres sem `ports`" falharia no seu ambiente; nenhuma asserção foi alterada.
 
 ---
 

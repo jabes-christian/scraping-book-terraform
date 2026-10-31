@@ -45,10 +45,10 @@
 ## Handoff
 
 - **Feature**: .specs/features/book-price-monitor
-- **Phase / Task**: Fase 2 concluída (T7-T12, 105 testes unit; gate Build verde: Quick; Full/Docker/Infra e `terraform fmt` não se aplicam à fase, pois não há Docker nem `terraform/` ainda); Fase 3 (T13-T16) ainda não iniciada
-- **Completed**: Fase 1 (T1-T6) mergeada; Fase 2 implementada (fixtures reais em `tests/fixtures/`, `parsing`: `parse_price`/`parse_categories`/`parse_listing`/`ParseError`, `browser`: `BrowserSession`/`PageLoadError`, `scraper`: `scrape_all`/`ScrapeError`); regex de "N results" corrigida para `results?` no Design (o site usa "1 result."); rastreabilidade da Spec acumula tasks (ex.: `In progress (T6, T11)`) e marca `Implemented` quando todas as tasks do requisito terminam
+- **Phase / Task**: Fase 3 concluída (T13-T16); gate Build verde: Quick (108 testes unit, ruff) + Docker (`docker compose build`, 14 testes `-m docker`). Full não se aplica à fase (ainda não há testes de integração, só a partir da T17); Infra e `terraform fmt` não se aplicam (não há `terraform/`). Fase 4 (T17-T21) ainda não iniciada
+- **Completed**: Fases 1 e 2 mergeadas; Fase 3 implementada: `Dockerfile` e `.dockerignore` (T13), `.env.example` (T14), `docker-compose.yml` (T15) e `docker-compose.override.yml.example` (T16); `.env` e `docker-compose.override.yml` locais criados (gitignored, senha do `.env` aleatória). Os testes docker usam o projeto Compose `bookmonitor_test` e `-f docker-compose.yml` (não carregam o override local). Rastreabilidade da Spec: LOC-03 e LOC-04 `Implemented`; LOC-01, LOC-02, LOC-05, VM-06 e DB-08 `In progress` (completam em T21/T48/T52/T54)
 - **In-progress** (file:line): none
-- **Next step**: Após o merge de `feat/robot-scraping` na `main`, atualizar a `main` local, criar `feat/docker-local` e iniciar a T13 (Dockerfile). Ligar o Docker Desktop antes (fases 3 e 4). Interpretação aprovada da reciclagem do driver: descarta após `CHROME_RECYCLE_PAGES` páginas, a seguinte usa driver novo
+- **Next step**: Após o merge de `feat/docker-local` na `main`, atualizar a `main` local, criar `feat/robot-persistence` e iniciar a T17 (schema do banco). Docker Desktop precisa estar ligado e o `.env` e o `docker-compose.override.yml` locais já existem (gate Full: `docker compose up -d --wait postgres` + `pytest -m integration`). O `ENTRYPOINT` da imagem só funciona após o `__main__.py` da T20
 - **Blockers**: none
-- **Uncommitted files**: `.specs/STATE.md` (e o commit da T12, se ainda não feito)
-- **Branch**: feat/robot-scraping
+- **Uncommitted files**: `.specs/STATE.md`, `.specs/features/book-price-monitor/tasks.md`, `docker-compose.override.yml.example`, `tests/docker/test_compose.py` (commit da T16)
+- **Branch**: feat/docker-local
