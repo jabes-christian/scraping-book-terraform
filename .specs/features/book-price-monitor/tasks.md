@@ -522,14 +522,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Teste: `.env.example` contém as chaves esperadas, `DB_PASSWORD` é o placeholder `change-me` e nenhuma outra linha parece segredo
-- [ ] `git check-ignore .env` confirma `.env` ignorado e `.env.example` não (verificação de leitura; sem alterar o repositório)
-- [ ] Gate check passes: Quick
-- [ ] Test count: ≥ 2 testes passam
+- [x] Teste: `.env.example` contém as chaves esperadas, `DB_PASSWORD` é o placeholder `change-me` e nenhuma outra linha parece segredo
+- [x] `git check-ignore .env` confirma `.env` ignorado e `.env.example` não (verificação de leitura; sem alterar o repositório)
+- [x] Gate check passes: Quick
+- [x] Test count: ≥ 2 testes passam
 
 **Tests**: unit
 **Gate**: quick
 **Commit**: `chore(env): adiciona .env.example sem segredos`
+**Status**: ✅ Concluída (3 testes novos; 108 unit passam). `.env.example` com as 6 chaves (`DB_NAME=books`, `DB_USER=books`, `DB_PASSWORD=change-me`, `SCRAPE_DELAY_SECONDS=0.5`, `SCRAPE_MAX_RETRIES=3`, `LOG_LEVEL=INFO`). `.env` local criado a partir dele com senha aleatória (não exibida). `git check-ignore -q`: `.env` ignorado (exit 0) e `.env.example` não (exit 1). LOC-05 fica `In progress (T14)` (completa na T15).
 
 ---
 
