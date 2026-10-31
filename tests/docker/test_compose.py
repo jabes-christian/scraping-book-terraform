@@ -21,7 +21,8 @@ ENV = {
 
 def _compose(*args: str, timeout: int = 300) -> str:
     result = subprocess.run(
-        ["docker", "compose", *args],
+        # -f explícito: não carrega o docker-compose.override.yml local do desenvolvedor
+        ["docker", "compose", "-f", "docker-compose.yml", *args],
         cwd=ROOT,
         env=ENV,
         capture_output=True,

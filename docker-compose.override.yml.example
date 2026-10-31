@@ -1,0 +1,7 @@
+# Copie para docker-compose.override.yml (ignorado pelo git) para acessar o
+# postgres a partir do host nos testes de integração. Só em desenvolvimento:
+# na VM este arquivo não existe e o postgres fica na rede interna do Compose.
+services:
+  postgres:
+    ports:
+      - "127.0.0.1:5432:5432"

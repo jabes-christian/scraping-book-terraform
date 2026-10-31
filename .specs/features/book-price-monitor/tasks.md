@@ -576,12 +576,13 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Com o override, `127.0.0.1:5432` aceita conexão TCP e sem o override a porta não é publicada; `git check-ignore docker-compose.override.yml` confirma o arquivo real ignorado
-- [ ] Gate check passes: Docker (testes anteriores continuam passando)
+- [x] Com o override, `127.0.0.1:5432` aceita conexão TCP e sem o override a porta não é publicada; `git check-ignore docker-compose.override.yml` confirma o arquivo real ignorado
+- [x] Gate check passes: Docker (testes anteriores continuam passando)
 
 **Tests**: none
 **Gate**: docker
 **Commit**: `chore(docker): adiciona exemplo de override local do Compose`
+**Status**: ✅ Concluída (sem testes novos; 14 docker e 108 unit passam). `docker-compose.override.yml.example` publica `127.0.0.1:5432:5432` do `postgres`; o `docker-compose.override.yml` local foi copiado dele. Verificado em projeto Compose descartável: sem o override a porta fica só `5432/tcp` (não publicada) e a conexão TCP do host é recusada; com o override aparece `127.0.0.1:5432->5432/tcp` e a conexão é aceita. `git check-ignore`: o override real é ignorado (exit 0) e o `.example` não (exit 1). Ajuste no `tests/docker/test_compose.py`: o helper passou a usar `-f docker-compose.yml`, pois o Compose carrega o override sozinho e o teste "postgres sem `ports`" falharia no seu ambiente; nenhuma asserção foi alterada.
 
 ---
 
