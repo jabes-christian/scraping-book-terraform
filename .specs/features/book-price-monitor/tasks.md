@@ -549,14 +549,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Teste sobre `docker compose config --format json`: volume nomeado em `/var/lib/postgresql/data`, `restart` do postgres, `mem_limit` de ambos com soma ≤ 752 MB, healthcheck presente, `postgres` sem `ports`, `robo` com `depends_on.postgres.condition == service_healthy` e `init` true
-- [ ] `docker compose up -d --wait postgres` fica `healthy` e os dados sobrevivem a `docker compose up -d --force-recreate postgres` (tabela de teste criada e relida)
-- [ ] Gate check passes: Docker
-- [ ] Test count: ≥ 6 testes passam
+- [x] Teste sobre `docker compose config --format json`: volume nomeado em `/var/lib/postgresql/data`, `restart` do postgres, `mem_limit` de ambos com soma ≤ 752 MB, healthcheck presente, `postgres` sem `ports`, `robo` com `depends_on.postgres.condition == service_healthy` e `init` true
+- [x] `docker compose up -d --wait postgres` fica `healthy` e os dados sobrevivem a `docker compose up -d --force-recreate postgres` (tabela de teste criada e relida)
+- [x] Gate check passes: Docker
+- [x] Test count: ≥ 6 testes passam
 
 **Tests**: integration (marker `docker`)
 **Gate**: docker
 **Commit**: `feat(docker): adiciona stack Compose com postgres e robô`
+**Status**: ✅ Concluída (8 testes docker novos; 14 docker e 108 unit passam). `docker-compose.yml` com `postgres:17-alpine` (volume `pgdata`, 192m, tuning, healthcheck `pg_isready -h 127.0.0.1` para só ficar `healthy` depois da inicialização, sem `ports`) e `robo` (`build: .`, `image: book-monitor-robo`, 560m, `init`, `restart: "no"`, `DB_HOST=postgres`); soma dos limites = 752 MB. `docker compose config` entrega `mem_limit` como string de bytes, então o teste converte com `int()`. Os testes usam o projeto `bookmonitor_test` e senha de teste via ambiente, e fazem `down -v` no fim (não tocam no volume nem no `.env` de desenvolvimento). Persistência verificada com `up -d --wait` + `--force-recreate`. O `robo` exige o `.env` local (`env_file`). Spec: LOC-03 e LOC-04 `Implemented`; LOC-01, LOC-05, VM-06 e DB-08 `In progress`.
 
 ---
 

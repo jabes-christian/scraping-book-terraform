@@ -278,7 +278,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | DB-05 | P1: Persistir histórico | Tasks | T19, T20 | Planned |
 | DB-06 | P1: Persistir histórico | Tasks | T18 | Planned |
 | DB-07 | P1: Persistir histórico | Tasks | T18, T20 | Planned |
-| DB-08 | P1: Persistir histórico | Tasks | T15, T21, T54 | Planned |
+| DB-08 | P1: Persistir histórico | Tasks | T15, T21, T54 | In progress (T15) |
 | DB-09 | P1: Persistir histórico | Tasks | T8, T17, T19 | In progress (T8) |
 | CFG-01 | P1: Configuração e agnóstico de nuvem | Tasks | T4 | Implemented |
 | CFG-02 | P1: Configuração e agnóstico de nuvem | Tasks | T4, T20 | In progress (T4) |
@@ -288,11 +288,11 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | CFG-06 | P1: Configuração e agnóstico de nuvem | Tasks | T5 | Implemented |
 | CFG-07 | P1: Configuração e agnóstico de nuvem | Tasks | T1 | Implemented |
 | CFG-08 | P1: Configuração e agnóstico de nuvem | Tasks | T4 | Implemented |
-| LOC-01 | P1: Ambiente local Docker Compose | Tasks | T15, T21, T48 | Planned |
+| LOC-01 | P1: Ambiente local Docker Compose | Tasks | T15, T21, T48 | In progress (T15) |
 | LOC-02 | P1: Ambiente local Docker Compose | Tasks | T13, T21 | In progress (T13) |
-| LOC-03 | P1: Ambiente local Docker Compose | Tasks | T15 | Planned |
-| LOC-04 | P1: Ambiente local Docker Compose | Tasks | T15 | Planned |
-| LOC-05 | P1: Ambiente local Docker Compose | Tasks | T14, T15, T48 | In progress (T14) |
+| LOC-03 | P1: Ambiente local Docker Compose | Tasks | T15 | Implemented |
+| LOC-04 | P1: Ambiente local Docker Compose | Tasks | T15 | Implemented |
+| LOC-05 | P1: Ambiente local Docker Compose | Tasks | T14, T15, T48 | In progress (T14, T15) |
 | LOC-06 | P1: Ambiente local Docker Compose | Tasks | T11, T21 | In progress (T11) |
 | TFB-01 | P1: Bootstrap do remote state | Tasks | T22, T24, T26 | Planned |
 | TFB-02 | P1: Bootstrap do remote state | Tasks | T24, T26 | Planned |
@@ -317,7 +317,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | VM-03 | P1: Runtime da VM | Tasks | T34, T52, T54 | Planned |
 | VM-04 | P1: Runtime da VM | Tasks | T34, T54 | Planned |
 | VM-05 | P1: Runtime da VM | Tasks | T33, T34, T54 | Planned |
-| VM-06 | P1: Runtime da VM | Tasks | T15, T52, T54 | Planned |
+| VM-06 | P1: Runtime da VM | Tasks | T15, T52, T54 | In progress (T15) |
 | VM-07 | P1: Runtime da VM | Tasks | T34, T52 | Planned |
 | VM-08 | P1: Runtime da VM | Tasks | T53 | Planned |
 | VM-09 | P1: Runtime da VM | Tasks | T33, T54 | Planned |
