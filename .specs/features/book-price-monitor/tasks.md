@@ -603,14 +603,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Aplicar o DDL duas vezes não falha (idempotente) e cria as três tabelas
-- [ ] `price_history.price` é `numeric(10,2)` e `currency` assume `GBP` por padrão; `status` rejeita valor fora de `RUNNING/SUCCESS/FAILED`; `UNIQUE (execution_id, book_id)` impede duplicata
-- [ ] Gate check passes: Full
-- [ ] Test count: ≥ 5 testes passam
+- [x] Aplicar o DDL duas vezes não falha (idempotente) e cria as três tabelas
+- [x] `price_history.price` é `numeric(10,2)` e `currency` assume `GBP` por padrão; `status` rejeita valor fora de `RUNNING/SUCCESS/FAILED`; `UNIQUE (execution_id, book_id)` impede duplicata
+- [x] Gate check passes: Full
+- [x] Test count: ≥ 5 testes passam
 
 **Tests**: integration
 **Gate**: full
 **Commit**: `feat(db): adiciona schema idempotente`
+**Status**: ✅ Concluída (7 testes de integração novos; 108 unit seguem passando). `schema.sql` é o DDL do Design sem alterações. O `conftest.py` de integração sobe um projeto Compose próprio (`bookmonitor_it`, volume próprio, `127.0.0.1` em porta livre via override temporário, `down -v` ao fim da sessão) em vez de usar o `.env` e a porta 5432 do desenvolvimento; a fixture `pg_env` entrega as variáveis `DB_*` (reaproveitadas na T18) e `conn` entrega uma conexão autocommit com o schema `public` recriado vazio a cada teste. Por isso o gate Full dispensa o `docker compose up -d --wait postgres` do ambiente de desenvolvimento. DB-01 e DB-09 ficam `In progress`.
 
 ---
 
