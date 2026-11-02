@@ -51,13 +51,13 @@ Regras do projeto que valem em toda a execução (do autor):
 | Gate Level | When to Use | Command |
 | ---------- | ----------- | ------- |
 | Quick | Tasks com apenas unit tests | `.venv\Scripts\python.exe -m pytest -m "not integration and not docker and not infra and not e2e"` + `.venv\Scripts\python.exe -m ruff check .` |
-| Full | Tasks com integration (exige Docker Desktop ligado e `.env` local) | Quick + `docker compose up -d --wait postgres` + `.venv\Scripts\python.exe -m pytest -m integration` |
+| Full | Tasks com integration (exige Docker Desktop ligado) | Quick + `.venv\Scripts\python.exe -m pytest -m integration`. O `conftest.py` sobe e remove sozinho um projeto Compose isolado (`bookmonitor_it`, volume próprio, `127.0.0.1` em porta livre, credenciais de teste): não usa o `.env`, o `docker-compose.override.yml` nem o volume de desenvolvimento, e não exige `docker compose up` prévio |
 | Docker | Tasks de Dockerfile/Compose | `docker compose build` + `.venv\Scripts\python.exe -m pytest -m docker` |
 | Infra | Tasks de Terraform e startup script | `terraform fmt -check -recursive terraform` + por stack/módulo alterado: `terraform -chdir=<dir> init -backend=false`, `terraform -chdir=<dir> validate`, `terraform -chdir=<dir> test` + `.venv\Scripts\python.exe -m pytest -m infra` (quando houver) |
-| E2E | T21 e antes do Verifier | `.venv\Scripts\python.exe -m pytest -m e2e` (site real; ~minutos) |
+| E2E | T21 e antes do Verifier | `.venv\Scripts\python.exe -m pytest -m e2e -s` (site real; ~3-4 min; projeto Compose isolado `bookmonitor_e2e`, credenciais do `.env`). Em rede com inspeção TLS: `E2E_BASE_URL=http://books.toscrape.com/` (repassado ao robô como `BASE_URL`) |
 | Build | Fim de cada fase | Quick + os níveis aplicáveis à fase (Full / Docker / Infra) + `terraform fmt -check -recursive terraform` |
 
-Pré-requisitos do ambiente: Docker Desktop ligado nas fases 3 e 4 (hoje o daemon está desligado); `.env` copiado de `.env.example` (gitignored); `docker-compose.override.yml` copiado do `.example` (gitignored) para publicar `127.0.0.1:5432` nos testes de integração; ADC ativo para tasks de Terraform com chamada real.
+Pré-requisitos do ambiente: Docker Desktop ligado nas fases 3 e 4 (hoje o daemon está desligado); `.env` copiado de `.env.example` (gitignored; usado pelo e2e e pelo Compose de desenvolvimento); `docker-compose.override.yml` copiado do `.example` (gitignored) só para acessar o Postgres de desenvolvimento pelo host (os testes de integração não dependem dele); ADC ativo para tasks de Terraform com chamada real.
 
 ---
 
@@ -714,15 +714,16 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Duas execuções terminam com exit code 0; `executions` tem 2 linhas `SUCCESS` com `items_count == 1000` e `price_history` tem 2.000 linhas; `books` tem 1.000 linhas
-- [ ] Nenhuma ocorrência do valor de `DB_PASSWORD` na saída das execuções
-- [ ] Após `docker compose up -d --force-recreate postgres`, as contagens permanecem (DB-08)
-- [ ] Gate check passes: E2E + Full (se o site divergir de 1.000 itens, a task não é concluída: investigar e reportar)
-- [ ] Test count: ≥ 3 testes e2e passam
+- [x] Duas execuções terminam com exit code 0; `executions` tem 2 linhas `SUCCESS` com `items_count == 1000` e `price_history` tem 2.000 linhas; `books` tem 1.000 linhas
+- [x] Nenhuma ocorrência do valor de `DB_PASSWORD` na saída das execuções
+- [x] Após `docker compose up -d --force-recreate postgres`, as contagens permanecem (DB-08)
+- [x] Gate check passes: E2E + Full (se o site divergir de 1.000 itens, a task não é concluída: investigar e reportar)
+- [x] Test count: ≥ 3 testes e2e passam
 
 **Tests**: integration (marker `e2e`)
 **Gate**: full
 **Commit**: `test(e2e): verifica a execução local via Compose de ponta a ponta`
+**Status**: ✅ Concluída (3 testes e2e novos; 3 e2e, 32 de integração e 109 unit passam). `tests/e2e/test_local_run.py` usa o projeto Compose isolado `bookmonitor_e2e` (volume próprio, `down -v` ao fim; o volume de desenvolvimento não é tocado), credenciais do `.env` local (o `env_file` do `robo` precisa da mesma senha com que o Postgres foi inicializado) e roda `docker compose run --rm -T robo` duas vezes contra o site real (GETs de leitura, delay de 0,5 s). **Causa do ajuste:** a primeira tentativa falhou (exit 1, `unexpected page structure` já na home) porque a rede corporativa faz inspeção TLS (Netskope) e o container não confia na CA interceptadora (`CERTIFICATE_VERIFY_FAILED: self-signed certificate in certificate chain`); o Chromium mostrava uma página de erro sem o marcador. Não é defeito do robô. O teste lê `E2E_BASE_URL` (padrão: HTTPS do site) e repassa ao robô como `BASE_URL`; as execuções abaixo rodaram com `E2E_BASE_URL=http://books.toscrape.com/`, sem alterar código do robô, Dockerfile nem flags do Chrome. **A validação por HTTPS fica para a T53, na VM** (sem inspeção TLS). Resultado: 2 execuções `SUCCESS` com 1.000 itens, `books` 1.000 e `price_history` 2.000; senha ausente da saída; contagens preservadas após `--force-recreate` do Postgres. **Referência para o orçamento de memória da e2-micro (VM-08)**, máximos sobre as duas execuções: duração 93,2 s e 88,9 s; pico de memória do `robo` 478,5 MiB (`docker stats`, sem cache) e 560,0 MiB (cgroup `memory.peak`, inclui cache de página, igual ao `mem_limit` de 560m e sem OOM); pico do `postgres` 55,8 MiB (`docker stats`) e 135,4 MiB (cgroup, inclui cache), contra o limite de 192m. O `docker stats` amostra a cada ~1-2 s e pode perder picos curtos; o `memory.peak` é o máximo real. Medido no Docker Desktop (WSL2); a e2-micro tem 1 GB de RAM e 2 GB de swap previstos. Spec: LOC-02 e LOC-06 viram `Implemented`; LOC-01, SCR-09 e DB-08 seguem `In progress` (completam em T48, T53 e T54).
 
 ---
 

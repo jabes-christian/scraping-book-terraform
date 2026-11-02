@@ -270,7 +270,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | SCR-06 | P1: Coletar categorias e livros | Tasks | T6, T11, T12 | Implemented |
 | SCR-07 | P1: Coletar categorias e livros | Tasks | T8, T10 | Implemented |
 | SCR-08 | P1: Coletar categorias e livros | Tasks | T12 | Implemented |
-| SCR-09 | P1: Coletar categorias e livros | Tasks | T11, T21, T53 | In progress (T11) |
+| SCR-09 | P1: Coletar categorias e livros | Tasks | T11, T21, T53 | In progress (T11, T21) |
 | DB-01 | P1: Persistir histórico | Tasks | T17, T18 | Implemented |
 | DB-02 | P1: Persistir histórico | Tasks | T19 | Implemented |
 | DB-03 | P1: Persistir histórico | Tasks | T19 | Implemented |
@@ -278,7 +278,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | DB-05 | P1: Persistir histórico | Tasks | T19, T20 | Implemented |
 | DB-06 | P1: Persistir histórico | Tasks | T18 | Implemented |
 | DB-07 | P1: Persistir histórico | Tasks | T18, T20 | Implemented |
-| DB-08 | P1: Persistir histórico | Tasks | T15, T21, T54 | In progress (T15) |
+| DB-08 | P1: Persistir histórico | Tasks | T15, T21, T54 | In progress (T15, T21) |
 | DB-09 | P1: Persistir histórico | Tasks | T8, T17, T19 | Implemented |
 | CFG-01 | P1: Configuração e agnóstico de nuvem | Tasks | T4 | Implemented |
 | CFG-02 | P1: Configuração e agnóstico de nuvem | Tasks | T4, T20 | Implemented |
@@ -288,12 +288,12 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | CFG-06 | P1: Configuração e agnóstico de nuvem | Tasks | T5 | Implemented |
 | CFG-07 | P1: Configuração e agnóstico de nuvem | Tasks | T1 | Implemented |
 | CFG-08 | P1: Configuração e agnóstico de nuvem | Tasks | T4 | Implemented |
-| LOC-01 | P1: Ambiente local Docker Compose | Tasks | T15, T21, T48 | In progress (T15) |
-| LOC-02 | P1: Ambiente local Docker Compose | Tasks | T13, T21 | In progress (T13) |
+| LOC-01 | P1: Ambiente local Docker Compose | Tasks | T15, T21, T48 | In progress (T15, T21) |
+| LOC-02 | P1: Ambiente local Docker Compose | Tasks | T13, T21 | Implemented |
 | LOC-03 | P1: Ambiente local Docker Compose | Tasks | T15 | Implemented |
 | LOC-04 | P1: Ambiente local Docker Compose | Tasks | T15 | Implemented |
 | LOC-05 | P1: Ambiente local Docker Compose | Tasks | T14, T15, T48 | In progress (T14, T15) |
-| LOC-06 | P1: Ambiente local Docker Compose | Tasks | T11, T21 | In progress (T11) |
+| LOC-06 | P1: Ambiente local Docker Compose | Tasks | T11, T21 | Implemented |
 | TFB-01 | P1: Bootstrap do remote state | Tasks | T22, T24, T26 | Planned |
 | TFB-02 | P1: Bootstrap do remote state | Tasks | T24, T26 | Planned |
 | TFB-03 | P1: Bootstrap do remote state | Tasks | T23 | Planned |
