@@ -78,7 +78,7 @@ def test_one_price_row_per_execution_and_book(conn, schema_sql):  # Done-when: U
     assert count == 2
 
 
-def test_book_url_is_unique(conn, schema_sql):  # base do upsert por URL (T19)
+def test_book_url_is_unique(conn, schema_sql):  # base do DB-03 (upsert por URL, T19)
     conn.execute(schema_sql)
     _new_book(conn, "http://x/same")
     with pytest.raises(psycopg.errors.UniqueViolation):

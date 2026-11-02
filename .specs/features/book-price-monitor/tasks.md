@@ -630,15 +630,16 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `ensure_schema` cria o schema em banco vazio e é reentrante
-- [ ] `mark_abandoned` marca como `FAILED` com erro `abandoned` só execuções `RUNNING` com `started_at` anterior a 2 h (uma de 3 h é marcada; uma de 1 h e uma `SUCCESS` ficam intactas)
-- [ ] `connect_with_retry` contra host inacessível desiste ao fim do timeout (reduzido no teste) com exceção cuja mensagem não contém a senha
-- [ ] Gate check passes: Full
-- [ ] Test count: ≥ 6 testes passam
+- [x] `ensure_schema` cria o schema em banco vazio e é reentrante
+- [x] `mark_abandoned` marca como `FAILED` com erro `abandoned` só execuções `RUNNING` com `started_at` anterior a 2 h (uma de 3 h é marcada; uma de 1 h e uma `SUCCESS` ficam intactas)
+- [x] `connect_with_retry` contra host inacessível desiste ao fim do timeout (reduzido no teste) com exceção cuja mensagem não contém a senha
+- [x] Gate check passes: Full
+- [x] Test count: ≥ 6 testes passam
 
 **Tests**: integration
 **Gate**: full
 **Commit**: `feat(db): adiciona reconexão, criação do schema e limpeza de execuções abandonadas`
+**Status**: ✅ Concluída (9 testes de integração novos; 16 de integração e 108 unit passam). `connect_with_retry(settings, timeout=60, interval=1.0)` devolve conexão autocommit, tenta de novo em `OperationalError` até o prazo e então levanta `DatabaseUnavailableError` (mensagem com host:porta e o motivo redigido, `from None` para não encadear a exceção original). `ensure_schema` executa o `schema.sql` (script sem parâmetros). `mark_abandoned` devolve a quantidade de execuções marcadas. Os testes de reconexão usam `monkeypatch` em `psycopg.connect` (falha duas vezes e depois conecta; erro do driver contendo a senha). O runner (T20) passa `settings.db_connect_timeout_seconds` como `timeout`. DB-01 e DB-06 viram `Implemented`; DB-07 `In progress` (completa na T20).
 
 ---
 
