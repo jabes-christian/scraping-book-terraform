@@ -51,13 +51,13 @@ Regras do projeto que valem em toda a execução (do autor):
 | Gate Level | When to Use | Command |
 | ---------- | ----------- | ------- |
 | Quick | Tasks com apenas unit tests | `.venv\Scripts\python.exe -m pytest -m "not integration and not docker and not infra and not e2e"` + `.venv\Scripts\python.exe -m ruff check .` |
-| Full | Tasks com integration (exige Docker Desktop ligado e `.env` local) | Quick + `docker compose up -d --wait postgres` + `.venv\Scripts\python.exe -m pytest -m integration` |
+| Full | Tasks com integration (exige Docker Desktop ligado) | Quick + `.venv\Scripts\python.exe -m pytest -m integration`. O `conftest.py` sobe e remove sozinho um projeto Compose isolado (`bookmonitor_it`, volume próprio, `127.0.0.1` em porta livre, credenciais de teste): não usa o `.env`, o `docker-compose.override.yml` nem o volume de desenvolvimento, e não exige `docker compose up` prévio |
 | Docker | Tasks de Dockerfile/Compose | `docker compose build` + `.venv\Scripts\python.exe -m pytest -m docker` |
 | Infra | Tasks de Terraform e startup script | `terraform fmt -check -recursive terraform` + por stack/módulo alterado: `terraform -chdir=<dir> init -backend=false`, `terraform -chdir=<dir> validate`, `terraform -chdir=<dir> test` + `.venv\Scripts\python.exe -m pytest -m infra` (quando houver) |
-| E2E | T21 e antes do Verifier | `.venv\Scripts\python.exe -m pytest -m e2e` (site real; ~minutos) |
+| E2E | T21 e antes do Verifier | `.venv\Scripts\python.exe -m pytest -m e2e -s` (site real; ~3-4 min; projeto Compose isolado `bookmonitor_e2e`, credenciais do `.env`). Em rede com inspeção TLS: `E2E_BASE_URL=http://books.toscrape.com/` (repassado ao robô como `BASE_URL`) |
 | Build | Fim de cada fase | Quick + os níveis aplicáveis à fase (Full / Docker / Infra) + `terraform fmt -check -recursive terraform` |
 
-Pré-requisitos do ambiente: Docker Desktop ligado nas fases 3 e 4 (hoje o daemon está desligado); `.env` copiado de `.env.example` (gitignored); `docker-compose.override.yml` copiado do `.example` (gitignored) para publicar `127.0.0.1:5432` nos testes de integração; ADC ativo para tasks de Terraform com chamada real.
+Pré-requisitos do ambiente: Docker Desktop ligado nas fases 3 e 4 (hoje o daemon está desligado); `.env` copiado de `.env.example` (gitignored; usado pelo e2e e pelo Compose de desenvolvimento); `docker-compose.override.yml` copiado do `.example` (gitignored) só para acessar o Postgres de desenvolvimento pelo host (os testes de integração não dependem dele); ADC ativo para tasks de Terraform com chamada real.
 
 ---
 
@@ -603,14 +603,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Aplicar o DDL duas vezes não falha (idempotente) e cria as três tabelas
-- [ ] `price_history.price` é `numeric(10,2)` e `currency` assume `GBP` por padrão; `status` rejeita valor fora de `RUNNING/SUCCESS/FAILED`; `UNIQUE (execution_id, book_id)` impede duplicata
-- [ ] Gate check passes: Full
-- [ ] Test count: ≥ 5 testes passam
+- [x] Aplicar o DDL duas vezes não falha (idempotente) e cria as três tabelas
+- [x] `price_history.price` é `numeric(10,2)` e `currency` assume `GBP` por padrão; `status` rejeita valor fora de `RUNNING/SUCCESS/FAILED`; `UNIQUE (execution_id, book_id)` impede duplicata
+- [x] Gate check passes: Full
+- [x] Test count: ≥ 5 testes passam
 
 **Tests**: integration
 **Gate**: full
 **Commit**: `feat(db): adiciona schema idempotente`
+**Status**: ✅ Concluída (7 testes de integração novos; 108 unit seguem passando). `schema.sql` é o DDL do Design sem alterações. O `conftest.py` de integração sobe um projeto Compose próprio (`bookmonitor_it`, volume próprio, `127.0.0.1` em porta livre via override temporário, `down -v` ao fim da sessão) em vez de usar o `.env` e a porta 5432 do desenvolvimento; a fixture `pg_env` entrega as variáveis `DB_*` (reaproveitadas na T18) e `conn` entrega uma conexão autocommit com o schema `public` recriado vazio a cada teste. Por isso o gate Full dispensa o `docker compose up -d --wait postgres` do ambiente de desenvolvimento. DB-01 e DB-09 ficam `In progress`.
 
 ---
 
@@ -629,15 +630,16 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `ensure_schema` cria o schema em banco vazio e é reentrante
-- [ ] `mark_abandoned` marca como `FAILED` com erro `abandoned` só execuções `RUNNING` com `started_at` anterior a 2 h (uma de 3 h é marcada; uma de 1 h e uma `SUCCESS` ficam intactas)
-- [ ] `connect_with_retry` contra host inacessível desiste ao fim do timeout (reduzido no teste) com exceção cuja mensagem não contém a senha
-- [ ] Gate check passes: Full
-- [ ] Test count: ≥ 6 testes passam
+- [x] `ensure_schema` cria o schema em banco vazio e é reentrante
+- [x] `mark_abandoned` marca como `FAILED` com erro `abandoned` só execuções `RUNNING` com `started_at` anterior a 2 h (uma de 3 h é marcada; uma de 1 h e uma `SUCCESS` ficam intactas)
+- [x] `connect_with_retry` contra host inacessível desiste ao fim do timeout (reduzido no teste) com exceção cuja mensagem não contém a senha
+- [x] Gate check passes: Full
+- [x] Test count: ≥ 6 testes passam
 
 **Tests**: integration
 **Gate**: full
 **Commit**: `feat(db): adiciona reconexão, criação do schema e limpeza de execuções abandonadas`
+**Status**: ✅ Concluída (9 testes de integração novos; 16 de integração e 108 unit passam). `connect_with_retry(settings, timeout=60, interval=1.0)` devolve conexão autocommit, tenta de novo em `OperationalError` até o prazo e então levanta `DatabaseUnavailableError` (mensagem com host:porta e o motivo redigido, `from None` para não encadear a exceção original). `ensure_schema` executa o `schema.sql` (script sem parâmetros). `mark_abandoned` devolve a quantidade de execuções marcadas. Os testes de reconexão usam `monkeypatch` em `psycopg.connect` (falha duas vezes e depois conecta; erro do driver contendo a senha). O runner (T20) passa `settings.db_connect_timeout_seconds` como `timeout`. DB-01 e DB-06 viram `Implemented`; DB-07 `In progress` (completa na T20).
 
 ---
 
@@ -656,15 +658,16 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `start_execution` cria linha `RUNNING` com `started_at`; `save_success` grava N livros e N linhas de preço e deixa `SUCCESS`, `finished_at` e `items_count == N` na mesma transação
-- [ ] Falha injetada no meio de `save_success` não deixa linha de `price_history` nem `SUCCESS` (rollback); `mark_failed` grava `FAILED`, `finished_at` e erro truncado em 2.000 caracteres sem tocar em `price_history`
-- [ ] Duas execuções no mesmo dia geram duas execuções independentes, cada uma com suas linhas; reexecutar o mesmo livro atualiza `books` (mesma URL) sem duplicá-lo; título com aspas e acentos volta íntegro
-- [ ] Gate check passes: Full
-- [ ] Test count: ≥ 8 testes passam
+- [x] `start_execution` cria linha `RUNNING` com `started_at`; `save_success` grava N livros e N linhas de preço e deixa `SUCCESS`, `finished_at` e `items_count == N` na mesma transação
+- [x] Falha injetada no meio de `save_success` não deixa linha de `price_history` nem `SUCCESS` (rollback); `mark_failed` grava `FAILED`, `finished_at` e erro truncado em 2.000 caracteres sem tocar em `price_history`
+- [x] Duas execuções no mesmo dia geram duas execuções independentes, cada uma com suas linhas; reexecutar o mesmo livro atualiza `books` (mesma URL) sem duplicá-lo; título com aspas e acentos volta íntegro
+- [x] Gate check passes: Full
+- [x] Test count: ≥ 8 testes passam
 
 **Tests**: integration
 **Gate**: full
 **Commit**: `feat(db): adiciona ciclo de vida da execução e gravação transacional de preços`
+**Status**: ✅ Concluída (8 testes de integração novos; 24 de integração e 108 unit passam). `start_execution`, `save_success` (um `executemany` do upsert do Design dentro de `conn.transaction()`, mais o `UPDATE` para `SUCCESS`) e `mark_failed` (erro cortado em 2.000 caracteres; a redação de segredos fica no runner, T20). A falha no meio da gravação é injetada com um preço que estoura `numeric(10,2)` no 2º item (`NumericValueOutOfRange`): o rollback desfaz também o upsert de `books`. `items_count` é `len(items)`. Spec: DB-02, DB-03, DB-04, DB-09 e EDG-03 viram `Implemented`; DB-05 e EDG-04 `In progress (T19)` (completam na T20).
 
 ---
 
@@ -683,15 +686,16 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Sem `DB_PASSWORD`: retorna 2, a mensagem cita `DB_PASSWORD` e nenhuma conexão é aberta
-- [ ] Scraper falso com sucesso: retorna 0, `executions` com `SUCCESS` e `items_count` correto; scraper que levanta erro: retorna 1, `FAILED` com erro, zero linhas de `price_history`
-- [ ] Banco inacessível: retorna 1 sem linha em `executions` e sem a senha na saída; a senha de teste não aparece em stdout/stderr nem em `executions.error` mesmo quando incluída na mensagem da exceção
-- [ ] Gate check passes: Full
-- [ ] Test count: ≥ 7 testes passam
+- [x] Sem `DB_PASSWORD`: retorna 2, a mensagem cita `DB_PASSWORD` e nenhuma conexão é aberta
+- [x] Scraper falso com sucesso: retorna 0, `executions` com `SUCCESS` e `items_count` correto; scraper que levanta erro: retorna 1, `FAILED` com erro, zero linhas de `price_history`
+- [x] Banco inacessível: retorna 1 sem linha em `executions` e sem a senha na saída; a senha de teste não aparece em stdout/stderr nem em `executions.error` mesmo quando incluída na mensagem da exceção
+- [x] Gate check passes: Full
+- [x] Test count: ≥ 7 testes passam
 
 **Tests**: integration
 **Gate**: full
 **Commit**: `feat(robot): liga runner e entrypoint com códigos de saída`
+**Status**: ✅ Concluída (8 testes de integração e 1 unit novos; 32 de integração e 109 unit passam). `runner.run(env, scraper=scrape_with_browser) -> int` (0/1/2) e `__main__.py` (`sys.exit(run(os.environ))`). Fluxo: config (exit 2 sem tocar o banco, log JSON com o nome da variável) → logs com redação → `connect_with_retry` (`DB_CONNECT_TIMEOUT_SECONDS`) → `ensure_schema` → `mark_abandoned` → `start_execution` → scraper → `save_success`; qualquer exceção depois do `start_execution` vira `mark_failed` com `Tipo: mensagem` redigido antes do corte de 2.000 caracteres. Banco inacessível devolve 1 sem criar execução (o teste confirma que `start_execution` e o scraper não são chamados, já que não há banco para consultar). O teste da senha altera temporariamente a senha do usuário do banco de teste para autenticar de verdade e a restaura em `finally`. O teste unit `test_main.py` roda `python -m book_monitor` sem variáveis e confirma exit 2. Spec: CFG-02, CFG-03, CFG-05, DB-05, DB-07 e EDG-04 viram `Implemented`.
 
 ---
 
@@ -710,15 +714,16 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Duas execuções terminam com exit code 0; `executions` tem 2 linhas `SUCCESS` com `items_count == 1000` e `price_history` tem 2.000 linhas; `books` tem 1.000 linhas
-- [ ] Nenhuma ocorrência do valor de `DB_PASSWORD` na saída das execuções
-- [ ] Após `docker compose up -d --force-recreate postgres`, as contagens permanecem (DB-08)
-- [ ] Gate check passes: E2E + Full (se o site divergir de 1.000 itens, a task não é concluída: investigar e reportar)
-- [ ] Test count: ≥ 3 testes e2e passam
+- [x] Duas execuções terminam com exit code 0; `executions` tem 2 linhas `SUCCESS` com `items_count == 1000` e `price_history` tem 2.000 linhas; `books` tem 1.000 linhas
+- [x] Nenhuma ocorrência do valor de `DB_PASSWORD` na saída das execuções
+- [x] Após `docker compose up -d --force-recreate postgres`, as contagens permanecem (DB-08)
+- [x] Gate check passes: E2E + Full (se o site divergir de 1.000 itens, a task não é concluída: investigar e reportar)
+- [x] Test count: ≥ 3 testes e2e passam
 
 **Tests**: integration (marker `e2e`)
 **Gate**: full
 **Commit**: `test(e2e): verifica a execução local via Compose de ponta a ponta`
+**Status**: ✅ Concluída (3 testes e2e novos; 3 e2e, 32 de integração e 109 unit passam). `tests/e2e/test_local_run.py` usa o projeto Compose isolado `bookmonitor_e2e` (volume próprio, `down -v` ao fim; o volume de desenvolvimento não é tocado), credenciais do `.env` local (o `env_file` do `robo` precisa da mesma senha com que o Postgres foi inicializado) e roda `docker compose run --rm -T robo` duas vezes contra o site real (GETs de leitura, delay de 0,5 s). **Causa do ajuste:** a primeira tentativa falhou (exit 1, `unexpected page structure` já na home) porque a rede corporativa faz inspeção TLS (Netskope) e o container não confia na CA interceptadora (`CERTIFICATE_VERIFY_FAILED: self-signed certificate in certificate chain`); o Chromium mostrava uma página de erro sem o marcador. Não é defeito do robô. O teste lê `E2E_BASE_URL` (padrão: HTTPS do site) e repassa ao robô como `BASE_URL`; as execuções abaixo rodaram com `E2E_BASE_URL=http://books.toscrape.com/`, sem alterar código do robô, Dockerfile nem flags do Chrome. **A validação por HTTPS fica para a T53, na VM** (sem inspeção TLS). Resultado: 2 execuções `SUCCESS` com 1.000 itens, `books` 1.000 e `price_history` 2.000; senha ausente da saída; contagens preservadas após `--force-recreate` do Postgres. **Referência para o orçamento de memória da e2-micro (VM-08)**, máximos sobre as duas execuções: duração 93,2 s e 88,9 s; pico de memória do `robo` 478,5 MiB (`docker stats`, sem cache) e 560,0 MiB (cgroup `memory.peak`, inclui cache de página, igual ao `mem_limit` de 560m e sem OOM); pico do `postgres` 55,8 MiB (`docker stats`) e 135,4 MiB (cgroup, inclui cache), contra o limite de 192m. O `docker stats` amostra a cada ~1-2 s e pode perder picos curtos; o `memory.peak` é o máximo real. Medido no Docker Desktop (WSL2); a e2-micro tem 1 GB de RAM e 2 GB de swap previstos. Spec: LOC-02 e LOC-06 viram `Implemented`; LOC-01, SCR-09 e DB-08 seguem `In progress` (completam em T48, T53 e T54).
 
 ---
 
