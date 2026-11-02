@@ -272,14 +272,14 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | SCR-08 | P1: Coletar categorias e livros | Tasks | T12 | Implemented |
 | SCR-09 | P1: Coletar categorias e livros | Tasks | T11, T21, T53 | In progress (T11) |
 | DB-01 | P1: Persistir histórico | Tasks | T17, T18 | Implemented |
-| DB-02 | P1: Persistir histórico | Tasks | T19 | Planned |
-| DB-03 | P1: Persistir histórico | Tasks | T19 | Planned |
-| DB-04 | P1: Persistir histórico | Tasks | T19 | Planned |
-| DB-05 | P1: Persistir histórico | Tasks | T19, T20 | Planned |
+| DB-02 | P1: Persistir histórico | Tasks | T19 | Implemented |
+| DB-03 | P1: Persistir histórico | Tasks | T19 | Implemented |
+| DB-04 | P1: Persistir histórico | Tasks | T19 | Implemented |
+| DB-05 | P1: Persistir histórico | Tasks | T19, T20 | In progress (T19) |
 | DB-06 | P1: Persistir histórico | Tasks | T18 | Implemented |
 | DB-07 | P1: Persistir histórico | Tasks | T18, T20 | In progress (T18) |
 | DB-08 | P1: Persistir histórico | Tasks | T15, T21, T54 | In progress (T15) |
-| DB-09 | P1: Persistir histórico | Tasks | T8, T17, T19 | In progress (T8, T17) |
+| DB-09 | P1: Persistir histórico | Tasks | T8, T17, T19 | Implemented |
 | CFG-01 | P1: Configuração e agnóstico de nuvem | Tasks | T4 | Implemented |
 | CFG-02 | P1: Configuração e agnóstico de nuvem | Tasks | T4, T20 | In progress (T4) |
 | CFG-03 | P1: Configuração e agnóstico de nuvem | Tasks | T5, T20 | In progress (T5) |
@@ -331,8 +331,8 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | AZR-01 | P3: Reaproveitamento para Azure | Tasks | T47, T49, T50 | Planned |
 | EDG-01 | Edge Cases | Tasks | T10, T12 | Implemented |
 | EDG-02 | Edge Cases | Tasks | T12 | Implemented |
-| EDG-03 | Edge Cases | Tasks | T10, T19 | In progress (T10) |
-| EDG-04 | Edge Cases | Tasks | T19, T20 | Planned |
+| EDG-03 | Edge Cases | Tasks | T10, T19 | Implemented |
+| EDG-04 | Edge Cases | Tasks | T19, T20 | In progress (T19) |
 | EDG-05 | Edge Cases | Tasks | T45 | Planned |
 
 **Coverage:** 72 total, 72 mapped to tasks, 0 unmapped ✅

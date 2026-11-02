@@ -658,15 +658,16 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `start_execution` cria linha `RUNNING` com `started_at`; `save_success` grava N livros e N linhas de preço e deixa `SUCCESS`, `finished_at` e `items_count == N` na mesma transação
-- [ ] Falha injetada no meio de `save_success` não deixa linha de `price_history` nem `SUCCESS` (rollback); `mark_failed` grava `FAILED`, `finished_at` e erro truncado em 2.000 caracteres sem tocar em `price_history`
-- [ ] Duas execuções no mesmo dia geram duas execuções independentes, cada uma com suas linhas; reexecutar o mesmo livro atualiza `books` (mesma URL) sem duplicá-lo; título com aspas e acentos volta íntegro
-- [ ] Gate check passes: Full
-- [ ] Test count: ≥ 8 testes passam
+- [x] `start_execution` cria linha `RUNNING` com `started_at`; `save_success` grava N livros e N linhas de preço e deixa `SUCCESS`, `finished_at` e `items_count == N` na mesma transação
+- [x] Falha injetada no meio de `save_success` não deixa linha de `price_history` nem `SUCCESS` (rollback); `mark_failed` grava `FAILED`, `finished_at` e erro truncado em 2.000 caracteres sem tocar em `price_history`
+- [x] Duas execuções no mesmo dia geram duas execuções independentes, cada uma com suas linhas; reexecutar o mesmo livro atualiza `books` (mesma URL) sem duplicá-lo; título com aspas e acentos volta íntegro
+- [x] Gate check passes: Full
+- [x] Test count: ≥ 8 testes passam
 
 **Tests**: integration
 **Gate**: full
 **Commit**: `feat(db): adiciona ciclo de vida da execução e gravação transacional de preços`
+**Status**: ✅ Concluída (8 testes de integração novos; 24 de integração e 108 unit passam). `start_execution`, `save_success` (um `executemany` do upsert do Design dentro de `conn.transaction()`, mais o `UPDATE` para `SUCCESS`) e `mark_failed` (erro cortado em 2.000 caracteres; a redação de segredos fica no runner, T20). A falha no meio da gravação é injetada com um preço que estoura `numeric(10,2)` no 2º item (`NumericValueOutOfRange`): o rollback desfaz também o upsert de `books`. `items_count` é `len(items)`. Spec: DB-02, DB-03, DB-04, DB-09 e EDG-03 viram `Implemented`; DB-05 e EDG-04 `In progress (T19)` (completam na T20).
 
 ---
 

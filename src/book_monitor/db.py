@@ -1,13 +1,26 @@
 import time
+from collections.abc import Sequence
 from pathlib import Path
 
 import psycopg
 
 from book_monitor.config import Settings
 from book_monitor.logging_setup import redact
+from book_monitor.models import BookItem
 
 SCHEMA_PATH = Path(__file__).with_name("schema.sql")
 ATTEMPT_TIMEOUT_SECONDS = 5
+MAX_ERROR_LENGTH = 2000
+
+UPSERT_BOOK_AND_PRICE = """
+WITH b AS (
+  INSERT INTO books (url, title, category) VALUES (%s, %s, %s)
+  ON CONFLICT (url) DO UPDATE
+    SET title = EXCLUDED.title, category = EXCLUDED.category, last_seen_at = now()
+  RETURNING id)
+INSERT INTO price_history (execution_id, book_id, price, availability)
+SELECT %s, id, %s, %s FROM b
+"""
 
 
 class DatabaseUnavailableError(Exception):
@@ -53,3 +66,30 @@ def mark_abandoned(conn: psycopg.Connection, hours: int) -> int:
         (hours,),
     )
     return cursor.rowcount
+
+
+def start_execution(conn: psycopg.Connection) -> int:
+    row = conn.execute("INSERT INTO executions (status) VALUES ('RUNNING') RETURNING id").fetchone()
+    return row[0]
+
+
+def save_success(conn: psycopg.Connection, exec_id: int, items: Sequence[BookItem]) -> None:
+    """Upsert books, add price rows and mark the execution SUCCESS in one transaction."""
+    params = [
+        (item.url, item.title, item.category, exec_id, item.price, item.availability)
+        for item in items
+    ]
+    with conn.transaction():
+        conn.cursor().executemany(UPSERT_BOOK_AND_PRICE, params)
+        conn.execute(
+            "UPDATE executions SET status = 'SUCCESS', finished_at = now(), items_count = %s "
+            "WHERE id = %s",
+            (len(items), exec_id),
+        )
+
+
+def mark_failed(conn: psycopg.Connection, exec_id: int, error: str) -> None:
+    conn.execute(
+        "UPDATE executions SET status = 'FAILED', finished_at = now(), error = %s WHERE id = %s",
+        (error[:MAX_ERROR_LENGTH], exec_id),
+    )
