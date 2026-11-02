@@ -686,15 +686,16 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Sem `DB_PASSWORD`: retorna 2, a mensagem cita `DB_PASSWORD` e nenhuma conexão é aberta
-- [ ] Scraper falso com sucesso: retorna 0, `executions` com `SUCCESS` e `items_count` correto; scraper que levanta erro: retorna 1, `FAILED` com erro, zero linhas de `price_history`
-- [ ] Banco inacessível: retorna 1 sem linha em `executions` e sem a senha na saída; a senha de teste não aparece em stdout/stderr nem em `executions.error` mesmo quando incluída na mensagem da exceção
-- [ ] Gate check passes: Full
-- [ ] Test count: ≥ 7 testes passam
+- [x] Sem `DB_PASSWORD`: retorna 2, a mensagem cita `DB_PASSWORD` e nenhuma conexão é aberta
+- [x] Scraper falso com sucesso: retorna 0, `executions` com `SUCCESS` e `items_count` correto; scraper que levanta erro: retorna 1, `FAILED` com erro, zero linhas de `price_history`
+- [x] Banco inacessível: retorna 1 sem linha em `executions` e sem a senha na saída; a senha de teste não aparece em stdout/stderr nem em `executions.error` mesmo quando incluída na mensagem da exceção
+- [x] Gate check passes: Full
+- [x] Test count: ≥ 7 testes passam
 
 **Tests**: integration
 **Gate**: full
 **Commit**: `feat(robot): liga runner e entrypoint com códigos de saída`
+**Status**: ✅ Concluída (8 testes de integração e 1 unit novos; 32 de integração e 109 unit passam). `runner.run(env, scraper=scrape_with_browser) -> int` (0/1/2) e `__main__.py` (`sys.exit(run(os.environ))`). Fluxo: config (exit 2 sem tocar o banco, log JSON com o nome da variável) → logs com redação → `connect_with_retry` (`DB_CONNECT_TIMEOUT_SECONDS`) → `ensure_schema` → `mark_abandoned` → `start_execution` → scraper → `save_success`; qualquer exceção depois do `start_execution` vira `mark_failed` com `Tipo: mensagem` redigido antes do corte de 2.000 caracteres. Banco inacessível devolve 1 sem criar execução (o teste confirma que `start_execution` e o scraper não são chamados, já que não há banco para consultar). O teste da senha altera temporariamente a senha do usuário do banco de teste para autenticar de verdade e a restaura em `finally`. O teste unit `test_main.py` roda `python -m book_monitor` sem variáveis e confirma exit 2. Spec: CFG-02, CFG-03, CFG-05, DB-05, DB-07 e EDG-04 viram `Implemented`.
 
 ---
 

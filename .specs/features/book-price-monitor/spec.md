@@ -275,16 +275,16 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | DB-02 | P1: Persistir histórico | Tasks | T19 | Implemented |
 | DB-03 | P1: Persistir histórico | Tasks | T19 | Implemented |
 | DB-04 | P1: Persistir histórico | Tasks | T19 | Implemented |
-| DB-05 | P1: Persistir histórico | Tasks | T19, T20 | In progress (T19) |
+| DB-05 | P1: Persistir histórico | Tasks | T19, T20 | Implemented |
 | DB-06 | P1: Persistir histórico | Tasks | T18 | Implemented |
-| DB-07 | P1: Persistir histórico | Tasks | T18, T20 | In progress (T18) |
+| DB-07 | P1: Persistir histórico | Tasks | T18, T20 | Implemented |
 | DB-08 | P1: Persistir histórico | Tasks | T15, T21, T54 | In progress (T15) |
 | DB-09 | P1: Persistir histórico | Tasks | T8, T17, T19 | Implemented |
 | CFG-01 | P1: Configuração e agnóstico de nuvem | Tasks | T4 | Implemented |
-| CFG-02 | P1: Configuração e agnóstico de nuvem | Tasks | T4, T20 | In progress (T4) |
-| CFG-03 | P1: Configuração e agnóstico de nuvem | Tasks | T5, T20 | In progress (T5) |
+| CFG-02 | P1: Configuração e agnóstico de nuvem | Tasks | T4, T20 | Implemented |
+| CFG-03 | P1: Configuração e agnóstico de nuvem | Tasks | T5, T20 | Implemented |
 | CFG-04 | P1: Configuração e agnóstico de nuvem | Tasks | T4 | Implemented |
-| CFG-05 | P1: Configuração e agnóstico de nuvem | Tasks | T20 | Planned |
+| CFG-05 | P1: Configuração e agnóstico de nuvem | Tasks | T20 | Implemented |
 | CFG-06 | P1: Configuração e agnóstico de nuvem | Tasks | T5 | Implemented |
 | CFG-07 | P1: Configuração e agnóstico de nuvem | Tasks | T1 | Implemented |
 | CFG-08 | P1: Configuração e agnóstico de nuvem | Tasks | T4 | Implemented |
@@ -332,7 +332,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | EDG-01 | Edge Cases | Tasks | T10, T12 | Implemented |
 | EDG-02 | Edge Cases | Tasks | T12 | Implemented |
 | EDG-03 | Edge Cases | Tasks | T10, T19 | Implemented |
-| EDG-04 | Edge Cases | Tasks | T19, T20 | In progress (T19) |
+| EDG-04 | Edge Cases | Tasks | T19, T20 | Implemented |
 | EDG-05 | Edge Cases | Tasks | T45 | Planned |
 
 **Coverage:** 72 total, 72 mapped to tasks, 0 unmapped ✅
