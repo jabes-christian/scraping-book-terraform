@@ -42,6 +42,14 @@
 - **Date**: 2026-10-24
 - **Status**: active
 
+### AD-006
+- **Decision**: Comandos `terraform` (init, fmt, validate, test, plan, apply, destroy, output, import, state etc.) e `gcloud` são executados pelo autor, nunca pelo agente. O agente escreve os arquivos (`.tf`, `.tftest.hcl`, templates, docs) e, em cada task, entrega os comandos exatos com o diretório de execução (PowerShell, a partir da raiz), a explicação do que cada um faz e da saída esperada, e os conceitos de Terraform/GCP da task; o autor cola a saída e o agente a analisa. A task só é concluída depois da saída confirmar o gate. `pytest` e `ruff` continuam com o agente. Pull Requests sempre pelo site do GitHub (sem `gh`); o `.terraform.lock.hcl` gerado pelo `init` do autor entra no commit da task.
+- **Reason**: O projeto é de estudo; o autor quer aprender Terraform e GCP na prática.
+- **Trade-off**: Execução mais lenta (ida e volta com a saída colada); o agente não vê o ambiente real, só o que o autor cola.
+- **Scope**: Gate Infra, tasks T22-T56 (em especial as [OPERACIONAL]: T26, T42, T51-T56). A Spec não muda (os ACs já dizem "o autor executa"). Restringe o AD-005 em um ponto: o merge de fase passa a ser só pelo site do GitHub (antes: `gh` ou site).
+- **Date**: 2026-11-03
+- **Status**: active
+
 ## Handoff
 
 - **Feature**: .specs/features/book-price-monitor

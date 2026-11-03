@@ -16,6 +16,8 @@ Regras do projeto que valem em toda a execução (do autor):
 - **Merge de fase:** pelo `gh` ou pelo site do GitHub (Pull Request com merge commit, sem squash).
 - **Python:** Windows, Python 3.13; sempre `.venv\Scripts\python.exe` e `.venv\Scripts\python.exe -m pip`. Nunca instalar no Python global.
 - **Custo:** `terraform apply`, `destroy` ou qualquer ação com custo ou efeito externo só com OK explícito do autor (tasks marcadas **[OPERACIONAL]**).
+- **Terraform e gcloud executados pelo autor (AD-006):** o objetivo é aprender Terraform e GCP, então o agente NÃO executa nenhum comando `terraform` (`init`, `fmt`, `validate`, `test`, `plan`, `apply`, `destroy`, `output`, `import`, `state` etc.) nem `gcloud`. O agente escreve os arquivos (`.tf`, `.tftest.hcl`, templates, docs) e, em cada task, entrega: (1) os comandos exatos, com o diretório de execução (PowerShell, a partir da raiz do projeto); (2) uma explicação curta de cada comando e da saída esperada; (3) os conceitos de Terraform/GCP usados na task. O autor roda, cola a saída e o agente a analisa (em caso de erro, explica a causa e propõe a correção). A task só é marcada como concluída depois da saída do autor confirmar o gate. `pytest` e `ruff` continuam com o agente. Se a saída mostrar `x509: certificate signed by unknown authority` (inspeção TLS da rede corporativa), o agente explica a causa e as opções antes de propor qualquer contorno.
+- **Pull Requests:** sempre pelo site do GitHub (o agente não sugere `gh`).
 - **Segurança:** nenhum segredo hardcoded; nenhuma chave de service account versionada.
 - **Context7:** consultar para Selenium, psycopg 3, provider Google e `terraform test` sempre que a sintaxe não estiver no Design.
 
@@ -42,7 +44,7 @@ Regras do projeto que valem em toda a execução (do autor):
 | `startup.sh.tftpl` | infra (renderização + `bash -n` + asserções estáticas) | Idempotência estática: uma entrada de cron, `.env` só se ausente, sem senha no texto, `flock`, logrotate | `tests/infra/test_*.py` (marker `infra`) + `*.tftest.hcl` | Infra |
 | Higiene do repositório | unit | `git ls-files` sem `.env`, `*.tfvars`, `backend.hcl`, chaves JSON (OPS-05) | `tests/unit/test_repo_hygiene.py` | Quick |
 | Docs (`docs/`, READMEs) | none - link check no T50 | Caminhos relativos resolvem | `docs/*.md` | manual / T50 |
-| Tarefas operacionais (apply, VM, billing, destroy) | none - evidência manual | Evidência colada no relatório da task (saída de `gcloud`/`terraform`) | - | Live |
+| Tarefas operacionais (apply, VM, billing, destroy) | none - evidência manual | Evidência: saída de `gcloud`/`terraform` executados pelo autor (AD-006) e colada no chat; o agente analisa e registra no relatório da task | - | Live |
 
 ## Gate Check Commands
 
@@ -53,11 +55,11 @@ Regras do projeto que valem em toda a execução (do autor):
 | Quick | Tasks com apenas unit tests | `.venv\Scripts\python.exe -m pytest -m "not integration and not docker and not infra and not e2e"` + `.venv\Scripts\python.exe -m ruff check .` |
 | Full | Tasks com integration (exige Docker Desktop ligado) | Quick + `.venv\Scripts\python.exe -m pytest -m integration`. O `conftest.py` sobe e remove sozinho um projeto Compose isolado (`bookmonitor_it`, volume próprio, `127.0.0.1` em porta livre, credenciais de teste): não usa o `.env`, o `docker-compose.override.yml` nem o volume de desenvolvimento, e não exige `docker compose up` prévio |
 | Docker | Tasks de Dockerfile/Compose | `docker compose build` + `.venv\Scripts\python.exe -m pytest -m docker` |
-| Infra | Tasks de Terraform e startup script | `terraform fmt -check -recursive terraform` + por stack/módulo alterado: `terraform -chdir=<dir> init -backend=false`, `terraform -chdir=<dir> validate`, `terraform -chdir=<dir> test` + `.venv\Scripts\python.exe -m pytest -m infra` (quando houver) |
+| Infra | Tasks de Terraform e startup script | **Executado pelo autor (AD-006)**, com o agente fornecendo os comandos, a explicação e a análise da saída: `terraform fmt -check -recursive terraform` + por stack/módulo alterado: `terraform -chdir=<dir> init -backend=false`, `terraform -chdir=<dir> validate`, `terraform -chdir=<dir> test`. O `pytest -m infra` (quando houver) continua com o agente: `.venv\Scripts\python.exe -m pytest -m infra`. O gate só passa com a saída do autor confirmando |
 | E2E | T21 e antes do Verifier | `.venv\Scripts\python.exe -m pytest -m e2e -s` (site real; ~3-4 min; projeto Compose isolado `bookmonitor_e2e`, credenciais do `.env`). Em rede com inspeção TLS: `E2E_BASE_URL=http://books.toscrape.com/` (repassado ao robô como `BASE_URL`) |
-| Build | Fim de cada fase | Quick + os níveis aplicáveis à fase (Full / Docker / Infra) + `terraform fmt -check -recursive terraform` |
+| Build | Fim de cada fase | Quick + os níveis aplicáveis à fase (Full / Docker / Infra) + `terraform fmt -check -recursive terraform` (os comandos `terraform` são executados pelo autor, AD-006) |
 
-Pré-requisitos do ambiente: Docker Desktop ligado nas fases 3 e 4 (hoje o daemon está desligado); `.env` copiado de `.env.example` (gitignored; usado pelo e2e e pelo Compose de desenvolvimento); `docker-compose.override.yml` copiado do `.example` (gitignored) só para acessar o Postgres de desenvolvimento pelo host (os testes de integração não dependem dele); ADC ativo para tasks de Terraform com chamada real.
+Pré-requisitos do ambiente: Docker Desktop ligado nas fases 3 e 4 (hoje o daemon está desligado); `.env` copiado de `.env.example` (gitignored; usado pelo e2e e pelo Compose de desenvolvimento); `docker-compose.override.yml` copiado do `.example` (gitignored) só para acessar o Postgres de desenvolvimento pelo host (os testes de integração não dependem dele); ADC ativo para tasks de Terraform com chamada real (quota project `book-price-monitor-jc`); Terraform e gcloud instalados na máquina do autor, que executa os comandos (AD-006).
 
 ---
 
@@ -835,6 +837,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **What**: Com `terraform.tfvars` local (gitignored) e ADC: `terraform plan` (somente leitura) mostrado ao autor; **somente com OK explícito**, `terraform apply`; verificar o bucket com `gcloud storage buckets describe`.
 **Where**: `terraform/bootstrap/` (execução; nenhum arquivo versionado novo)
+**Execução**: pelo autor (AD-006). O agente orienta a criação do `terraform.tfvars` local (`project_id = "book-price-monitor-jc"`), fornece os comandos de `plan`/`apply`/`output` e `gcloud`, explica cada um e analisa a saída colada; o `apply` só após a revisão do plano pelo autor.
 **Depends on**: T25
 **Reuses**: ADC e `billing_project` configurados (PRD §11)
 **Requirement**: TFB-01, TFB-02, TFB-04 (validação real)
@@ -1250,6 +1253,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **What**: Com `terraform.tfvars` e `backend.hcl` locais e ADC: `terraform init -backend-config=backend.hcl` e `terraform plan` (somente leitura; senha por `TF_VAR_db_password`); mostrar o plano ao autor. **Não aplicar.**
 **Where**: `terraform/envs/prod/` (execução; nenhum arquivo versionado novo)
+**Execução**: pelo autor (AD-006). O agente fornece os comandos (`init -backend-config`, `plan`), explica a saída esperada e analisa o plano colado; não há `apply`.
 **Depends on**: T41
 **Reuses**: Bucket do T26
 **Requirement**: TFP-01, TFP-02, TFP-08 (validação real)
@@ -1475,6 +1479,7 @@ Tarefas operacionais: todas exigem OK explícito do autor antes de agir. Correç
 
 **What**: Após revisão final do plano e **OK explícito do autor**, `terraform apply` em `envs/prod`; conferir recursos com `gcloud`.
 **Where**: `terraform/envs/prod/` (execução)
+**Execução**: pelo autor (AD-006). O agente fornece os comandos de `apply` e `gcloud`, explica a saída esperada e analisa o resultado colado.
 **Depends on**: T50
 **Reuses**: Runbooks `docs/gcp-setup.md`
 **Requirement**: TFP-01, TFP-03..07, TFP-09, TFP-11
@@ -1500,6 +1505,7 @@ Tarefas operacionais: todas exigem OK explícito do autor antes de agir. Correç
 
 **What**: Via `gcloud compute ssh`: inspecionar o log do startup, Docker, swap, `.env` (permissão 600), `postgres` saudável, entrada de cron única e logrotate.
 **Where**: VM (leitura)
+**Execução**: pelo autor (AD-006). O agente fornece os comandos (`gcloud compute ssh` e as inspeções na VM), explica a saída esperada e analisa o resultado colado.
 **Depends on**: T51
 **Reuses**: Startup script (T32-T34)
 **Requirement**: VM-01, VM-02, VM-03, VM-06, VM-07
@@ -1524,6 +1530,7 @@ Tarefas operacionais: todas exigem OK explícito do autor antes de agir. Correç
 
 **What**: Na VM, `docker compose run --rm robo` completo, monitorando memória (`docker stats`, `free -m`) e conferindo `dmesg` por OOM; ajustar `mem_limit`/swap se necessário.
 **Where**: VM (execução)
+**Execução**: pelo autor (AD-006). O agente fornece os comandos (`gcloud compute ssh`, `docker compose run --rm robo`, `docker stats`, `free -m`, `dmesg`), explica a saída esperada e analisa o resultado colado.
 **Depends on**: T52
 **Reuses**: Orçamento de memória do Design
 **Requirement**: VM-08, SCR-09 (em produção)
@@ -1548,6 +1555,7 @@ Tarefas operacionais: todas exigem OK explícito do autor antes de agir. Correç
 
 **What**: Confirmar a execução do cron das 06:00 UTC no dia seguinte (nova linha em `executions` criada pelo cron); reiniciar a VM e conferir `postgres` de volta, dados preservados e uma só entrada de cron; testar `git pull` no boot (inclusive com GitHub inacessível simulado, se viável).
 **Where**: VM (execução)
+**Execução**: pelo autor (AD-006). O agente fornece os comandos (`gcloud compute ssh/instances reset`, consultas ao banco, `git`), explica a saída esperada e analisa o resultado colado.
 **Depends on**: T53
 **Reuses**: `docs/update-code.md`
 **Requirement**: VM-03, VM-04, VM-05, VM-06, VM-09, VM-10, DB-08
@@ -1573,6 +1581,7 @@ Tarefas operacionais: todas exigem OK explícito do autor antes de agir. Correç
 
 **What**: Conferir no Billing Report, após alguns dias, se o IPv4 externo é cobrado e se os e-mails de budget chegam; registrar o resultado.
 **Where**: `docs/cost-and-billing.md` (modify)
+**Execução**: pelo autor (AD-006) nas consultas de `gcloud` e no Billing Report do console; o agente fornece os comandos, explica o que observar, analisa o resultado colado e registra no documento.
 **Depends on**: T54
 **Reuses**: `docs/cost-and-billing.md` (T45)
 **Requirement**: OPS-02, TFP-09 (validação real)
@@ -1597,6 +1606,7 @@ Tarefas operacionais: todas exigem OK explícito do autor antes de agir. Correç
 
 **What**: Com **OK explícito do autor**, executar o runbook `docs/destroy.md`: `terraform destroy` de `envs/prod` e, por último, do bootstrap; confirmar que nada que gera custo permanece. Reaplicar depois é decisão do autor.
 **Where**: `terraform/envs/prod/` (execução)
+**Execução**: pelo autor (AD-006). O agente fornece os comandos de `destroy` e `gcloud` (na ordem do runbook), explica a saída esperada e analisa o resultado colado.
 **Depends on**: T55
 **Reuses**: `docs/destroy.md`
 **Requirement**: OPS-01 (validação real)
@@ -1623,7 +1633,7 @@ Tarefas operacionais: todas exigem OK explícito do autor antes de agir. Correç
 Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 7 → Phase 8 → Phase 9 → Phase 10
 ```
 
-Execution is strictly sequential - there is no intra-phase parallelism. Cada fase corresponde a uma branch criada da `main` após o merge da anterior. **Sem sub-agentes** (decisão do autor): toda a execução fica com o agente principal, task a task; não oferecer lotes de sub-agentes. O Verifier final do skill roda inline, como passada independente (`validate.md`), e não em sub-agente. As tasks **[OPERACIONAL]** (T26, T42, T51-T56) exigem OK explícito do autor antes de agir.
+Execution is strictly sequential - there is no intra-phase parallelism. Cada fase corresponde a uma branch criada da `main` após o merge da anterior. **Sem sub-agentes** (decisão do autor): toda a execução fica com o agente principal, task a task; não oferecer lotes de sub-agentes. O Verifier final do skill roda inline, como passada independente (`validate.md`), e não em sub-agente. As tasks **[OPERACIONAL]** (T26, T42, T51-T56) exigem OK explícito do autor antes de agir e, por AD-006, os comandos `terraform`/`gcloud` são sempre executados pelo autor (o agente fornece comandos, explicação e análise da saída).
 
 ---
 
