@@ -772,14 +772,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Teste `terraform test`: `project_id` vazio ou inválido falha na validação (`expect_failures`) antes de qualquer chamada de API; valor válido passa
-- [ ] Nenhum valor real de projeto no arquivo
-- [ ] Gate check passes: Infra
-- [ ] Test count: ≥ 3 testes (`run` blocks) passam
+- [x] Teste `terraform test`: `project_id` vazio ou inválido falha na validação (`expect_failures`) antes de qualquer chamada de API; valor válido passa
+- [x] Nenhum valor real de projeto no arquivo
+- [x] Gate check passes: Infra
+- [x] Test count: ≥ 3 testes (`run` blocks) passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-bootstrap): adiciona variáveis de entrada validadas`
+**Status**: ✅ Concluída (8 `run` blocks passam). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `validate` com `Success!`, `terraform test` com `8 passed, 0 failed` (`terraform/bootstrap/tests/variables.tftest.hcl`, com `mock_provider "google"`, sem ADC). Cobertura: padrões e `bucket_name` customizado válidos; `project_id` vazio, com maiúscula, curto e com hífen final falham; `region` fora do Free Tier e `bucket_name` inválido falham. **Adição ao escopo (aprovada explicitamente pelo autor; segue o AD-003):** `region` só aceita `us-central1`, `us-east1` e `us-west1` (regiões do Free Tier do Cloud Storage). Spec: TFB-03 e TFB-05 `Implemented`.
 
 ---
 
