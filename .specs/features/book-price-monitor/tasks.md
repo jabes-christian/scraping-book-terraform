@@ -733,7 +733,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 #### T22: Esqueleto da stack bootstrap
 
-**What**: Criar `versions.tf` (`required_version >= 1.9`, provider `google ~> 7.0`) e `providers.tf` (`user_project_override = true`, `billing_project = var.project_id`) e gerar `.terraform.lock.hcl`.
+**What**: Criar `versions.tf` (`required_version >= 1.9`, provider `google ~> 7.0`) e `providers.tf` (`project = var.project_id`, `user_project_override = true`, `billing_project = var.project_id`), mais uma declaração mínima de `variable "project_id"` em `variables.tf` (o `validate` falha sem ela; a T23 completa o arquivo), e gerar `.terraform.lock.hcl`.
 **Where**: `terraform/bootstrap/`
 **Depends on**: T21
 **Reuses**: Seção Terraform do Design; Context7 para a versão do provider
@@ -746,19 +746,20 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `terraform -chdir=terraform/bootstrap init -backend=false` e `validate` passam; `.terraform.lock.hcl` gerado para versionar
-- [ ] `terraform fmt -check -recursive terraform` passa
-- [ ] Gate check passes: Infra
+- [x] `terraform -chdir=terraform/bootstrap init -backend=false` e `validate` passam; `.terraform.lock.hcl` gerado para versionar
+- [x] `terraform fmt -check -recursive terraform` passa
+- [x] Gate check passes: Infra
 
 **Tests**: none
 **Gate**: infra
 **Commit**: `feat(tf-bootstrap): adiciona provider e restrições de versão`
+**Status**: ✅ Concluída. Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `init -backend=false` instalou `hashicorp/google v7.46.2` e gerou o `.terraform.lock.hcl`, `validate` com `Success!`. O `providers.tf` também define `project = var.project_id` (o Design só cita `user_project_override`/`billing_project`) e `variables.tf` traz só a declaração mínima de `project_id`, pois o `validate` falha sem ela; a T23 completa o arquivo. Spec: TFB-01 e TFP-13 seguem `In progress` (completam nas tasks seguintes).
 
 ---
 
 #### T23: Variáveis do bootstrap
 
-**What**: Criar `variables.tf` com `project_id` (obrigatória, validação de não vazio e formato), `region` (`us-central1`), `bucket_name` (opcional), `force_destroy` (`false`).
+**What**: Completar `variables.tf` (a T22 já declara `project_id` sem validação, exigido pelo `providers.tf`) com `project_id` (obrigatória, validação de não vazio e formato), `region` (`us-central1`), `bucket_name` (opcional), `force_destroy` (`false`).
 **Where**: `terraform/bootstrap/variables.tf`
 **Depends on**: T22
 **Reuses**: Design (tabela do bootstrap)
