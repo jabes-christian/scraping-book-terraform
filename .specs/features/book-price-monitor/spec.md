@@ -295,7 +295,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | LOC-05 | P1: Ambiente local Docker Compose | Tasks | T14, T15, T48 | In progress (T14, T15) |
 | LOC-06 | P1: Ambiente local Docker Compose | Tasks | T11, T21 | Implemented |
 | TFB-01 | P1: Bootstrap do remote state | Tasks | T22, T24, T26 | In progress |
-| TFB-02 | P1: Bootstrap do remote state | Tasks | T24, T26 | Planned |
+| TFB-02 | P1: Bootstrap do remote state | Tasks | T24, T26 | In progress |
 | TFB-03 | P1: Bootstrap do remote state | Tasks | T23 | Implemented |
 | TFB-04 | P1: Bootstrap do remote state | Tasks | T25, T26 | Planned |
 | TFB-05 | P1: Bootstrap do remote state | Tasks | T23 | Implemented |

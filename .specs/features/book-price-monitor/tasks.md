@@ -799,14 +799,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `terraform test` (plan com `mock_provider`) afirma: local `US-CENTRAL1`, versionamento ligado, `uniform_bucket_level_access` true, prevenção de acesso público `enforced`, `disable_on_destroy` false, `force_destroy` false por padrão e nome derivado do `project_id`
-- [ ] O plano contém apenas `google_project_service` e `google_storage_bucket`
-- [ ] Gate check passes: Infra
-- [ ] Test count: ≥ 5 asserções em `run` blocks passam
+- [x] `terraform test` (plan com `mock_provider`) afirma: local `US-CENTRAL1`, versionamento ligado, `uniform_bucket_level_access` true, prevenção de acesso público `enforced`, `disable_on_destroy` false, `force_destroy` false por padrão e nome derivado do `project_id`
+- [x] O plano contém apenas `google_project_service` e `google_storage_bucket`
+- [x] Gate check passes: Infra
+- [x] Test count: ≥ 5 asserções em `run` blocks passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-bootstrap): adiciona bucket versionado do tfstate`
+**Status**: ✅ Concluída (6 `run` blocks novos, 13 asserções; 14 `run` blocks no total passam). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `validate` com `Success!`, `terraform test` com `14 passed, 0 failed`. Além do `terraform test` (`terraform/bootstrap/tests/main.tftest.hcl`, `mock_provider "google"`), `tests/infra/test_bootstrap_resources.py` (pytest, marker `infra`) garante estaticamente que o bootstrap declara só `google_project_service.storage` e `google_storage_bucket.tfstate`, pois o `terraform test` não enumera os recursos do plano; a confirmação no plano real fica para a T26. **Causa do ajuste:** a primeira execução falhou porque `action` e `condition` de `lifecycle_rule` são sets (não aceitam `[0]`); o teste passou a usar `one(one(lifecycle_rule).action)`. Spec: TFB-01 e TFB-02 seguem `In progress` (validação real na T26); TFP-13 segue `In progress`.
 
 ---
 
