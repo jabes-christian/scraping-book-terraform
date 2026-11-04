@@ -16,6 +16,8 @@ Regras do projeto que valem em toda a execução (do autor):
 - **Merge de fase:** pelo `gh` ou pelo site do GitHub (Pull Request com merge commit, sem squash).
 - **Python:** Windows, Python 3.13; sempre `.venv\Scripts\python.exe` e `.venv\Scripts\python.exe -m pip`. Nunca instalar no Python global.
 - **Custo:** `terraform apply`, `destroy` ou qualquer ação com custo ou efeito externo só com OK explícito do autor (tasks marcadas **[OPERACIONAL]**).
+- **Terraform e gcloud executados pelo autor (AD-006):** o objetivo é aprender Terraform e GCP, então o agente NÃO executa nenhum comando `terraform` (`init`, `fmt`, `validate`, `test`, `plan`, `apply`, `destroy`, `output`, `import`, `state` etc.) nem `gcloud`. O agente escreve os arquivos (`.tf`, `.tftest.hcl`, templates, docs) e, em cada task, entrega: (1) os comandos exatos, com o diretório de execução (PowerShell, a partir da raiz do projeto); (2) uma explicação curta de cada comando e da saída esperada; (3) os conceitos de Terraform/GCP usados na task. O autor roda, cola a saída e o agente a analisa (em caso de erro, explica a causa e propõe a correção). A task só é marcada como concluída depois da saída do autor confirmar o gate. `pytest` e `ruff` continuam com o agente. Se a saída mostrar `x509: certificate signed by unknown authority` (inspeção TLS da rede corporativa), o agente explica a causa e as opções antes de propor qualquer contorno.
+- **Pull Requests:** sempre pelo site do GitHub (o agente não sugere `gh`).
 - **Segurança:** nenhum segredo hardcoded; nenhuma chave de service account versionada.
 - **Context7:** consultar para Selenium, psycopg 3, provider Google e `terraform test` sempre que a sintaxe não estiver no Design.
 
@@ -42,7 +44,7 @@ Regras do projeto que valem em toda a execução (do autor):
 | `startup.sh.tftpl` | infra (renderização + `bash -n` + asserções estáticas) | Idempotência estática: uma entrada de cron, `.env` só se ausente, sem senha no texto, `flock`, logrotate | `tests/infra/test_*.py` (marker `infra`) + `*.tftest.hcl` | Infra |
 | Higiene do repositório | unit | `git ls-files` sem `.env`, `*.tfvars`, `backend.hcl`, chaves JSON (OPS-05) | `tests/unit/test_repo_hygiene.py` | Quick |
 | Docs (`docs/`, READMEs) | none - link check no T50 | Caminhos relativos resolvem | `docs/*.md` | manual / T50 |
-| Tarefas operacionais (apply, VM, billing, destroy) | none - evidência manual | Evidência colada no relatório da task (saída de `gcloud`/`terraform`) | - | Live |
+| Tarefas operacionais (apply, VM, billing, destroy) | none - evidência manual | Evidência: saída de `gcloud`/`terraform` executados pelo autor (AD-006) e colada no chat; o agente analisa e registra no relatório da task | - | Live |
 
 ## Gate Check Commands
 
@@ -53,11 +55,11 @@ Regras do projeto que valem em toda a execução (do autor):
 | Quick | Tasks com apenas unit tests | `.venv\Scripts\python.exe -m pytest -m "not integration and not docker and not infra and not e2e"` + `.venv\Scripts\python.exe -m ruff check .` |
 | Full | Tasks com integration (exige Docker Desktop ligado) | Quick + `.venv\Scripts\python.exe -m pytest -m integration`. O `conftest.py` sobe e remove sozinho um projeto Compose isolado (`bookmonitor_it`, volume próprio, `127.0.0.1` em porta livre, credenciais de teste): não usa o `.env`, o `docker-compose.override.yml` nem o volume de desenvolvimento, e não exige `docker compose up` prévio |
 | Docker | Tasks de Dockerfile/Compose | `docker compose build` + `.venv\Scripts\python.exe -m pytest -m docker` |
-| Infra | Tasks de Terraform e startup script | `terraform fmt -check -recursive terraform` + por stack/módulo alterado: `terraform -chdir=<dir> init -backend=false`, `terraform -chdir=<dir> validate`, `terraform -chdir=<dir> test` + `.venv\Scripts\python.exe -m pytest -m infra` (quando houver) |
+| Infra | Tasks de Terraform e startup script | **Executado pelo autor (AD-006)**, com o agente fornecendo os comandos, a explicação e a análise da saída: `terraform fmt -check -recursive terraform` + por stack/módulo alterado: `terraform -chdir=<dir> init -backend=false`, `terraform -chdir=<dir> validate`, `terraform -chdir=<dir> test`. O `pytest -m infra` (quando houver) continua com o agente: `.venv\Scripts\python.exe -m pytest -m infra`. O gate só passa com a saída do autor confirmando |
 | E2E | T21 e antes do Verifier | `.venv\Scripts\python.exe -m pytest -m e2e -s` (site real; ~3-4 min; projeto Compose isolado `bookmonitor_e2e`, credenciais do `.env`). Em rede com inspeção TLS: `E2E_BASE_URL=http://books.toscrape.com/` (repassado ao robô como `BASE_URL`) |
-| Build | Fim de cada fase | Quick + os níveis aplicáveis à fase (Full / Docker / Infra) + `terraform fmt -check -recursive terraform` |
+| Build | Fim de cada fase | Quick + os níveis aplicáveis à fase (Full / Docker / Infra) + `terraform fmt -check -recursive terraform` (os comandos `terraform` são executados pelo autor, AD-006) |
 
-Pré-requisitos do ambiente: Docker Desktop ligado nas fases 3 e 4 (hoje o daemon está desligado); `.env` copiado de `.env.example` (gitignored; usado pelo e2e e pelo Compose de desenvolvimento); `docker-compose.override.yml` copiado do `.example` (gitignored) só para acessar o Postgres de desenvolvimento pelo host (os testes de integração não dependem dele); ADC ativo para tasks de Terraform com chamada real.
+Pré-requisitos do ambiente: Docker Desktop ligado nas fases 3 e 4 (hoje o daemon está desligado); `.env` copiado de `.env.example` (gitignored; usado pelo e2e e pelo Compose de desenvolvimento); `docker-compose.override.yml` copiado do `.example` (gitignored) só para acessar o Postgres de desenvolvimento pelo host (os testes de integração não dependem dele); ADC ativo para tasks de Terraform com chamada real (quota project `book-price-monitor-jc`); Terraform e gcloud instalados na máquina do autor, que executa os comandos (AD-006).
 
 ---
 
@@ -731,7 +733,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 #### T22: Esqueleto da stack bootstrap
 
-**What**: Criar `versions.tf` (`required_version >= 1.9`, provider `google ~> 7.0`) e `providers.tf` (`user_project_override = true`, `billing_project = var.project_id`) e gerar `.terraform.lock.hcl`.
+**What**: Criar `versions.tf` (`required_version >= 1.9`, provider `google ~> 7.0`) e `providers.tf` (`project = var.project_id`, `user_project_override = true`, `billing_project = var.project_id`), mais uma declaração mínima de `variable "project_id"` em `variables.tf` (o `validate` falha sem ela; a T23 completa o arquivo), e gerar `.terraform.lock.hcl`.
 **Where**: `terraform/bootstrap/`
 **Depends on**: T21
 **Reuses**: Seção Terraform do Design; Context7 para a versão do provider
@@ -744,19 +746,20 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `terraform -chdir=terraform/bootstrap init -backend=false` e `validate` passam; `.terraform.lock.hcl` gerado para versionar
-- [ ] `terraform fmt -check -recursive terraform` passa
-- [ ] Gate check passes: Infra
+- [x] `terraform -chdir=terraform/bootstrap init -backend=false` e `validate` passam; `.terraform.lock.hcl` gerado para versionar
+- [x] `terraform fmt -check -recursive terraform` passa
+- [x] Gate check passes: Infra
 
 **Tests**: none
 **Gate**: infra
 **Commit**: `feat(tf-bootstrap): adiciona provider e restrições de versão`
+**Status**: ✅ Concluída. Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `init -backend=false` instalou `hashicorp/google v7.46.2` e gerou o `.terraform.lock.hcl`, `validate` com `Success!`. O `providers.tf` também define `project = var.project_id` (o Design só cita `user_project_override`/`billing_project`) e `variables.tf` traz só a declaração mínima de `project_id`, pois o `validate` falha sem ela; a T23 completa o arquivo. Spec: TFB-01 e TFP-13 seguem `In progress` (completam nas tasks seguintes).
 
 ---
 
 #### T23: Variáveis do bootstrap
 
-**What**: Criar `variables.tf` com `project_id` (obrigatória, validação de não vazio e formato), `region` (`us-central1`), `bucket_name` (opcional), `force_destroy` (`false`).
+**What**: Completar `variables.tf` (a T22 já declara `project_id` sem validação, exigido pelo `providers.tf`) com `project_id` (obrigatória, validação de não vazio e formato), `region` (`us-central1`), `bucket_name` (opcional), `force_destroy` (`false`).
 **Where**: `terraform/bootstrap/variables.tf`
 **Depends on**: T22
 **Reuses**: Design (tabela do bootstrap)
@@ -769,14 +772,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Teste `terraform test`: `project_id` vazio ou inválido falha na validação (`expect_failures`) antes de qualquer chamada de API; valor válido passa
-- [ ] Nenhum valor real de projeto no arquivo
-- [ ] Gate check passes: Infra
-- [ ] Test count: ≥ 3 testes (`run` blocks) passam
+- [x] Teste `terraform test`: `project_id` vazio ou inválido falha na validação (`expect_failures`) antes de qualquer chamada de API; valor válido passa
+- [x] Nenhum valor real de projeto no arquivo
+- [x] Gate check passes: Infra
+- [x] Test count: ≥ 3 testes (`run` blocks) passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-bootstrap): adiciona variáveis de entrada validadas`
+**Status**: ✅ Concluída (8 `run` blocks passam). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `validate` com `Success!`, `terraform test` com `8 passed, 0 failed` (`terraform/bootstrap/tests/variables.tftest.hcl`, com `mock_provider "google"`, sem ADC). Cobertura: padrões e `bucket_name` customizado válidos; `project_id` vazio, com maiúscula, curto e com hífen final falham; `region` fora do Free Tier e `bucket_name` inválido falham. **Adição ao escopo (aprovada explicitamente pelo autor; segue o AD-003):** `region` só aceita `us-central1`, `us-east1` e `us-west1` (regiões do Free Tier do Cloud Storage). Spec: TFB-03 e TFB-05 `Implemented`.
 
 ---
 
@@ -795,14 +799,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `terraform test` (plan com `mock_provider`) afirma: local `US-CENTRAL1`, versionamento ligado, `uniform_bucket_level_access` true, prevenção de acesso público `enforced`, `disable_on_destroy` false, `force_destroy` false por padrão e nome derivado do `project_id`
-- [ ] O plano contém apenas `google_project_service` e `google_storage_bucket`
-- [ ] Gate check passes: Infra
-- [ ] Test count: ≥ 5 asserções em `run` blocks passam
+- [x] `terraform test` (plan com `mock_provider`) afirma: local `US-CENTRAL1`, versionamento ligado, `uniform_bucket_level_access` true, prevenção de acesso público `enforced`, `disable_on_destroy` false, `force_destroy` false por padrão e nome derivado do `project_id`
+- [x] O plano contém apenas `google_project_service` e `google_storage_bucket`
+- [x] Gate check passes: Infra
+- [x] Test count: ≥ 5 asserções em `run` blocks passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-bootstrap): adiciona bucket versionado do tfstate`
+**Status**: ✅ Concluída (6 `run` blocks novos, 13 asserções; 14 `run` blocks no total passam). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `validate` com `Success!`, `terraform test` com `14 passed, 0 failed`. Além do `terraform test` (`terraform/bootstrap/tests/main.tftest.hcl`, `mock_provider "google"`), `tests/infra/test_bootstrap_resources.py` (pytest, marker `infra`) garante estaticamente que o bootstrap declara só `google_project_service.storage` e `google_storage_bucket.tfstate`, pois o `terraform test` não enumera os recursos do plano; a confirmação no plano real fica para a T26. **Causa do ajuste:** a primeira execução falhou porque `action` e `condition` de `lifecycle_rule` são sets (não aceitam `[0]`); o teste passou a usar `one(one(lifecycle_rule).action)`. Spec: TFB-01 e TFB-02 seguem `In progress` (validação real na T26); TFP-13 segue `In progress`.
 
 ---
 
@@ -821,13 +826,14 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `terraform test` afirma que `bucket_name` é o nome do bucket e que o snippet contém `bucket = "<nome>"` e `prefix`
-- [ ] Gate check passes: Infra
-- [ ] Test count: ≥ 2 asserções passam
+- [x] `terraform test` afirma que `bucket_name` é o nome do bucket e que o snippet contém `bucket = "<nome>"` e `prefix`
+- [x] Gate check passes: Infra
+- [x] Test count: ≥ 2 asserções passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-bootstrap): expõe nome do bucket e trecho do backend`
+**Status**: ✅ Concluída (3 `run` blocks novos, 5 asserções; 17 `run` blocks no total passam). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `validate` com `Success!`, `terraform test` com `17 passed, 0 failed` (`terraform/bootstrap/tests/outputs.tftest.hcl`). O snippet traz `bucket = "<nome>"` e `prefix = "envs/prod"` (o mesmo valor que o `backend.tf` de `envs/prod` fixa; valores iguais não conflitam na configuração parcial). Spec: TFB-04 segue `In progress` (validação real na T26).
 
 ---
 
@@ -835,6 +841,8 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **What**: Com `terraform.tfvars` local (gitignored) e ADC: `terraform plan` (somente leitura) mostrado ao autor; **somente com OK explícito**, `terraform apply`; verificar o bucket com `gcloud storage buckets describe`.
 **Where**: `terraform/bootstrap/` (execução; nenhum arquivo versionado novo)
+**Nota (Context7, provider 7.x; relevante para a T56):** `deletion_policy` do `google_project_service` (padrão `"DELETE"`; aparece no plano da T26) controla se o Terraform pode remover o recurso: `"DELETE"` permite, `"PREVENT"` faz o `destroy`/`apply` falhar, `"ABANDON"` tira do state sem chamar a API. Na rotina de exclusão do provider, a política é checada primeiro e, em seguida, `disable_on_destroy = false` faz o `destroy` apenas remover o recurso do state, sem desabilitar a API (a doc diz: com `false`, o serviço continua habilitado mesmo com `deletion_policy = "DELETE"`). Conclusão: no `destroy` do bootstrap, `storage.googleapis.com` permanece habilitada e o recurso some só do state; é o comportamento desejado (AD-003). O `google_storage_bucket` também tem `deletion_policy = "DELETE"` no plano, mas com `force_destroy = false` o `destroy` falha se o bucket tiver objetos (o state de `envs/prod` e suas versões): na T56, aplicar antes `force_destroy = true` (variável) e só então destruir, como prevê `docs/destroy.md`.
+**Execução**: pelo autor (AD-006). O agente orienta a criação do `terraform.tfvars` local (`project_id = "book-price-monitor-jc"`), fornece os comandos de `plan`/`apply`/`output` e `gcloud`, explica cada um e analisa a saída colada; o `apply` só após a revisão do plano pelo autor.
 **Depends on**: T25
 **Reuses**: ADC e `billing_project` configurados (PRD §11)
 **Requirement**: TFB-01, TFB-02, TFB-04 (validação real)
@@ -846,14 +854,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Plano mostrado e aprovado pelo autor; plano contém exatamente 2 recursos (API Storage e bucket)
-- [ ] Após o apply: bucket em `US-CENTRAL1`, versionamento habilitado, acesso público bloqueado (saída do `gcloud` registrada); `terraform output` entrega o nome do bucket
-- [ ] `backend.hcl` real criado localmente (gitignored) a partir do snippet
-- [ ] Conclusão marcada em `tasks.md` e commit próprio contendo somente esse arquivo (mensagem abaixo)
+- [x] Plano mostrado e aprovado pelo autor; plano contém exatamente 2 recursos (API Storage e bucket)
+- [x] Após o apply: bucket em `US-CENTRAL1`, versionamento habilitado, acesso público bloqueado (saída do `gcloud` registrada); `terraform output` entrega o nome do bucket
+- [x] `backend.hcl` real criado localmente (gitignored) a partir do snippet
+- [x] Conclusão marcada em `tasks.md` e commit próprio contendo somente esse arquivo (mensagem abaixo)
 
 **Tests**: none
 **Gate**: infra
 **Commit**: `docs(tasks): registra apply do bootstrap (T26)` (só `tasks.md`, na própria branch da fase, antes do merge)
+**Status**: ✅ Concluída (2026-11-03/04, executada pelo autor, AD-006). **Plano** (`terraform plan "-out=bootstrap.tfplan"`; as aspas são necessárias no PowerShell 5.1): `Plan: 2 to add, 0 to change, 0 to destroy` (`google_project_service.storage` e `google_storage_bucket.tfstate`), revisado e aprovado pelo autor. **Apply** (`terraform apply "bootstrap.tfplan"`): `Apply complete! Resources: 2 added, 0 changed, 0 destroyed` (API em 4 s, bucket em 3 s); `state list` mostra os 2 recursos; `output -raw bucket_name` = `book-price-monitor-jc-tfstate`. **Evidência do `gcloud storage buckets describe`:** `location: US-CENTRAL1` (`location_type: region`), `default_storage_class: STANDARD`, `versioning_enabled: true`, `uniform_bucket_level_access: true`, `public_access_prevention: enforced`, `lifecycle_config` = `Delete` com `isLive: false` e `numNewerVersions: 5`, `soft_delete_policy.retentionDurationSeconds: '604800'` (7 dias, padrão do provider 7.x). `gcloud services list --enabled` lista `storage.googleapis.com`. **`backend.hcl`** criado em `terraform/envs/prod/backend.hcl` (`Set-Content -Encoding ascii`, para evitar UTF-16 do `>` do PowerShell 5.1), ignorado pelo git (`.gitignore:34`). O `terraform.tfstate` do bootstrap é local (`terraform/bootstrap/`, ignorado) e não pode ser apagado: o `destroy` da T56 depende dele. Gate de fase (Build): Quick (109 unit, ruff) + pytest `-m infra` (1) + Infra (`fmt -check`, `validate`, `terraform test` 17 passam, executados pelo autor). Spec: TFB-01, TFB-02 e TFB-04 `Implemented`; TFP-13 segue `In progress` (T27, T37, T39).
 
 ---
 
@@ -1250,6 +1259,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **What**: Com `terraform.tfvars` e `backend.hcl` locais e ADC: `terraform init -backend-config=backend.hcl` e `terraform plan` (somente leitura; senha por `TF_VAR_db_password`); mostrar o plano ao autor. **Não aplicar.**
 **Where**: `terraform/envs/prod/` (execução; nenhum arquivo versionado novo)
+**Execução**: pelo autor (AD-006). O agente fornece os comandos (`init -backend-config`, `plan`), explica a saída esperada e analisa o plano colado; não há `apply`.
 **Depends on**: T41
 **Reuses**: Bucket do T26
 **Requirement**: TFP-01, TFP-02, TFP-08 (validação real)
@@ -1475,6 +1485,7 @@ Tarefas operacionais: todas exigem OK explícito do autor antes de agir. Correç
 
 **What**: Após revisão final do plano e **OK explícito do autor**, `terraform apply` em `envs/prod`; conferir recursos com `gcloud`.
 **Where**: `terraform/envs/prod/` (execução)
+**Execução**: pelo autor (AD-006). O agente fornece os comandos de `apply` e `gcloud`, explica a saída esperada e analisa o resultado colado.
 **Depends on**: T50
 **Reuses**: Runbooks `docs/gcp-setup.md`
 **Requirement**: TFP-01, TFP-03..07, TFP-09, TFP-11
@@ -1500,6 +1511,7 @@ Tarefas operacionais: todas exigem OK explícito do autor antes de agir. Correç
 
 **What**: Via `gcloud compute ssh`: inspecionar o log do startup, Docker, swap, `.env` (permissão 600), `postgres` saudável, entrada de cron única e logrotate.
 **Where**: VM (leitura)
+**Execução**: pelo autor (AD-006). O agente fornece os comandos (`gcloud compute ssh` e as inspeções na VM), explica a saída esperada e analisa o resultado colado.
 **Depends on**: T51
 **Reuses**: Startup script (T32-T34)
 **Requirement**: VM-01, VM-02, VM-03, VM-06, VM-07
@@ -1524,6 +1536,7 @@ Tarefas operacionais: todas exigem OK explícito do autor antes de agir. Correç
 
 **What**: Na VM, `docker compose run --rm robo` completo, monitorando memória (`docker stats`, `free -m`) e conferindo `dmesg` por OOM; ajustar `mem_limit`/swap se necessário.
 **Where**: VM (execução)
+**Execução**: pelo autor (AD-006). O agente fornece os comandos (`gcloud compute ssh`, `docker compose run --rm robo`, `docker stats`, `free -m`, `dmesg`), explica a saída esperada e analisa o resultado colado.
 **Depends on**: T52
 **Reuses**: Orçamento de memória do Design
 **Requirement**: VM-08, SCR-09 (em produção)
@@ -1548,6 +1561,7 @@ Tarefas operacionais: todas exigem OK explícito do autor antes de agir. Correç
 
 **What**: Confirmar a execução do cron das 06:00 UTC no dia seguinte (nova linha em `executions` criada pelo cron); reiniciar a VM e conferir `postgres` de volta, dados preservados e uma só entrada de cron; testar `git pull` no boot (inclusive com GitHub inacessível simulado, se viável).
 **Where**: VM (execução)
+**Execução**: pelo autor (AD-006). O agente fornece os comandos (`gcloud compute ssh/instances reset`, consultas ao banco, `git`), explica a saída esperada e analisa o resultado colado.
 **Depends on**: T53
 **Reuses**: `docs/update-code.md`
 **Requirement**: VM-03, VM-04, VM-05, VM-06, VM-09, VM-10, DB-08
@@ -1573,6 +1587,7 @@ Tarefas operacionais: todas exigem OK explícito do autor antes de agir. Correç
 
 **What**: Conferir no Billing Report, após alguns dias, se o IPv4 externo é cobrado e se os e-mails de budget chegam; registrar o resultado.
 **Where**: `docs/cost-and-billing.md` (modify)
+**Execução**: pelo autor (AD-006) nas consultas de `gcloud` e no Billing Report do console; o agente fornece os comandos, explica o que observar, analisa o resultado colado e registra no documento.
 **Depends on**: T54
 **Reuses**: `docs/cost-and-billing.md` (T45)
 **Requirement**: OPS-02, TFP-09 (validação real)
@@ -1597,6 +1612,7 @@ Tarefas operacionais: todas exigem OK explícito do autor antes de agir. Correç
 
 **What**: Com **OK explícito do autor**, executar o runbook `docs/destroy.md`: `terraform destroy` de `envs/prod` e, por último, do bootstrap; confirmar que nada que gera custo permanece. Reaplicar depois é decisão do autor.
 **Where**: `terraform/envs/prod/` (execução)
+**Execução**: pelo autor (AD-006). O agente fornece os comandos de `destroy` e `gcloud` (na ordem do runbook), explica a saída esperada e analisa o resultado colado.
 **Depends on**: T55
 **Reuses**: `docs/destroy.md`
 **Requirement**: OPS-01 (validação real)
@@ -1623,7 +1639,7 @@ Tarefas operacionais: todas exigem OK explícito do autor antes de agir. Correç
 Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 7 → Phase 8 → Phase 9 → Phase 10
 ```
 
-Execution is strictly sequential - there is no intra-phase parallelism. Cada fase corresponde a uma branch criada da `main` após o merge da anterior. **Sem sub-agentes** (decisão do autor): toda a execução fica com o agente principal, task a task; não oferecer lotes de sub-agentes. O Verifier final do skill roda inline, como passada independente (`validate.md`), e não em sub-agente. As tasks **[OPERACIONAL]** (T26, T42, T51-T56) exigem OK explícito do autor antes de agir.
+Execution is strictly sequential - there is no intra-phase parallelism. Cada fase corresponde a uma branch criada da `main` após o merge da anterior. **Sem sub-agentes** (decisão do autor): toda a execução fica com o agente principal, task a task; não oferecer lotes de sub-agentes. O Verifier final do skill roda inline, como passada independente (`validate.md`), e não em sub-agente. As tasks **[OPERACIONAL]** (T26, T42, T51-T56) exigem OK explícito do autor antes de agir e, por AD-006, os comandos `terraform`/`gcloud` são sempre executados pelo autor (o agente fornece comandos, explicação e análise da saída).
 
 ---
 
