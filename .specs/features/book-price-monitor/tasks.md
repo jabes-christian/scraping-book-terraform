@@ -841,6 +841,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **What**: Com `terraform.tfvars` local (gitignored) e ADC: `terraform plan` (somente leitura) mostrado ao autor; **somente com OK explícito**, `terraform apply`; verificar o bucket com `gcloud storage buckets describe`.
 **Where**: `terraform/bootstrap/` (execução; nenhum arquivo versionado novo)
+**Nota (Context7, provider 7.x; relevante para a T56):** `deletion_policy` do `google_project_service` (padrão `"DELETE"`; aparece no plano da T26) controla se o Terraform pode remover o recurso: `"DELETE"` permite, `"PREVENT"` faz o `destroy`/`apply` falhar, `"ABANDON"` tira do state sem chamar a API. Na rotina de exclusão do provider, a política é checada primeiro e, em seguida, `disable_on_destroy = false` faz o `destroy` apenas remover o recurso do state, sem desabilitar a API (a doc diz: com `false`, o serviço continua habilitado mesmo com `deletion_policy = "DELETE"`). Conclusão: no `destroy` do bootstrap, `storage.googleapis.com` permanece habilitada e o recurso some só do state; é o comportamento desejado (AD-003). O `google_storage_bucket` também tem `deletion_policy = "DELETE"` no plano, mas com `force_destroy = false` o `destroy` falha se o bucket tiver objetos (o state de `envs/prod` e suas versões): na T56, aplicar antes `force_destroy = true` (variável) e só então destruir, como prevê `docs/destroy.md`.
 **Execução**: pelo autor (AD-006). O agente orienta a criação do `terraform.tfvars` local (`project_id = "book-price-monitor-jc"`), fornece os comandos de `plan`/`apply`/`output` e `gcloud`, explica cada um e analisa a saída colada; o `apply` só após a revisão do plano pelo autor.
 **Depends on**: T25
 **Reuses**: ADC e `billing_project` configurados (PRD §11)
@@ -853,14 +854,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Plano mostrado e aprovado pelo autor; plano contém exatamente 2 recursos (API Storage e bucket)
-- [ ] Após o apply: bucket em `US-CENTRAL1`, versionamento habilitado, acesso público bloqueado (saída do `gcloud` registrada); `terraform output` entrega o nome do bucket
-- [ ] `backend.hcl` real criado localmente (gitignored) a partir do snippet
-- [ ] Conclusão marcada em `tasks.md` e commit próprio contendo somente esse arquivo (mensagem abaixo)
+- [x] Plano mostrado e aprovado pelo autor; plano contém exatamente 2 recursos (API Storage e bucket)
+- [x] Após o apply: bucket em `US-CENTRAL1`, versionamento habilitado, acesso público bloqueado (saída do `gcloud` registrada); `terraform output` entrega o nome do bucket
+- [x] `backend.hcl` real criado localmente (gitignored) a partir do snippet
+- [x] Conclusão marcada em `tasks.md` e commit próprio contendo somente esse arquivo (mensagem abaixo)
 
 **Tests**: none
 **Gate**: infra
 **Commit**: `docs(tasks): registra apply do bootstrap (T26)` (só `tasks.md`, na própria branch da fase, antes do merge)
+**Status**: ✅ Concluída (2026-11-03/04, executada pelo autor, AD-006). **Plano** (`terraform plan "-out=bootstrap.tfplan"`; as aspas são necessárias no PowerShell 5.1): `Plan: 2 to add, 0 to change, 0 to destroy` (`google_project_service.storage` e `google_storage_bucket.tfstate`), revisado e aprovado pelo autor. **Apply** (`terraform apply "bootstrap.tfplan"`): `Apply complete! Resources: 2 added, 0 changed, 0 destroyed` (API em 4 s, bucket em 3 s); `state list` mostra os 2 recursos; `output -raw bucket_name` = `book-price-monitor-jc-tfstate`. **Evidência do `gcloud storage buckets describe`:** `location: US-CENTRAL1` (`location_type: region`), `default_storage_class: STANDARD`, `versioning_enabled: true`, `uniform_bucket_level_access: true`, `public_access_prevention: enforced`, `lifecycle_config` = `Delete` com `isLive: false` e `numNewerVersions: 5`, `soft_delete_policy.retentionDurationSeconds: '604800'` (7 dias, padrão do provider 7.x). `gcloud services list --enabled` lista `storage.googleapis.com`. **`backend.hcl`** criado em `terraform/envs/prod/backend.hcl` (`Set-Content -Encoding ascii`, para evitar UTF-16 do `>` do PowerShell 5.1), ignorado pelo git (`.gitignore:34`). O `terraform.tfstate` do bootstrap é local (`terraform/bootstrap/`, ignorado) e não pode ser apagado: o `destroy` da T56 depende dele. Gate de fase (Build): Quick (109 unit, ruff) + pytest `-m infra` (1) + Infra (`fmt -check`, `validate`, `terraform test` 17 passam, executados pelo autor). Spec: TFB-01, TFB-02 e TFB-04 `Implemented`; TFP-13 segue `In progress` (T27, T37, T39).
 
 ---
 
