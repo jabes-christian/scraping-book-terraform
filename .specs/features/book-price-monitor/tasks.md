@@ -826,13 +826,14 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `terraform test` afirma que `bucket_name` é o nome do bucket e que o snippet contém `bucket = "<nome>"` e `prefix`
-- [ ] Gate check passes: Infra
-- [ ] Test count: ≥ 2 asserções passam
+- [x] `terraform test` afirma que `bucket_name` é o nome do bucket e que o snippet contém `bucket = "<nome>"` e `prefix`
+- [x] Gate check passes: Infra
+- [x] Test count: ≥ 2 asserções passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-bootstrap): expõe nome do bucket e trecho do backend`
+**Status**: ✅ Concluída (3 `run` blocks novos, 5 asserções; 17 `run` blocks no total passam). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `validate` com `Success!`, `terraform test` com `17 passed, 0 failed` (`terraform/bootstrap/tests/outputs.tftest.hcl`). O snippet traz `bucket = "<nome>"` e `prefix = "envs/prod"` (o mesmo valor que o `backend.tf` de `envs/prod` fixa; valores iguais não conflitam na configuração parcial). Spec: TFB-04 segue `In progress` (validação real na T26).
 
 ---
 

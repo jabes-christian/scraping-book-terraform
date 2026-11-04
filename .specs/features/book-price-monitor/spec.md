@@ -297,7 +297,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | TFB-01 | P1: Bootstrap do remote state | Tasks | T22, T24, T26 | In progress |
 | TFB-02 | P1: Bootstrap do remote state | Tasks | T24, T26 | In progress |
 | TFB-03 | P1: Bootstrap do remote state | Tasks | T23 | Implemented |
-| TFB-04 | P1: Bootstrap do remote state | Tasks | T25, T26 | Planned |
+| TFB-04 | P1: Bootstrap do remote state | Tasks | T25, T26 | In progress |
 | TFB-05 | P1: Bootstrap do remote state | Tasks | T23 | Implemented |
 | TFP-01 | P1: Infraestrutura de produção | Tasks | T27, T39, T42, T51 | Planned |
 | TFP-02 | P1: Infraestrutura de produção | Tasks | T37, T41, T42 | Planned |
