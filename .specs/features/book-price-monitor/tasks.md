@@ -883,13 +883,14 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `terraform test`: uma instância por serviço informado, todas com `disable_on_destroy == false` e `disable_dependent_services == false`
-- [ ] Gate check passes: Infra
-- [ ] Test count: ≥ 3 asserções passam
+- [x] `terraform test`: uma instância por serviço informado, todas com `disable_on_destroy == false` e `disable_dependent_services == false`
+- [x] Gate check passes: Infra
+- [x] Test count: ≥ 3 asserções passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-modules): adiciona módulo apis`
+**Status**: ✅ Concluída (4 `run` blocks, 7 asserções). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `init -backend=false` (provider `google` v7.46.2, `.terraform.lock.hcl` gerado), `validate` com `Success!`, `terraform test` com `4 passed, 0 failed` (`terraform/modules/apis/tests/main.tftest.hcl`, `mock_provider "google"`). Cobertura: uma instância por serviço indexada pelo nome da API, `project` repassado, `disable_on_destroy` e `disable_dependent_services` falsos em todas, output `services` igual à entrada, caso de um único serviço. Spec: TFP-01 e TFP-12 `In progress` (módulos restantes e `envs/prod`); TFP-13 segue `In progress` (T37, T39).
 
 ---
 
