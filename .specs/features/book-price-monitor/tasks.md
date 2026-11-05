@@ -937,13 +937,14 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `terraform test`: o plano contém a SA e nenhum recurso `google_*_iam_*` nem `google_service_account_key`; output `email` presente
-- [ ] Gate check passes: Infra
-- [ ] Test count: ≥ 3 asserções passam
+- [x] `terraform test`: o plano contém a SA e nenhum recurso `google_*_iam_*` nem `google_service_account_key`; output `email` presente
+- [x] Gate check passes: Infra
+- [x] Test count: ≥ 3 asserções passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-modules): adiciona módulo identity com service account sem chave`
+**Status**: ✅ Concluída (3 `run` blocks, 4 asserções). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `init -backend=false` (provider `google` v7.46.2, `.terraform.lock.hcl` gerado), `validate` com `Success!`, `terraform test` com `3 passed, 0 failed` (`terraform/modules/identity/tests/main.tftest.hcl`, `mock_provider "google"`). `tests/infra/test_identity_resources.py` (pytest, marker `infra`, 2 testes `infra` no total) garante estaticamente que o módulo declara só `google_service_account.this`, sem `google_*_iam_*` nem `google_service_account_key` (o `terraform test` não enumera recursos do plano). **Causa do ajuste:** a primeira execução do `email_output` falhou com `Unknown condition value`, pois `override_resource` só vale no apply por padrão; o teste passou a usar `override_during = plan`. Spec: TFP-06 `In progress` (composição em `envs/prod`: T39, T51); TFP-12 segue `In progress`.
 
 ---
 
