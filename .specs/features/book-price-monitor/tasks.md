@@ -909,14 +909,16 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `terraform test`: `auto_create_subnetworks == false`, região `us-central1`, regra permite só `tcp` porta `22` com `source_ranges == [allowed_ssh_cidr]` e `target_tags` correta
-- [ ] `allowed_ssh_cidr = "0.0.0.0/0"` e CIDR malformado falham na validação (`expect_failures`)
-- [ ] Gate check passes: Infra
-- [ ] Test count: ≥ 5 asserções passam
+- [x] `terraform test`: `auto_create_subnetworks == false`, região `us-central1`, regra permite só `tcp` porta `22` com `source_ranges == [allowed_ssh_cidr]` e `target_tags` correta
+- [x] `allowed_ssh_cidr = "0.0.0.0/0"` e CIDR malformado falham na validação (`expect_failures`)
+- [x] **Adição ao escopo (aprovada explicitamente pelo autor):** terceira `validation` em `allowed_ssh_cidr` exige prefixo `/24` ou mais específico; `10.0.0.0/8` falha (`expect_failures`) e `/24` e `/32` passam
+- [x] Gate check passes: Infra
+- [x] Test count: ≥ 5 asserções passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-modules): adiciona módulo network com SSH restrito`
+**Status**: ✅ Concluída (9 `run` blocks: 11 asserções e 4 `expect_failures`). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `init -backend=false` (provider `google` v7.46.2, `.terraform.lock.hcl` gerado), `validate` com `Success!`, `terraform test` com `9 passed, 0 failed` (`terraform/modules/network/tests/main.tftest.hcl`, `mock_provider "google"`). Cobertura: VPC custom, sub-rede `10.10.0.0/24` em `us-central1`, firewall INGRESS só `tcp:22` com `source_ranges == [allowed_ssh_cidr]` e `target_tags == [book-monitor]`, output `network_tag`; `0.0.0.0/0`, `abc`, `/33` e `/8` falham na validação; `/24` e `/32` passam. **Adição ao escopo (aprovada explicitamente pelo autor):** terceira `validation` exige prefixo ≥ `/24`, com `try()` para valores sem `/`. A ausência de NAT, LB e IP estático não é verificada por `terraform test`; fica para o pytest estático de `envs/prod`. Spec: TFP-03, TFP-04 e TFP-05 `In progress` (composição em `envs/prod`: T38, T39, T51); TFP-12 segue `In progress`.
 
 ---
 
