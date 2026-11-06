@@ -883,13 +883,14 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `terraform test`: uma instância por serviço informado, todas com `disable_on_destroy == false` e `disable_dependent_services == false`
-- [ ] Gate check passes: Infra
-- [ ] Test count: ≥ 3 asserções passam
+- [x] `terraform test`: uma instância por serviço informado, todas com `disable_on_destroy == false` e `disable_dependent_services == false`
+- [x] Gate check passes: Infra
+- [x] Test count: ≥ 3 asserções passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-modules): adiciona módulo apis`
+**Status**: ✅ Concluída (4 `run` blocks, 7 asserções). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `init -backend=false` (provider `google` v7.46.2, `.terraform.lock.hcl` gerado), `validate` com `Success!`, `terraform test` com `4 passed, 0 failed` (`terraform/modules/apis/tests/main.tftest.hcl`, `mock_provider "google"`). Cobertura: uma instância por serviço indexada pelo nome da API, `project` repassado, `disable_on_destroy` e `disable_dependent_services` falsos em todas, output `services` igual à entrada, caso de um único serviço. Spec: TFP-01 e TFP-12 `In progress` (módulos restantes e `envs/prod`); TFP-13 segue `In progress` (T37, T39).
 
 ---
 
@@ -908,14 +909,16 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `terraform test`: `auto_create_subnetworks == false`, região `us-central1`, regra permite só `tcp` porta `22` com `source_ranges == [allowed_ssh_cidr]` e `target_tags` correta
-- [ ] `allowed_ssh_cidr = "0.0.0.0/0"` e CIDR malformado falham na validação (`expect_failures`)
-- [ ] Gate check passes: Infra
-- [ ] Test count: ≥ 5 asserções passam
+- [x] `terraform test`: `auto_create_subnetworks == false`, região `us-central1`, regra permite só `tcp` porta `22` com `source_ranges == [allowed_ssh_cidr]` e `target_tags` correta
+- [x] `allowed_ssh_cidr = "0.0.0.0/0"` e CIDR malformado falham na validação (`expect_failures`)
+- [x] **Adição ao escopo (aprovada explicitamente pelo autor):** terceira `validation` em `allowed_ssh_cidr` exige prefixo `/24` ou mais específico; `10.0.0.0/8` falha (`expect_failures`) e `/24` e `/32` passam
+- [x] Gate check passes: Infra
+- [x] Test count: ≥ 5 asserções passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-modules): adiciona módulo network com SSH restrito`
+**Status**: ✅ Concluída (9 `run` blocks: 11 asserções e 4 `expect_failures`). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `init -backend=false` (provider `google` v7.46.2, `.terraform.lock.hcl` gerado), `validate` com `Success!`, `terraform test` com `9 passed, 0 failed` (`terraform/modules/network/tests/main.tftest.hcl`, `mock_provider "google"`). Cobertura: VPC custom, sub-rede `10.10.0.0/24` em `us-central1`, firewall INGRESS só `tcp:22` com `source_ranges == [allowed_ssh_cidr]` e `target_tags == [book-monitor]`, output `network_tag`; `0.0.0.0/0`, `abc`, `/33` e `/8` falham na validação; `/24` e `/32` passam. **Adição ao escopo (aprovada explicitamente pelo autor):** terceira `validation` exige prefixo ≥ `/24`, com `try()` para valores sem `/`. A ausência de NAT, LB e IP estático não é verificada por `terraform test`; fica para o pytest estático de `envs/prod`. Spec: TFP-03, TFP-04 e TFP-05 `In progress` (composição em `envs/prod`: T38, T39, T51); TFP-12 segue `In progress`.
 
 ---
 
@@ -934,13 +937,14 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `terraform test`: o plano contém a SA e nenhum recurso `google_*_iam_*` nem `google_service_account_key`; output `email` presente
-- [ ] Gate check passes: Infra
-- [ ] Test count: ≥ 3 asserções passam
+- [x] `terraform test`: o plano contém a SA e nenhum recurso `google_*_iam_*` nem `google_service_account_key`; output `email` presente
+- [x] Gate check passes: Infra
+- [x] Test count: ≥ 3 asserções passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-modules): adiciona módulo identity com service account sem chave`
+**Status**: ✅ Concluída (3 `run` blocks, 4 asserções). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `init -backend=false` (provider `google` v7.46.2, `.terraform.lock.hcl` gerado), `validate` com `Success!`, `terraform test` com `3 passed, 0 failed` (`terraform/modules/identity/tests/main.tftest.hcl`, `mock_provider "google"`). `tests/infra/test_identity_resources.py` (pytest, marker `infra`, 2 testes `infra` no total) garante estaticamente que o módulo declara só `google_service_account.this`, sem `google_*_iam_*` nem `google_service_account_key` (o `terraform test` não enumera recursos do plano). **Causa do ajuste:** a primeira execução do `email_output` falhou com `Unknown condition value`, pois `override_resource` só vale no apply por padrão; o teste passou a usar `override_during = plan`. Spec: TFP-06 `In progress` (composição em `envs/prod`: T39, T51); TFP-12 segue `In progress`.
 
 ---
 
@@ -959,13 +963,14 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `terraform test`: `currency_code == "BRL"`, `units == "5"`, exatamente 3 thresholds (0.5, 0.9, 1.0), filtro por `projects/<número>`, ausência de `all_updates_rule` e de qualquer recurso Pub/Sub/Monitoring
-- [ ] Gate check passes: Infra
-- [ ] Test count: ≥ 5 asserções passam
+- [x] `terraform test`: `currency_code == "BRL"`, `units == "5"`, exatamente 3 thresholds (0.5, 0.9, 1.0), filtro por `projects/<número>`, ausência de `all_updates_rule` e de qualquer recurso Pub/Sub/Monitoring
+- [x] Gate check passes: Infra
+- [x] Test count: ≥ 5 asserções passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-modules): adiciona módulo budget`
+**Status**: ✅ Concluída (6 `run` blocks, 11 asserções). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `init -backend=false` (provider `google` v7.46.2, `.terraform.lock.hcl` gerado), `validate` com `Success!`, `terraform test` com `6 passed, 0 failed` (`terraform/modules/budget/tests/main.tftest.hcl`, `mock_provider "google"`, `override_data` com `override_during = plan` para o número do projeto). `tests/infra/test_budget_resources.py` (pytest, marker `infra`) garante estaticamente que o módulo declara só `google_billing_budget.this` (sem Pub/Sub nem Monitoring) e que `all_updates_rule` não aparece no código. Spec: TFP-09 `In progress` (composição em `envs/prod` e confirmação real do e-mail: T39, T51, T55); TFP-12 segue `In progress`. **Gate Build da Fase 6** (Quick: 109 unit e ruff limpo; `pytest -m infra`: 4; Infra dos 4 módulos e `fmt -check` executados pelo autor, todos verdes): fase concluída.
 
 ---
 
