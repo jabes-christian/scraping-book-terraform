@@ -963,13 +963,14 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `terraform test`: `currency_code == "BRL"`, `units == "5"`, exatamente 3 thresholds (0.5, 0.9, 1.0), filtro por `projects/<número>`, ausência de `all_updates_rule` e de qualquer recurso Pub/Sub/Monitoring
-- [ ] Gate check passes: Infra
-- [ ] Test count: ≥ 5 asserções passam
+- [x] `terraform test`: `currency_code == "BRL"`, `units == "5"`, exatamente 3 thresholds (0.5, 0.9, 1.0), filtro por `projects/<número>`, ausência de `all_updates_rule` e de qualquer recurso Pub/Sub/Monitoring
+- [x] Gate check passes: Infra
+- [x] Test count: ≥ 5 asserções passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-modules): adiciona módulo budget`
+**Status**: ✅ Concluída (6 `run` blocks, 11 asserções). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `init -backend=false` (provider `google` v7.46.2, `.terraform.lock.hcl` gerado), `validate` com `Success!`, `terraform test` com `6 passed, 0 failed` (`terraform/modules/budget/tests/main.tftest.hcl`, `mock_provider "google"`, `override_data` com `override_during = plan` para o número do projeto). `tests/infra/test_budget_resources.py` (pytest, marker `infra`) garante estaticamente que o módulo declara só `google_billing_budget.this` (sem Pub/Sub nem Monitoring) e que `all_updates_rule` não aparece no código. Spec: TFP-09 `In progress` (composição em `envs/prod` e confirmação real do e-mail: T39, T51, T55); TFP-12 segue `In progress`. **Gate Build da Fase 6** (Quick: 109 unit e ruff limpo; `pytest -m infra`: 4; Infra dos 4 módulos e `fmt -check` executados pelo autor, todos verdes): fase concluída.
 
 ---
 
