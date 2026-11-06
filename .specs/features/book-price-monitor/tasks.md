@@ -992,14 +992,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `terraform test` com `expect_failures`: `machine_type = "e2-small"`, `boot_disk_size_gb = 31` e zona `europe-west1-b` falham; valores válidos passam
-- [ ] `db_password` marcada `sensitive`
-- [ ] Gate check passes: Infra
-- [ ] Test count: ≥ 5 `run` blocks passam
+- [x] `terraform test` com `expect_failures`: `machine_type = "e2-small"`, `boot_disk_size_gb = 31` e zona `europe-west1-b` falham; valores válidos passam
+- [x] `db_password` marcada `sensitive`
+- [x] Gate check passes: Infra
+- [x] Test count: ≥ 5 `run` blocks passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-modules): adiciona entradas do compute_vm com guardas do Free Tier`
+**Status**: ✅ Concluída (6 `run` blocks). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `init -backend=false` (provider `google` v7.46.2, `.terraform.lock.hcl` gerado), `validate` com `Success!`, `terraform test` com `6 passed, 0 failed` (`terraform/modules/compute_vm/tests/main.tftest.hcl`, `mock_provider "google"`). `tests/infra/test_compute_vm_variables.py` (pytest, marker `infra`; 6 passam no total) garante `db_password` com `sensitive = true` e sem `default`. Além das variáveis do Design, o módulo declara `machine_type` (padrão e fixo `e2-micro`, exigido pela guarda da task). O `ssh_command` (T36) usará `google_compute_instance.this.project`, sem variável `project_id`. Spec: TFP-07 e TFP-10 `In progress` (T35, T38, T39, T41, T51); TFP-12 segue `In progress`.
 
 ---
 
