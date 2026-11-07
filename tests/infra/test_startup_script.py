@@ -225,3 +225,53 @@ def test_password_is_read_before_any_write_to_env_file(script):
     read = _first_index(lines, "DB_PASSWORD_VALUE=$(curl")
     first_write = _first_index(lines, '> "$ENV_FILE"')
     assert read < first_write
+
+
+# --- Parte 3: cron e logrotate (VM-03, VM-04, VM-05, VM-07) ---
+
+CRON_LINE = (
+    "15 4 * * * root flock -n /var/lock/book-monitor.lock "
+    "docker compose -f /opt/book-monitor/docker-compose.yml run --rm -T robo "
+    ">> /var/log/book-monitor/run.log 2>&1"
+)
+
+
+def test_cron_file_is_overwritten_and_holds_exactly_one_entry(script):
+    lines = _code_lines(script)
+    writes = [line for line in lines if "/etc/cron.d/" in line and ">" in line]
+    assert writes == [
+        "cat > /etc/cron.d/book-monitor <<'CRON'",
+    ]
+    body = _block(lines, "cat > /etc/cron.d/book-monitor <<'CRON'", "CRON")
+    assert body == [CRON_LINE]
+    assert "chmod 644 /etc/cron.d/book-monitor" in lines
+
+
+def test_cron_entry_serializes_runs_with_flock_n_and_logs_to_file(script):
+    lines = _code_lines(script)
+    entries = [line for line in lines if " root " in line and line.startswith("15 4 * * * ")]
+    assert len(entries) == 1
+    assert "flock -n /var/lock/book-monitor.lock" in entries[0]
+    assert entries[0].endswith(">> /var/log/book-monitor/run.log 2>&1")
+    assert "mkdir -p /var/log/book-monitor" in lines
+
+
+def test_logrotate_keeps_seven_daily_compressed_copies(script):
+    lines = _code_lines(script)
+    body = _block(lines, "cat > /etc/logrotate.d/book-monitor <<'LOGROTATE'", "LOGROTATE")
+    assert body == [
+        "/var/log/book-monitor/*.log {",
+        "daily",
+        "rotate 7",
+        "compress",
+        "copytruncate",
+        "missingok",
+        "}",
+    ]
+
+
+def test_cron_and_logrotate_come_after_the_build(script):
+    lines = _code_lines(script)
+    up = _first_index(lines, "docker compose up -d --wait")
+    assert up < _first_index(lines, "cat > /etc/cron.d/book-monitor <<'CRON'")
+    assert up < _first_index(lines, "cat > /etc/logrotate.d/book-monitor <<'LOGROTATE'")

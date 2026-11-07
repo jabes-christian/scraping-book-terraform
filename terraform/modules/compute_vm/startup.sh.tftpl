@@ -91,3 +91,21 @@ cd "$APP_DIR"
 docker compose build
 docker image prune -f
 docker compose up -d --wait --wait-timeout 180 postgres
+
+# --- 7. Daily run via cron (file is overwritten on every boot: a single entry) -
+mkdir -p /var/log/book-monitor
+cat > /etc/cron.d/book-monitor <<'CRON'
+${cron_schedule} root flock -n /var/lock/book-monitor.lock docker compose -f /opt/book-monitor/docker-compose.yml run --rm -T robo >> /var/log/book-monitor/run.log 2>&1
+CRON
+chmod 644 /etc/cron.d/book-monitor
+
+# --- 8. Log rotation for the run log ------------------------------------------
+cat > /etc/logrotate.d/book-monitor <<'LOGROTATE'
+/var/log/book-monitor/*.log {
+    daily
+    rotate 7
+    compress
+    copytruncate
+    missingok
+}
+LOGROTATE

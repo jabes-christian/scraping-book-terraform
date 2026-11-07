@@ -242,3 +242,46 @@ run "startup_script_build_before_postgres_up" {
     error_message = "A ordem deve ser build, prune, up -d --wait postgres."
   }
 }
+
+# --- Startup script, parte 3 (VM-03, VM-04, VM-05, VM-07) ---
+
+run "startup_script_cron_line_uses_default_schedule_and_flock" {
+  command = plan
+
+  assert {
+    condition     = var.cron_schedule == "0 6 * * *"
+    error_message = "O padrão de cron_schedule deve ser 0 6 * * *."
+  }
+
+  assert {
+    condition     = strcontains(local.startup_script, "\n0 6 * * * root flock -n /var/lock/book-monitor.lock docker compose -f /opt/book-monitor/docker-compose.yml run --rm -T robo >> /var/log/book-monitor/run.log 2>&1\n")
+    error_message = "A linha de cron deve usar o agendamento padrão, flock -n e redirecionar para run.log."
+  }
+}
+
+run "startup_script_cron_file_is_overwritten_not_appended" {
+  command = plan
+
+  variables {
+    cron_schedule = "15 4 * * *"
+  }
+
+  assert {
+    condition     = strcontains(local.startup_script, "cat > /etc/cron.d/book-monitor <<'CRON'\n15 4 * * * root flock -n")
+    error_message = "O arquivo de cron deve ser sobrescrito (>) com a linha de cron_schedule logo no início."
+  }
+
+  assert {
+    condition     = !strcontains(local.startup_script, ">> /etc/cron.d/")
+    error_message = "Nada pode acrescentar (>>) ao /etc/cron.d."
+  }
+}
+
+run "startup_script_logrotate_policy" {
+  command = plan
+
+  assert {
+    condition     = strcontains(local.startup_script, "/var/log/book-monitor/*.log {\n    daily\n    rotate 7\n    compress\n    copytruncate\n    missingok\n}")
+    error_message = "O logrotate deve ter daily, rotate 7, compress, copytruncate e missingok."
+  }
+}

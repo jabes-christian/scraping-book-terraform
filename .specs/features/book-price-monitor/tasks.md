@@ -1073,14 +1073,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Renderizado (reexecutado pelo autor) passa em `bash -n`; exatamente uma linha de cron, escrita por sobrescrita; `flock -n` presente; `cron_schedule` padrão `0 6 * * *`
-- [ ] Logrotate contém `daily` e `rotate 7`
-- [ ] Gate check passes: Infra (renderização reexecutada; teste de renderização PASSANDO, `skip` = gate não cumprido)
-- [ ] Test count: ≥ 5 testes passam
+- [x] Renderizado (reexecutado pelo autor) passa em `bash -n`; exatamente uma linha de cron, escrita por sobrescrita; `flock -n` presente; `cron_schedule` padrão `0 6 * * *`
+- [x] Logrotate contém `daily` e `rotate 7`
+- [x] Gate check passes: Infra (renderização reexecutada; teste de renderização PASSANDO, `skip` = gate não cumprido)
+- [x] Test count: ≥ 5 testes passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-compute-vm): adiciona cron e rotação de logs ao startup script`
+**Status**: ✅ Concluída (3 `run` blocks novos; 19 no `terraform test`; 4 testes novos em `tests/infra/test_startup_script.py`, 26 no `pytest -m infra`, todos PASSANDO, 0 skip). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `validate` com `Success!`, `terraform test` com `19 passed, 0 failed`, renderização reexecutada (0 recursos; `.rendered-startup.json` regerado). `/etc/cron.d/book-monitor` sobrescrito com `cat >` (heredoc `'CRON'`, uma só linha, `chmod 644`), `flock -n /var/lock/book-monitor.lock`, saída em `/var/log/book-monitor/run.log`; `cron_schedule` padrão `0 6 * * *`. `/etc/logrotate.d/book-monitor` com `daily`, `rotate 7`, `compress`, `copytruncate`, `missingok`. Cron e logrotate vêm depois do `up -d --wait postgres`. Quick: 109 unit, ruff limpo. Spec: VM-03, VM-04, VM-05 e VM-07 `In progress` (T52, T54).
 
 ---
 
