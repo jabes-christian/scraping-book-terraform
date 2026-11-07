@@ -17,6 +17,7 @@ Regras do projeto que valem em toda a execução (do autor):
 - **Python:** Windows, Python 3.13; sempre `.venv\Scripts\python.exe` e `.venv\Scripts\python.exe -m pip`. Nunca instalar no Python global.
 - **Custo:** `terraform apply`, `destroy` ou qualquer ação com custo ou efeito externo só com OK explícito do autor (tasks marcadas **[OPERACIONAL]**).
 - **Terraform e gcloud executados pelo autor (AD-006):** o objetivo é aprender Terraform e GCP, então o agente NÃO executa nenhum comando `terraform` (`init`, `fmt`, `validate`, `test`, `plan`, `apply`, `destroy`, `output`, `import`, `state` etc.) nem `gcloud`. O agente escreve os arquivos (`.tf`, `.tftest.hcl`, templates, docs) e, em cada task, entrega: (1) os comandos exatos, com o diretório de execução (PowerShell, a partir da raiz do projeto); (2) uma explicação curta de cada comando e da saída esperada; (3) os conceitos de Terraform/GCP usados na task. O autor roda, cola a saída e o agente a analisa (em caso de erro, explica a causa e propõe a correção). A task só é marcada como concluída depois da saída do autor confirmar o gate. `pytest` e `ruff` continuam com o agente. Se a saída mostrar `x509: certificate signed by unknown authority` (inspeção TLS da rede corporativa), o agente explica a causa e as opções antes de propor qualquer contorno.
+- **`-auto-approve`:** só é aceito na configuração de renderização do startup script (`terraform/modules/compute_vm/tests/render`, sem provider e sem recursos, só outputs locais). Nunca em `plan`/`apply` de `envs/` reais nem do bootstrap: ali o `apply` sempre pede confirmação interativa e OK explícito.
 - **Pull Requests:** sempre pelo site do GitHub (o agente não sugere `gh`).
 - **Segurança:** nenhum segredo hardcoded; nenhuma chave de service account versionada.
 - **Context7:** consultar para Selenium, psycopg 3, provider Google e `terraform test` sempre que a sintaxe não estiver no Design.
@@ -55,7 +56,7 @@ Regras do projeto que valem em toda a execução (do autor):
 | Quick | Tasks com apenas unit tests | `.venv\Scripts\python.exe -m pytest -m "not integration and not docker and not infra and not e2e"` + `.venv\Scripts\python.exe -m ruff check .` |
 | Full | Tasks com integration (exige Docker Desktop ligado) | Quick + `.venv\Scripts\python.exe -m pytest -m integration`. O `conftest.py` sobe e remove sozinho um projeto Compose isolado (`bookmonitor_it`, volume próprio, `127.0.0.1` em porta livre, credenciais de teste): não usa o `.env`, o `docker-compose.override.yml` nem o volume de desenvolvimento, e não exige `docker compose up` prévio |
 | Docker | Tasks de Dockerfile/Compose | `docker compose build` + `.venv\Scripts\python.exe -m pytest -m docker` |
-| Infra | Tasks de Terraform e startup script | **Executado pelo autor (AD-006)**, com o agente fornecendo os comandos, a explicação e a análise da saída: `terraform fmt -check -recursive terraform` + por stack/módulo alterado: `terraform -chdir=<dir> init -backend=false`, `terraform -chdir=<dir> validate`, `terraform -chdir=<dir> test`. O `pytest -m infra` (quando houver) continua com o agente: `.venv\Scripts\python.exe -m pytest -m infra`. O gate só passa com a saída do autor confirmando |
+| Infra | Tasks de Terraform e startup script | **Executado pelo autor (AD-006)**, com o agente fornecendo os comandos, a explicação e a análise da saída: `terraform fmt -check -recursive terraform` + por stack/módulo alterado: `terraform -chdir=<dir> init -backend=false`, `terraform -chdir=<dir> validate`, `terraform -chdir=<dir> test`. O `pytest -m infra` (quando houver) continua com o agente: `.venv\Scripts\python.exe -m pytest -m infra`. O gate só passa com a saída do autor confirmando. **Tasks do startup script (T32-T34) e Build da Fase 7:** antes do `pytest -m infra`, o autor reexecuta a renderização (`init`, `apply -auto-approve` e `output -json script` em `terraform/modules/compute_vm/tests/render`, ver T32). O gate Infra dessas tasks (e o Build da fase) só é cumprido se o teste de renderização PASSAR; `skip` (arquivo renderizado ausente) significa gate NÃO cumprido |
 | E2E | T21 e antes do Verifier | `.venv\Scripts\python.exe -m pytest -m e2e -s` (site real; ~3-4 min; projeto Compose isolado `bookmonitor_e2e`, credenciais do `.env`). Em rede com inspeção TLS: `E2E_BASE_URL=http://books.toscrape.com/` (repassado ao robô como `BASE_URL`) |
 | Build | Fim de cada fase | Quick + os níveis aplicáveis à fase (Full / Docker / Infra) + `terraform fmt -check -recursive terraform` (os comandos `terraform` são executados pelo autor, AD-006) |
 
@@ -991,21 +992,22 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `terraform test` com `expect_failures`: `machine_type = "e2-small"`, `boot_disk_size_gb = 31` e zona `europe-west1-b` falham; valores válidos passam
-- [ ] `db_password` marcada `sensitive`
-- [ ] Gate check passes: Infra
-- [ ] Test count: ≥ 5 `run` blocks passam
+- [x] `terraform test` com `expect_failures`: `machine_type = "e2-small"`, `boot_disk_size_gb = 31` e zona `europe-west1-b` falham; valores válidos passam
+- [x] `db_password` marcada `sensitive`
+- [x] Gate check passes: Infra
+- [x] Test count: ≥ 5 `run` blocks passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-modules): adiciona entradas do compute_vm com guardas do Free Tier`
+**Status**: ✅ Concluída (6 `run` blocks). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `init -backend=false` (provider `google` v7.46.2, `.terraform.lock.hcl` gerado), `validate` com `Success!`, `terraform test` com `6 passed, 0 failed` (`terraform/modules/compute_vm/tests/main.tftest.hcl`, `mock_provider "google"`). `tests/infra/test_compute_vm_variables.py` (pytest, marker `infra`; 6 passam no total) garante `db_password` com `sensitive = true` e sem `default`. Além das variáveis do Design, o módulo declara `machine_type` (padrão e fixo `e2-micro`, exigido pela guarda da task). O `ssh_command` (T36) usará `google_compute_instance.this.project`, sem variável `project_id`. Spec: TFP-07 e TFP-10 `In progress` (T35, T38, T39, T41, T51); TFP-12 segue `In progress`. **Adição ao escopo aprovada pelo autor (após a T33):** `db_password` ganhou duas `validation` (somente `[A-Za-z0-9_.-]` e no mínimo 16 caracteres), porque o Compose altera `$`, `#`, aspas, espaço e `\` ao ler o `.env` e o banco subiria com senha diferente da do Terraform; +3 `run` blocks (senha válida, caractere proibido `$`, senha curta) e a senha de teste das variáveis globais passou a `Senha-De-Teste_1234`.
 
 ---
 
 #### T32: Startup script, parte 1 (swap, pacotes, Docker) e harness de renderização
 
-**What**: Criar `startup.sh.tftpl` com `set -euo pipefail`, log em `/var/log/book-monitor-startup.log`, swap file condicional + `fstab` + `vm.swappiness` em `/etc/sysctl.d`, instalação condicional de `git cron logrotate curl ca-certificates` e Docker CE + plugin Compose; criar `locals.tf` que renderiza o template e o helper de teste que renderiza e roda `bash -n` (decisão do mecanismo na task, p.ex. `terraform console`).
-**Where**: `terraform/modules/compute_vm/startup.sh.tftpl`
+**What**: Criar `startup.sh.tftpl` com `set -euo pipefail`, log em `/var/log/book-monitor-startup.log`, swap file condicional + `fstab` + `vm.swappiness` em `/etc/sysctl.d`, instalação condicional de `git cron logrotate curl ca-certificates` e Docker CE + plugin Compose; criar `locals.tf` que renderiza o template (`local.startup_script`) e o mecanismo de renderização (aprovado, respeita o AD-006): (1) camada `terraform test` (`mock_provider`), com asserções sobre `local.startup_script`, rodada pelo autor; (2) config mínima `tests/render/main.tf` (sem provider, só `templatefile` com valores fixos e `output "script"`) que o autor executa (`init`, `apply -auto-approve`, `output -json script | Set-Content -Encoding ascii .rendered-startup.json`, a partir da raiz); o pytest (`tests/infra/test_startup_script.py`, marker `infra`) lê o JSON, grava o script em arquivo temporário, roda `bash -n` com o bash do Git (`C:\Program Files\Git\usr\bin\bash.exe`; nunca o `System32\bash.exe` do WSL) e faz as asserções estáticas. O JSON renderizado e o state do `render/` ficam no `.gitignore`. O pytest compara o `mtime` do JSON com o do `.tftpl` e falha se o JSON estiver mais velho; sem o JSON, dá `skip` com mensagem indicando os comandos. Um teste estático confere que as chaves passadas ao `templatefile` em `locals.tf` e em `render/main.tf` são as mesmas.
+**Where**: `terraform/modules/compute_vm/startup.sh.tftpl`, `locals.tf`, `tests/render/main.tf`, `tests/main.tftest.hcl`, `tests/infra/test_startup_script.py`, `.gitignore`
 **Depends on**: T31
 **Reuses**: Passos 1-3 do Design (startup script)
 **Requirement**: VM-02, VM-01 (parcial)
@@ -1017,14 +1019,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Script renderizado passa em `bash -n`; swap só é criado se `/swapfile` não estiver ativo; swap e sysctl aparecem antes de qualquer `docker`
-- [ ] Texto renderizado não contém senha nem placeholder de segredo
-- [ ] Gate check passes: Infra (inclui `pytest -m infra`)
-- [ ] Test count: ≥ 5 testes passam
+- [x] Script renderizado passa em `bash -n`; swap só é criado se `/swapfile` não estiver ativo; swap e sysctl aparecem antes de qualquer `docker`
+- [x] Texto renderizado não contém senha nem placeholder de segredo
+- [x] Gate check passes: Infra (inclui `pytest -m infra` com o teste de renderização PASSANDO; `skip` = gate não cumprido)
+- [x] Test count: ≥ 5 testes passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-compute-vm): adiciona swap e instalação do Docker ao startup script`
+**Status**: ✅ Concluída (4 `run` blocks novos, 10 no `terraform test`; 10 testes novos em `tests/infra/test_startup_script.py`, 16 no `pytest -m infra`, todos PASSANDO, 0 skip). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `validate` com `Success!`, `terraform test` com `10 passed, 0 failed`, renderização (`init`, `apply -auto-approve` com 0 recursos, `output -json script | Set-Content -Encoding ascii .rendered-startup.json`; arquivo ignorado pelo git). `bash -n` com o bash do Git sobre o script renderizado: OK. `locals.tf` já passa as 6 chaves do template (`swap_size_mb`, `repo_url`, `repo_ref`, `db_name`, `db_user`, `cron_schedule`) para as T33/T34 não alterarem a assinatura; `tests/render/main.tf` usa as mesmas. O template é só ASCII (o `Set-Content -Encoding ascii` trocaria acentos por `?`). Quick: 109 unit, ruff limpo. Spec: VM-02 e VM-01 `In progress` (T33, T52).
 
 ---
 
@@ -1043,14 +1046,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Renderizado passa em `bash -n`; asserções estáticas: `.env` só é criado sob `[ ! -f ]`, senha lida do endpoint de metadata com cabeçalho `Metadata-Flavor: Google` e nunca embutida no texto, `chmod 600`, falha de `git fetch` com checkout existente apenas registra e segue
-- [ ] `repo_url` e `repo_ref` do template aparecem no clone; `build` ocorre antes de `up -d postgres`
-- [ ] Gate check passes: Infra
-- [ ] Test count: ≥ 6 testes passam
+- [x] Renderizado (reexecutado pelo autor) passa em `bash -n`; asserções estáticas no pytest e no `terraform test` (`local.startup_script`): `.env` só é criado sob `[ ! -f ]`, senha lida do endpoint de metadata com cabeçalho `Metadata-Flavor: Google` e nunca embutida no texto, `chmod 600`, falha de `git fetch` com checkout existente apenas registra e segue
+- [x] `repo_url` e `repo_ref` do template aparecem no clone; `build` ocorre antes de `up -d postgres`
+- [x] Gate check passes: Infra (renderização reexecutada; teste de renderização PASSANDO, `skip` = gate não cumprido)
+- [x] Test count: ≥ 6 testes passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-compute-vm): adiciona sincronização do código, .env e build ao startup script`
+**Status**: ✅ Concluída (3 `run` blocks novos; 16 no `terraform test`; 6 testes novos em `tests/infra/test_startup_script.py`, 22 no `pytest -m infra`, todos PASSANDO, 0 skip). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `validate` com `Success!`, `terraform test` com `16 passed, 0 failed`, renderização reexecutada (`apply -auto-approve` com 0 recursos e `output -json script` gravado em `.rendered-startup.json`). Clone/atualização sob `flock -w 900 9` (`fetch` falho com checkout existente só registra); `.env` só sob `[ ! -f "$ENV_FILE" ]`, com `umask 077` e `chmod 600`; a senha é lida da metadata (`Metadata-Flavor: Google`) em `DB_PASSWORD_VALUE=$(curl ...)` antes de qualquer escrita no `.env` (teste garante a ordem; falha do `curl` com `set -e` não deixa `.env` vazio); `build` -> `prune` -> `up -d --wait --wait-timeout 180 postgres`. Adição ao escopo da T31 aprovada pelo autor: validação de `db_password` (ver T31). Quick: 109 unit, ruff limpo. Spec: VM-01, VM-05, VM-09 e VM-10 `In progress` (T34, T52, T54).
 
 ---
 
@@ -1069,14 +1073,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Renderizado passa em `bash -n`; exatamente uma linha de cron, escrita por sobrescrita; `flock -n` presente; `cron_schedule` padrão `0 6 * * *`
-- [ ] Logrotate contém `daily` e `rotate 7`
-- [ ] Gate check passes: Infra
-- [ ] Test count: ≥ 5 testes passam
+- [x] Renderizado (reexecutado pelo autor) passa em `bash -n`; exatamente uma linha de cron, escrita por sobrescrita; `flock -n` presente; `cron_schedule` padrão `0 6 * * *`
+- [x] Logrotate contém `daily` e `rotate 7`
+- [x] Gate check passes: Infra (renderização reexecutada; teste de renderização PASSANDO, `skip` = gate não cumprido)
+- [x] Test count: ≥ 5 testes passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-compute-vm): adiciona cron e rotação de logs ao startup script`
+**Status**: ✅ Concluída (3 `run` blocks novos; 19 no `terraform test`; 4 testes novos em `tests/infra/test_startup_script.py`, 26 no `pytest -m infra`, todos PASSANDO, 0 skip). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `validate` com `Success!`, `terraform test` com `19 passed, 0 failed`, renderização reexecutada (0 recursos; `.rendered-startup.json` regerado). `/etc/cron.d/book-monitor` sobrescrito com `cat >` (heredoc `'CRON'`, uma só linha, `chmod 644`), `flock -n /var/lock/book-monitor.lock`, saída em `/var/log/book-monitor/run.log`; `cron_schedule` padrão `0 6 * * *`. `/etc/logrotate.d/book-monitor` com `daily`, `rotate 7`, `compress`, `copytruncate`, `missingok`. Cron e logrotate vêm depois do `up -d --wait postgres`. Quick: 109 unit, ruff limpo. Spec: VM-03, VM-04, VM-05 e VM-07 `In progress` (T52, T54).
 
 ---
 
@@ -1095,14 +1100,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `terraform test`: `machine_type == "e2-micro"`, `scheduling.preemptible == false`, disco `pd-standard` ≤ 30 GB, imagem Debian 12, IP externo efêmero (sem `nat_ip`), metadata contém `startup-script` e `book-db-password`
-- [ ] O plano contém apenas a instância (nenhum disco extra, IP estático, snapshot ou NAT)
-- [ ] Gate check passes: Infra
-- [ ] Test count: ≥ 7 asserções passam
+- [x] `terraform test`: `machine_type == "e2-micro"`, `scheduling.preemptible == false`, disco `pd-standard` ≤ 30 GB, imagem Debian 12, IP externo efêmero (sem `nat_ip`), metadata contém `startup-script` e `book-db-password`
+- [x] O plano contém apenas a instância (nenhum disco extra, IP estático, snapshot ou NAT)
+- [x] Gate check passes: Infra
+- [x] Test count: ≥ 7 asserções passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-compute-vm): adiciona instância e2-micro dentro do Free Tier`
+**Status**: ✅ Concluída (6 `run` blocks novos com 18 asserções; 25 no `terraform test`; `tests/infra/test_compute_vm_resources.py` com 6 testes, 32 no `pytest -m infra`). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `validate` com `Success!`, `terraform test` com `25 passed, 0 failed` (a renderização do startup script não mudou). `google_compute_instance.this` (`book-monitor`): `e2-micro`, `debian-cloud/debian-12`, boot `pd-standard` com `boot_disk_size_gb`, `access_config {}` (IP efêmero), `scheduling` `preemptible = false`/`MIGRATE`/`STANDARD`, `shielded_instance_config` completo, SA anexada (escopo `cloud-platform`; a SA não tem roles), metadata só com `startup-script` e `book-db-password`. A lista fechada de recursos (só a instância; sem `nat_ip`, `attached_disk`, `scratch_disk`, `google_compute_address`, `snapshot`) é garantida por pytest estático, pois o `terraform test` não enumera o plano (achado da Fase 5). O nome `book-monitor` é um `local` (o Design não lista `instance_name` como entrada). Quick: 109 unit, ruff limpo. Spec: TFP-07 e TFP-08 `In progress` (composição e plan real: T39, T41, T51); TFP-12 segue `In progress`.
 
 ---
 
@@ -1121,13 +1127,14 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `terraform test` afirma o texto exato do comando `gcloud compute ssh`
-- [ ] Gate check passes: Infra (fase completa: `fmt`, `validate`, `test`, `pytest -m infra`)
-- [ ] Test count: ≥ 2 asserções passam
+- [x] `terraform test` afirma o texto exato do comando `gcloud compute ssh`
+- [x] Gate check passes: Infra (fase completa: `fmt`, `validate`, `test`, `pytest -m infra`)
+- [x] Test count: ≥ 2 asserções passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-compute-vm): expõe nome da instância, zona e comando SSH`
+**Status**: ✅ Concluída (2 `run` blocks novos, 3 asserções; 27 no `terraform test` do `compute_vm`). `outputs.tf` com `instance_name`, `zone` e `ssh_command` (`gcloud compute ssh <vm> --zone <zone> --project <id>`, com o project vindo de `google_compute_instance.this.project`, sem variável nova); os testes usam `override_resource` com `override_during = plan` para o `project` e afirmam o texto exato. Spec: TFP-11 `In progress` (T40, T51); TFP-12 segue `In progress` (T39, T49). **Gate Build da Fase 7** (Quick: 109 unit e ruff limpo; `pytest -m infra`: 32, 0 skip; executado pelo autor: `fmt -check -recursive terraform` sem saída e `validate` + `test` verdes nos 5 módulos e no bootstrap: compute_vm 27, apis 4, network 9, identity 3, budget 6, bootstrap 17): fase concluída.
 
 ---
 

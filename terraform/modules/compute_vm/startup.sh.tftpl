@@ -1,0 +1,111 @@
+#!/bin/bash
+# Book price monitor - VM startup script (rendered by Terraform templatefile).
+# Runs as root on every boot and must be idempotent. No secrets are rendered here.
+# Note: in this template a literal dollar-brace must be written with two dollars;
+# plain $VAR and $(command) are safe and are used on purpose.
+set -euo pipefail
+
+LOG_FILE=/var/log/book-monitor-startup.log
+exec >>"$LOG_FILE" 2>&1
+echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] startup: begin"
+
+export DEBIAN_FRONTEND=noninteractive
+
+# --- 1. Swap (before any package install or build) ---------------------------
+SWAP_FILE=/swapfile
+if ! swapon --show=NAME --noheadings | grep -qx "$SWAP_FILE"; then
+  if [ ! -f "$SWAP_FILE" ]; then
+    fallocate -l ${swap_size_mb}M "$SWAP_FILE"
+    chmod 600 "$SWAP_FILE"
+    mkswap "$SWAP_FILE"
+  fi
+  swapon "$SWAP_FILE"
+fi
+if ! grep -q '^/swapfile ' /etc/fstab; then
+  echo '/swapfile none swap sw 0 0' >> /etc/fstab
+fi
+echo 'vm.swappiness=60' > /etc/sysctl.d/99-book-monitor.conf
+sysctl -p /etc/sysctl.d/99-book-monitor.conf
+
+# --- 2. Base packages (only the missing ones) ---------------------------------
+missing=""
+for pkg in git cron logrotate curl ca-certificates; do
+  if ! dpkg -s "$pkg" >/dev/null 2>&1; then
+    missing="$missing $pkg"
+  fi
+done
+if [ -n "$missing" ]; then
+  apt-get update
+  apt-get install -y --no-install-recommends $missing
+fi
+
+# --- 3. Container engine + compose plugin (official apt repository) ----------
+if ! command -v docker >/dev/null 2>&1 || ! docker compose version >/dev/null 2>&1; then
+  install -m 0755 -d /etc/apt/keyrings
+  curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+  chmod a+r /etc/apt/keyrings/docker.asc
+  cat > /etc/apt/sources.list.d/docker.sources <<EOF
+Types: deb
+URIs: https://download.docker.com/linux/debian
+Suites: $(. /etc/os-release && echo "$VERSION_CODENAME")
+Components: stable
+Architectures: $(dpkg --print-architecture)
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+  apt-get update
+  apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+fi
+systemctl enable --now docker
+
+# --- 4. Application code (git clone / update, serialized with the cron run) ---
+APP_DIR=/opt/book-monitor
+LOCK_FILE=/var/lock/book-monitor.lock
+(
+  flock -w 900 9
+  if [ ! -d "$APP_DIR/.git" ]; then
+    git clone --depth 1 --branch "${repo_ref}" "${repo_url}" "$APP_DIR"
+  elif git -C "$APP_DIR" fetch --depth 1 origin "${repo_ref}"; then
+    git -C "$APP_DIR" reset --hard FETCH_HEAD
+  else
+    echo "WARN: git fetch failed; keeping the existing checkout"
+  fi
+) 9>"$LOCK_FILE"
+
+# --- 5. .env (created only when absent; the password comes from instance metadata)
+ENV_FILE="$APP_DIR/.env"
+if [ ! -f "$ENV_FILE" ]; then
+  METADATA_URL=http://metadata.google.internal/computeMetadata/v1/instance/attributes/book-db-password
+  DB_PASSWORD_VALUE=$(curl -fsS --retry 5 --retry-delay 2 -H "Metadata-Flavor: Google" "$METADATA_URL")
+  (
+    umask 077
+    echo "DB_NAME=${db_name}" > "$ENV_FILE"
+    echo "DB_USER=${db_user}" >> "$ENV_FILE"
+    echo "DB_PASSWORD=$DB_PASSWORD_VALUE" >> "$ENV_FILE"
+  )
+  chmod 600 "$ENV_FILE"
+  unset DB_PASSWORD_VALUE
+fi
+
+# --- 6. Build the robot image and start the database --------------------------
+cd "$APP_DIR"
+docker compose build
+docker image prune -f
+docker compose up -d --wait --wait-timeout 180 postgres
+
+# --- 7. Daily run via cron (file is overwritten on every boot: a single entry) -
+mkdir -p /var/log/book-monitor
+cat > /etc/cron.d/book-monitor <<'CRON'
+${cron_schedule} root flock -n /var/lock/book-monitor.lock docker compose -f /opt/book-monitor/docker-compose.yml run --rm -T robo >> /var/log/book-monitor/run.log 2>&1
+CRON
+chmod 644 /etc/cron.d/book-monitor
+
+# --- 8. Log rotation for the run log ------------------------------------------
+cat > /etc/logrotate.d/book-monitor <<'LOGROTATE'
+/var/log/book-monitor/*.log {
+    daily
+    rotate 7
+    compress
+    copytruncate
+    missingok
+}
+LOGROTATE
