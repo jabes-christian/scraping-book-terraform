@@ -146,3 +146,82 @@ def test_rendered_script_has_no_secret_and_no_leftover_placeholder(script):
     assert not re.search(r"(?i)password\s*=\s*[^\s$\"']", script)
     assert "${" not in script  # nada de interpolação pendente
     assert "%{" not in script
+
+
+# --- Parte 2: código, .env e build (VM-01, VM-05, VM-09, VM-10) ---
+
+CLONE = (
+    'git clone --depth 1 --branch "v1.2.3" '
+    '"https://github.com/example/book-price-monitor.git" "$APP_DIR"'
+)
+
+
+def _block(lines: list[str], start: str, end: str) -> list[str]:
+    begin = _first_index(lines, start)
+    stop = next(i for i in range(begin + 1, len(lines)) if lines[i] == end)
+    return lines[begin + 1 : stop]
+
+
+def test_code_sync_runs_under_flock_with_repo_url_and_ref(script):
+    lines = _code_lines(script)
+    assert "LOCK_FILE=/var/lock/book-monitor.lock" in lines
+    assert "flock -w 900 9" in lines
+    assert ') 9>"$LOCK_FILE"' in lines
+    assert 'if [ ! -d "$APP_DIR/.git" ]; then' in lines
+    assert CLONE in lines
+    assert 'git -C "$APP_DIR" fetch --depth 1 origin "v1.2.3"' in script
+
+
+def test_failed_fetch_with_existing_checkout_only_logs_and_continues(script):
+    lines = _code_lines(script)
+    elif_fetch = 'elif git -C "$APP_DIR" fetch --depth 1 origin "v1.2.3"; then'
+    fetch = _first_index(lines, elif_fetch)
+    reset = _first_index(lines, 'git -C "$APP_DIR" reset --hard FETCH_HEAD')
+    otherwise = lines.index("else", fetch)
+    assert fetch < reset < otherwise
+    # O ramo else só registra (não há exit nem comando que falhe).
+    assert lines[otherwise + 1] == 'echo "WARN: git fetch failed; keeping the existing checkout"'
+    assert lines[otherwise + 2] == "fi"
+
+
+def test_env_file_is_created_only_if_absent_with_mode_600(script):
+    lines = _code_lines(script)
+    body = _block(lines, 'if [ ! -f "$ENV_FILE" ]; then', "fi")
+    assert 'echo "DB_NAME=booksdb" > "$ENV_FILE"' in body
+    assert 'echo "DB_USER=booksuser" >> "$ENV_FILE"' in body
+    assert 'echo "DB_PASSWORD=$DB_PASSWORD_VALUE" >> "$ENV_FILE"' in body
+    assert 'chmod 600 "$ENV_FILE"' in body
+    assert "umask 077" in body
+    # Nada escreve no .env fora do bloco condicional.
+    outside = [line for line in lines if '"$ENV_FILE"' in line and line not in body]
+    assert outside == ['if [ ! -f "$ENV_FILE" ]; then']
+
+
+def test_password_is_read_from_metadata_and_never_embedded(script):
+    lines = _code_lines(script)
+    url = "http://metadata.google.internal/computeMetadata/v1/instance/attributes/book-db-password"
+    assert f"METADATA_URL={url}" in lines
+    fetch = [line for line in lines if line.startswith("DB_PASSWORD_VALUE=$(curl")]
+    assert len(fetch) == 1
+    assert '-H "Metadata-Flavor: Google" "$METADATA_URL"' in fetch[0]
+    assert [line for line in lines if "DB_PASSWORD=" in line] == [
+        'echo "DB_PASSWORD=$DB_PASSWORD_VALUE" >> "$ENV_FILE"'
+    ]
+
+
+def test_build_runs_before_postgres_up_and_waits_for_healthcheck(script):
+    lines = _code_lines(script)
+    build = _first_index(lines, "docker compose build")
+    prune = _first_index(lines, "docker image prune -f")
+    up = _first_index(lines, "docker compose up -d")
+    assert build < prune < up
+    assert lines[up] == "docker compose up -d --wait --wait-timeout 180 postgres"
+    assert 'cd "$APP_DIR"' in lines[:up]
+
+
+def test_password_is_read_before_any_write_to_env_file(script):
+    # Falha do curl (set -e) aborta antes de criar um .env vazio.
+    lines = _code_lines(script)
+    read = _first_index(lines, "DB_PASSWORD_VALUE=$(curl")
+    first_write = _first_index(lines, '> "$ENV_FILE"')
+    assert read < first_write

@@ -73,6 +73,18 @@ variable "db_password" {
   type        = string
   description = "Senha do PostgreSQL. Vai para a metadata book-db-password e é gravada no .env da VM (AD-002)."
   sensitive   = true
+
+  # Adição ao escopo aprovada pelo autor: o Compose interpreta $, #, aspas, espaço
+  # e \ ao ler o .env, o que faria o banco subir com senha diferente da do Terraform.
+  validation {
+    condition     = can(regex("^[A-Za-z0-9_.-]*$", var.db_password))
+    error_message = "db_password só pode conter letras, números, _, . e - (outros caracteres, como $ e #, são alterados pelo Compose ao ler o .env)."
+  }
+
+  validation {
+    condition     = length(var.db_password) >= 16
+    error_message = "db_password deve ter no mínimo 16 caracteres."
+  }
 }
 
 variable "cron_schedule" {

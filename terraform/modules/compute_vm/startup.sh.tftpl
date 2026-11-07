@@ -56,3 +56,38 @@ EOF
   apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 fi
 systemctl enable --now docker
+
+# --- 4. Application code (git clone / update, serialized with the cron run) ---
+APP_DIR=/opt/book-monitor
+LOCK_FILE=/var/lock/book-monitor.lock
+(
+  flock -w 900 9
+  if [ ! -d "$APP_DIR/.git" ]; then
+    git clone --depth 1 --branch "${repo_ref}" "${repo_url}" "$APP_DIR"
+  elif git -C "$APP_DIR" fetch --depth 1 origin "${repo_ref}"; then
+    git -C "$APP_DIR" reset --hard FETCH_HEAD
+  else
+    echo "WARN: git fetch failed; keeping the existing checkout"
+  fi
+) 9>"$LOCK_FILE"
+
+# --- 5. .env (created only when absent; the password comes from instance metadata)
+ENV_FILE="$APP_DIR/.env"
+if [ ! -f "$ENV_FILE" ]; then
+  METADATA_URL=http://metadata.google.internal/computeMetadata/v1/instance/attributes/book-db-password
+  DB_PASSWORD_VALUE=$(curl -fsS --retry 5 --retry-delay 2 -H "Metadata-Flavor: Google" "$METADATA_URL")
+  (
+    umask 077
+    echo "DB_NAME=${db_name}" > "$ENV_FILE"
+    echo "DB_USER=${db_user}" >> "$ENV_FILE"
+    echo "DB_PASSWORD=$DB_PASSWORD_VALUE" >> "$ENV_FILE"
+  )
+  chmod 600 "$ENV_FILE"
+  unset DB_PASSWORD_VALUE
+fi
+
+# --- 6. Build the robot image and start the database --------------------------
+cd "$APP_DIR"
+docker compose build
+docker image prune -f
+docker compose up -d --wait --wait-timeout 180 postgres

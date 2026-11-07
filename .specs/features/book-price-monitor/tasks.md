@@ -1000,7 +1000,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-modules): adiciona entradas do compute_vm com guardas do Free Tier`
-**Status**: ✅ Concluída (6 `run` blocks). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `init -backend=false` (provider `google` v7.46.2, `.terraform.lock.hcl` gerado), `validate` com `Success!`, `terraform test` com `6 passed, 0 failed` (`terraform/modules/compute_vm/tests/main.tftest.hcl`, `mock_provider "google"`). `tests/infra/test_compute_vm_variables.py` (pytest, marker `infra`; 6 passam no total) garante `db_password` com `sensitive = true` e sem `default`. Além das variáveis do Design, o módulo declara `machine_type` (padrão e fixo `e2-micro`, exigido pela guarda da task). O `ssh_command` (T36) usará `google_compute_instance.this.project`, sem variável `project_id`. Spec: TFP-07 e TFP-10 `In progress` (T35, T38, T39, T41, T51); TFP-12 segue `In progress`.
+**Status**: ✅ Concluída (6 `run` blocks). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `init -backend=false` (provider `google` v7.46.2, `.terraform.lock.hcl` gerado), `validate` com `Success!`, `terraform test` com `6 passed, 0 failed` (`terraform/modules/compute_vm/tests/main.tftest.hcl`, `mock_provider "google"`). `tests/infra/test_compute_vm_variables.py` (pytest, marker `infra`; 6 passam no total) garante `db_password` com `sensitive = true` e sem `default`. Além das variáveis do Design, o módulo declara `machine_type` (padrão e fixo `e2-micro`, exigido pela guarda da task). O `ssh_command` (T36) usará `google_compute_instance.this.project`, sem variável `project_id`. Spec: TFP-07 e TFP-10 `In progress` (T35, T38, T39, T41, T51); TFP-12 segue `In progress`. **Adição ao escopo aprovada pelo autor (após a T33):** `db_password` ganhou duas `validation` (somente `[A-Za-z0-9_.-]` e no mínimo 16 caracteres), porque o Compose altera `$`, `#`, aspas, espaço e `\` ao ler o `.env` e o banco subiria com senha diferente da do Terraform; +3 `run` blocks (senha válida, caractere proibido `$`, senha curta) e a senha de teste das variáveis globais passou a `Senha-De-Teste_1234`.
 
 ---
 
@@ -1046,14 +1046,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Renderizado (reexecutado pelo autor) passa em `bash -n`; asserções estáticas no pytest e no `terraform test` (`local.startup_script`): `.env` só é criado sob `[ ! -f ]`, senha lida do endpoint de metadata com cabeçalho `Metadata-Flavor: Google` e nunca embutida no texto, `chmod 600`, falha de `git fetch` com checkout existente apenas registra e segue
-- [ ] `repo_url` e `repo_ref` do template aparecem no clone; `build` ocorre antes de `up -d postgres`
-- [ ] Gate check passes: Infra (renderização reexecutada; teste de renderização PASSANDO, `skip` = gate não cumprido)
-- [ ] Test count: ≥ 6 testes passam
+- [x] Renderizado (reexecutado pelo autor) passa em `bash -n`; asserções estáticas no pytest e no `terraform test` (`local.startup_script`): `.env` só é criado sob `[ ! -f ]`, senha lida do endpoint de metadata com cabeçalho `Metadata-Flavor: Google` e nunca embutida no texto, `chmod 600`, falha de `git fetch` com checkout existente apenas registra e segue
+- [x] `repo_url` e `repo_ref` do template aparecem no clone; `build` ocorre antes de `up -d postgres`
+- [x] Gate check passes: Infra (renderização reexecutada; teste de renderização PASSANDO, `skip` = gate não cumprido)
+- [x] Test count: ≥ 6 testes passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-compute-vm): adiciona sincronização do código, .env e build ao startup script`
+**Status**: ✅ Concluída (3 `run` blocks novos; 16 no `terraform test`; 6 testes novos em `tests/infra/test_startup_script.py`, 22 no `pytest -m infra`, todos PASSANDO, 0 skip). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `validate` com `Success!`, `terraform test` com `16 passed, 0 failed`, renderização reexecutada (`apply -auto-approve` com 0 recursos e `output -json script` gravado em `.rendered-startup.json`). Clone/atualização sob `flock -w 900 9` (`fetch` falho com checkout existente só registra); `.env` só sob `[ ! -f "$ENV_FILE" ]`, com `umask 077` e `chmod 600`; a senha é lida da metadata (`Metadata-Flavor: Google`) em `DB_PASSWORD_VALUE=$(curl ...)` antes de qualquer escrita no `.env` (teste garante a ordem; falha do `curl` com `set -e` não deixa `.env` vazio); `build` -> `prune` -> `up -d --wait --wait-timeout 180 postgres`. Adição ao escopo da T31 aprovada pelo autor: validação de `db_password` (ver T31). Quick: 109 unit, ruff limpo. Spec: VM-01, VM-05, VM-09 e VM-10 `In progress` (T34, T52, T54).
 
 ---
 

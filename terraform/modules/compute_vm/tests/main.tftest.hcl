@@ -8,7 +8,7 @@ variables {
   network_tag           = "book-monitor"
   service_account_email = "vm@p.iam.gserviceaccount.com"
   repo_url              = "https://github.com/example/repo.git"
-  db_password           = "senha-de-teste"
+  db_password           = "Senha-De-Teste_1234"
 }
 
 run "defaults_are_valid_and_inside_free_tier" {
@@ -63,6 +63,39 @@ run "zone_outside_free_tier_regions_fails" {
   }
 
   expect_failures = [var.zone]
+}
+
+run "db_password_with_forbidden_character_fails" {
+  command = plan
+
+  variables {
+    db_password = "Senha$De-Teste_1234"
+  }
+
+  expect_failures = [var.db_password]
+}
+
+run "db_password_too_short_fails" {
+  command = plan
+
+  variables {
+    db_password = "Curta-123"
+  }
+
+  expect_failures = [var.db_password]
+}
+
+run "db_password_valid_is_accepted" {
+  command = plan
+
+  variables {
+    db_password = "abcDEF0123456789_.-"
+  }
+
+  assert {
+    condition     = length(var.db_password) >= 16
+    error_message = "Uma senha de 19 caracteres com [A-Za-z0-9_.-] deve ser aceita."
+  }
 }
 
 run "boundary_values_are_accepted" {
@@ -145,5 +178,67 @@ run "startup_script_has_no_secret_and_no_unrendered_placeholder" {
   assert {
     condition     = !strcontains(local.startup_script, "$${") && !strcontains(local.startup_script, "%%{")
     error_message = "Não pode sobrar placeholder do Terraform no script renderizado."
+  }
+}
+
+# --- Startup script, parte 2 (VM-01, VM-05, VM-09, VM-10) ---
+
+run "startup_script_clones_and_updates_with_repo_url_and_ref" {
+  command = plan
+
+  variables {
+    repo_url = "https://github.com/example/book-price-monitor.git"
+    repo_ref = "v1.2.3"
+  }
+
+  assert {
+    condition     = strcontains(local.startup_script, "git clone --depth 1 --branch \"v1.2.3\" \"https://github.com/example/book-price-monitor.git\" \"$APP_DIR\"")
+    error_message = "O clone deve usar repo_ref e repo_url."
+  }
+
+  assert {
+    condition     = strcontains(local.startup_script, "git -C \"$APP_DIR\" fetch --depth 1 origin \"v1.2.3\"")
+    error_message = "A atualização deve buscar repo_ref."
+  }
+}
+
+run "startup_script_env_only_if_absent_with_metadata_password" {
+  command = plan
+
+  variables {
+    db_name = "booksdb"
+    db_user = "booksuser"
+  }
+
+  assert {
+    condition     = strcontains(local.startup_script, "if [ ! -f \"$ENV_FILE\" ]; then")
+    error_message = "O .env só pode ser criado se ausente."
+  }
+
+  assert {
+    condition     = strcontains(local.startup_script, "-H \"Metadata-Flavor: Google\" \"$METADATA_URL\"")
+    error_message = "A senha deve ser lida da metadata com o cabeçalho Metadata-Flavor: Google."
+  }
+
+  assert {
+    condition     = strcontains(local.startup_script, "echo \"DB_NAME=booksdb\"") && strcontains(local.startup_script, "echo \"DB_USER=booksuser\"")
+    error_message = "DB_NAME e DB_USER devem vir das variáveis do módulo."
+  }
+
+  assert {
+    condition     = strcontains(local.startup_script, "chmod 600 \"$ENV_FILE\"")
+    error_message = "O .env deve ter permissão 600."
+  }
+}
+
+run "startup_script_build_before_postgres_up" {
+  command = plan
+
+  assert {
+    condition = (
+      length(split("docker compose build", local.startup_script)[0]) < length(split("docker image prune -f", local.startup_script)[0])
+      && length(split("docker image prune -f", local.startup_script)[0]) < length(split("docker compose up -d --wait", local.startup_script)[0])
+    )
+    error_message = "A ordem deve ser build, prune, up -d --wait postgres."
   }
 }
