@@ -1127,13 +1127,14 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `terraform test` afirma o texto exato do comando `gcloud compute ssh`
-- [ ] Gate check passes: Infra (fase completa: `fmt`, `validate`, `test`, `pytest -m infra`)
-- [ ] Test count: ≥ 2 asserções passam
+- [x] `terraform test` afirma o texto exato do comando `gcloud compute ssh`
+- [x] Gate check passes: Infra (fase completa: `fmt`, `validate`, `test`, `pytest -m infra`)
+- [x] Test count: ≥ 2 asserções passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-compute-vm): expõe nome da instância, zona e comando SSH`
+**Status**: ✅ Concluída (2 `run` blocks novos, 3 asserções; 27 no `terraform test` do `compute_vm`). `outputs.tf` com `instance_name`, `zone` e `ssh_command` (`gcloud compute ssh <vm> --zone <zone> --project <id>`, com o project vindo de `google_compute_instance.this.project`, sem variável nova); os testes usam `override_resource` com `override_during = plan` para o `project` e afirmam o texto exato. Spec: TFP-11 `In progress` (T40, T51); TFP-12 segue `In progress` (T39, T49). **Gate Build da Fase 7** (Quick: 109 unit e ruff limpo; `pytest -m infra`: 32, 0 skip; executado pelo autor: `fmt -check -recursive terraform` sem saída e `validate` + `test` verdes nos 5 módulos e no bootstrap: compute_vm 27, apis 4, network 9, identity 3, budget 6, bootstrap 17): fase concluída.
 
 ---
 

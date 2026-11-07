@@ -409,3 +409,50 @@ run "metadata_carries_startup_script_and_password" {
     error_message = "A metadata deve ter somente startup-script e book-db-password."
   }
 }
+
+# --- Outputs (TFP-11, TFP-12) ---
+
+run "outputs_expose_name_zone_and_ssh_command" {
+  command = plan
+
+  # O project é herdado do provider (atributo computado); o override simula o
+  # valor real. override_during = plan: por padrão o override só vale no apply.
+  override_resource {
+    target          = google_compute_instance.this
+    override_during = plan
+    values = {
+      project = "projeto-teste-123"
+    }
+  }
+
+  assert {
+    condition     = output.instance_name == "book-monitor" && output.zone == "us-central1-a"
+    error_message = "Os outputs instance_name e zone devem expor o nome e a zona da VM."
+  }
+
+  assert {
+    condition     = output.ssh_command == "gcloud compute ssh book-monitor --zone us-central1-a --project projeto-teste-123"
+    error_message = "ssh_command deve ser exatamente: gcloud compute ssh <vm> --zone <zone> --project <id>."
+  }
+}
+
+run "ssh_command_follows_the_zone_variable" {
+  command = plan
+
+  variables {
+    zone = "us-east1-b"
+  }
+
+  override_resource {
+    target          = google_compute_instance.this
+    override_during = plan
+    values = {
+      project = "projeto-teste-123"
+    }
+  }
+
+  assert {
+    condition     = output.ssh_command == "gcloud compute ssh book-monitor --zone us-east1-b --project projeto-teste-123"
+    error_message = "ssh_command deve usar a zona informada."
+  }
+}
