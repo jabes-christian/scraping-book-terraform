@@ -306,7 +306,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | TFP-05 | P1: Infraestrutura de produção | Tasks | T28, T38 | In progress |
 | TFP-06 | P1: Infraestrutura de produção | Tasks | T29, T39, T51 | In progress |
 | TFP-07 | P1: Infraestrutura de produção | Tasks | T31, T35, T39, T51 | In progress |
-| TFP-08 | P1: Infraestrutura de produção | Tasks | T35, T39, T42 | Planned |
+| TFP-08 | P1: Infraestrutura de produção | Tasks | T35, T39, T42 | In progress |
 | TFP-09 | P1: Infraestrutura de produção | Tasks | T30, T39, T51, T55 | In progress |
 | TFP-10 | P1: Infraestrutura de produção | Tasks | T31, T38, T41 | In progress |
 | TFP-11 | P1: Infraestrutura de produção | Tasks | T36, T40, T51 | Planned |

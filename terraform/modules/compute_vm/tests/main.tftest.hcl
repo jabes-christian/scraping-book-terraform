@@ -285,3 +285,127 @@ run "startup_script_logrotate_policy" {
     error_message = "O logrotate deve ter daily, rotate 7, compress, copytruncate e missingok."
   }
 }
+
+# --- Recurso da VM (TFP-07, TFP-08, TFP-12) ---
+
+run "instance_is_e2_micro_non_preemptible_with_shielded_vm" {
+  command = plan
+
+  assert {
+    condition     = google_compute_instance.this.machine_type == "e2-micro"
+    error_message = "A VM deve ser e2-micro."
+  }
+
+  assert {
+    condition     = one(google_compute_instance.this.scheduling).preemptible == false
+    error_message = "A VM não pode ser preemptível."
+  }
+
+  assert {
+    condition     = one(google_compute_instance.this.scheduling).provisioning_model == "STANDARD"
+    error_message = "A VM deve usar o modelo de provisionamento STANDARD (não Spot)."
+  }
+
+  assert {
+    condition = (
+      one(google_compute_instance.this.shielded_instance_config).enable_secure_boot == true
+      && one(google_compute_instance.this.shielded_instance_config).enable_vtpm == true
+      && one(google_compute_instance.this.shielded_instance_config).enable_integrity_monitoring == true
+    )
+    error_message = "A VM deve habilitar secure boot, vTPM e monitoramento de integridade."
+  }
+
+  assert {
+    condition     = google_compute_instance.this.deletion_protection == false
+    error_message = "deletion_protection deve ser false (o destroy da T56 precisa funcionar)."
+  }
+}
+
+run "boot_disk_is_pd_standard_debian_12_within_free_tier" {
+  command = plan
+
+  assert {
+    condition     = one(one(google_compute_instance.this.boot_disk).initialize_params).type == "pd-standard"
+    error_message = "O disco de boot deve ser pd-standard."
+  }
+
+  assert {
+    condition     = one(one(google_compute_instance.this.boot_disk).initialize_params).image == "debian-cloud/debian-12"
+    error_message = "A imagem deve ser debian-cloud/debian-12."
+  }
+
+  assert {
+    condition     = one(one(google_compute_instance.this.boot_disk).initialize_params).size == 30
+    error_message = "O disco de boot padrão deve ter 30 GB (limite do Free Tier)."
+  }
+
+  assert {
+    condition     = length(google_compute_instance.this.scratch_disk) == 0 && length(google_compute_instance.this.attached_disk) == 0
+    error_message = "A VM não pode ter disco extra (scratch ou anexado)."
+  }
+}
+
+run "boot_disk_size_follows_variable" {
+  command = plan
+
+  variables {
+    boot_disk_size_gb = 20
+  }
+
+  assert {
+    condition     = one(one(google_compute_instance.this.boot_disk).initialize_params).size == 20
+    error_message = "O tamanho do disco deve seguir boot_disk_size_gb."
+  }
+}
+
+run "network_has_only_an_ephemeral_external_ip_and_the_firewall_tag" {
+  command = plan
+
+  assert {
+    condition     = length(one(google_compute_instance.this.network_interface).access_config) == 1
+    error_message = "Deve haver exatamente um access_config (IP externo efêmero)."
+  }
+
+  assert {
+    condition     = one(google_compute_instance.this.network_interface).subnetwork == var.subnetwork
+    error_message = "A VM deve usar a sub-rede informada."
+  }
+
+  assert {
+    condition     = contains(google_compute_instance.this.tags, "book-monitor")
+    error_message = "A VM deve ter a tag de rede da regra de firewall SSH."
+  }
+}
+
+run "instance_identity_zone_and_service_account" {
+  command = plan
+
+  assert {
+    condition     = google_compute_instance.this.name == "book-monitor" && google_compute_instance.this.zone == "us-central1-a"
+    error_message = "A VM deve se chamar book-monitor e ficar em us-central1-a por padrão."
+  }
+
+  assert {
+    condition     = one(google_compute_instance.this.service_account).email == var.service_account_email
+    error_message = "A VM deve usar a service account informada."
+  }
+}
+
+run "metadata_carries_startup_script_and_password" {
+  command = plan
+
+  assert {
+    condition     = google_compute_instance.this.metadata["startup-script"] == local.startup_script
+    error_message = "A metadata startup-script deve ser o script renderizado."
+  }
+
+  assert {
+    condition     = google_compute_instance.this.metadata["book-db-password"] == var.db_password
+    error_message = "A metadata book-db-password deve ser a senha informada."
+  }
+
+  assert {
+    condition     = length(google_compute_instance.this.metadata) == 2
+    error_message = "A metadata deve ter somente startup-script e book-db-password."
+  }
+}

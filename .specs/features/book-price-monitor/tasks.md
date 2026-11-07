@@ -1100,14 +1100,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `terraform test`: `machine_type == "e2-micro"`, `scheduling.preemptible == false`, disco `pd-standard` ≤ 30 GB, imagem Debian 12, IP externo efêmero (sem `nat_ip`), metadata contém `startup-script` e `book-db-password`
-- [ ] O plano contém apenas a instância (nenhum disco extra, IP estático, snapshot ou NAT)
-- [ ] Gate check passes: Infra
-- [ ] Test count: ≥ 7 asserções passam
+- [x] `terraform test`: `machine_type == "e2-micro"`, `scheduling.preemptible == false`, disco `pd-standard` ≤ 30 GB, imagem Debian 12, IP externo efêmero (sem `nat_ip`), metadata contém `startup-script` e `book-db-password`
+- [x] O plano contém apenas a instância (nenhum disco extra, IP estático, snapshot ou NAT)
+- [x] Gate check passes: Infra
+- [x] Test count: ≥ 7 asserções passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-compute-vm): adiciona instância e2-micro dentro do Free Tier`
+**Status**: ✅ Concluída (6 `run` blocks novos com 18 asserções; 25 no `terraform test`; `tests/infra/test_compute_vm_resources.py` com 6 testes, 32 no `pytest -m infra`). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `validate` com `Success!`, `terraform test` com `25 passed, 0 failed` (a renderização do startup script não mudou). `google_compute_instance.this` (`book-monitor`): `e2-micro`, `debian-cloud/debian-12`, boot `pd-standard` com `boot_disk_size_gb`, `access_config {}` (IP efêmero), `scheduling` `preemptible = false`/`MIGRATE`/`STANDARD`, `shielded_instance_config` completo, SA anexada (escopo `cloud-platform`; a SA não tem roles), metadata só com `startup-script` e `book-db-password`. A lista fechada de recursos (só a instância; sem `nat_ip`, `attached_disk`, `scratch_disk`, `google_compute_address`, `snapshot`) é garantida por pytest estático, pois o `terraform test` não enumera o plano (achado da Fase 5). O nome `book-monitor` é um `local` (o Design não lista `instance_name` como entrada). Quick: 109 unit, ruff limpo. Spec: TFP-07 e TFP-08 `In progress` (composição e plan real: T39, T41, T51); TFP-12 segue `In progress`.
 
 ---
 
