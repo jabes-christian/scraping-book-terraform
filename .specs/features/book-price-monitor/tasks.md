@@ -1019,14 +1019,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Script renderizado passa em `bash -n`; swap só é criado se `/swapfile` não estiver ativo; swap e sysctl aparecem antes de qualquer `docker`
-- [ ] Texto renderizado não contém senha nem placeholder de segredo
-- [ ] Gate check passes: Infra (inclui `pytest -m infra` com o teste de renderização PASSANDO; `skip` = gate não cumprido)
-- [ ] Test count: ≥ 5 testes passam
+- [x] Script renderizado passa em `bash -n`; swap só é criado se `/swapfile` não estiver ativo; swap e sysctl aparecem antes de qualquer `docker`
+- [x] Texto renderizado não contém senha nem placeholder de segredo
+- [x] Gate check passes: Infra (inclui `pytest -m infra` com o teste de renderização PASSANDO; `skip` = gate não cumprido)
+- [x] Test count: ≥ 5 testes passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-compute-vm): adiciona swap e instalação do Docker ao startup script`
+**Status**: ✅ Concluída (4 `run` blocks novos, 10 no `terraform test`; 10 testes novos em `tests/infra/test_startup_script.py`, 16 no `pytest -m infra`, todos PASSANDO, 0 skip). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `validate` com `Success!`, `terraform test` com `10 passed, 0 failed`, renderização (`init`, `apply -auto-approve` com 0 recursos, `output -json script | Set-Content -Encoding ascii .rendered-startup.json`; arquivo ignorado pelo git). `bash -n` com o bash do Git sobre o script renderizado: OK. `locals.tf` já passa as 6 chaves do template (`swap_size_mb`, `repo_url`, `repo_ref`, `db_name`, `db_user`, `cron_schedule`) para as T33/T34 não alterarem a assinatura; `tests/render/main.tf` usa as mesmas. O template é só ASCII (o `Set-Content -Encoding ascii` trocaria acentos por `?`). Quick: 109 unit, ruff limpo. Spec: VM-02 e VM-01 `In progress` (T33, T52).
 
 ---
 

@@ -92,3 +92,58 @@ run "other_free_tier_regions_are_accepted" {
     error_message = "Zonas de us-east1 devem ser aceitas."
   }
 }
+
+# --- Startup script, parte 1 (VM-02): conteúdo de local.startup_script ---
+
+run "startup_script_swap_uses_swap_size_mb" {
+  command = plan
+
+  variables {
+    swap_size_mb = 2048
+  }
+
+  assert {
+    condition     = strcontains(local.startup_script, "fallocate -l 2048M \"$SWAP_FILE\"")
+    error_message = "O swap deve ser criado com swap_size_mb (fallocate -l 2048M)."
+  }
+}
+
+run "startup_script_swap_only_when_not_active" {
+  command = plan
+
+  assert {
+    condition     = strcontains(local.startup_script, "if ! swapon --show=NAME --noheadings | grep -qx \"$SWAP_FILE\"; then")
+    error_message = "O swap só pode ser criado se /swapfile não estiver ativo."
+  }
+
+  assert {
+    condition     = strcontains(local.startup_script, "if ! grep -q '^/swapfile ' /etc/fstab; then")
+    error_message = "A linha do fstab só pode ser adicionada se ausente."
+  }
+}
+
+run "startup_script_swap_and_sysctl_before_docker" {
+  command = plan
+
+  assert {
+    condition = (
+      length(split("swapon \"$SWAP_FILE\"", local.startup_script)[0]) < length(split("sysctl -p", local.startup_script)[0])
+      && length(split("sysctl -p", local.startup_script)[0]) < length(split("apt-get install -y docker-ce", local.startup_script)[0])
+    )
+    error_message = "swap e sysctl devem aparecer antes da instalação do Docker."
+  }
+}
+
+run "startup_script_has_no_secret_and_no_unrendered_placeholder" {
+  command = plan
+
+  assert {
+    condition     = !strcontains(local.startup_script, var.db_password)
+    error_message = "A senha do banco não pode aparecer no startup script."
+  }
+
+  assert {
+    condition     = !strcontains(local.startup_script, "$${") && !strcontains(local.startup_script, "%%{")
+    error_message = "Não pode sobrar placeholder do Terraform no script renderizado."
+  }
+}

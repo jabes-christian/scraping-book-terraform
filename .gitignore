@@ -32,6 +32,8 @@ override.tf.json
 terraform.rc
 *.tfplan
 backend.hcl
+# Saída da renderização do startup script (T32-T34), gerada pelo autor
+.rendered-startup.json
 
 # ===== Credenciais GCP =====
 *.json.key
