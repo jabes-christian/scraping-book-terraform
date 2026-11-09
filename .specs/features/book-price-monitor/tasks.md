@@ -1142,8 +1142,8 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 #### T37: Esqueleto de `envs/prod`
 
-**What**: Criar `versions.tf`, `providers.tf` (`user_project_override`, `billing_project`) e `backend.tf` (`backend "gcs" { prefix = "envs/prod" }`, bucket por configuração parcial).
-**Where**: `terraform/envs/prod/`
+**What**: Criar `versions.tf`, `providers.tf` (`user_project_override`, `billing_project`), `backend.tf` (`backend "gcs" { prefix = "envs/prod" }`, bucket por configuração parcial) e um `variables.tf` mínimo só com `project_id` (o `providers.tf` o referencia; mesmo precedente da T22). A T38 completa o arquivo.
+**Where**: `terraform/envs/prod/` (`versions.tf`, `providers.tf`, `backend.tf`, `variables.tf`)
 **Depends on**: T36
 **Reuses**: Esqueleto do bootstrap (T22)
 **Requirement**: TFP-02, TFP-13 (convenção)
@@ -1155,19 +1155,20 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `terraform -chdir=terraform/envs/prod init -backend=false` e `validate` passam; o bloco `backend "gcs"` não contém `bucket` nem variáveis
-- [ ] `.terraform.lock.hcl` gerado para versionar
-- [ ] Gate check passes: Infra
+- [x] `terraform -chdir=terraform/envs/prod init -backend=false` e `validate` passam; o bloco `backend "gcs"` não contém `bucket` nem variáveis
+- [x] `.terraform.lock.hcl` gerado para versionar
+- [x] Gate check passes: Infra
 
 **Tests**: none
 **Gate**: infra
 **Commit**: `feat(tf-prod): adiciona providers e backend gcs parcial`
+**Status**: ✅ Concluída. Gate Infra executado pelo autor (AD-006): `fmt -check -recursive terraform` sem saída, `init -backend=false` com `successfully initialized` (`hashicorp/google v7.46.2`, lock gerado) e `validate` com `Success!`. Arquivos em `terraform/envs/prod/`: `versions.tf`, `providers.tf` (`user_project_override`, `billing_project`), `backend.tf` (`backend "gcs"` só com `prefix = "envs/prod"`, sem `bucket`) e `variables.tf` mínimo com `project_id` (precedente da T22; a T38 completa). **Evidência antecipada da T42** (o autor rodou `init "-backend-config=backend.hcl"` na T37; sem `plan` nem `apply`): `Successfully configured the backend "gcs"!`, o que confirma ADC, `backend.hcl` real e acesso ao bucket do state pela rede corporativa (inspeção TLS) sem erro de certificado. O `plan` real segue pendente na T42. Spec: TFP-02 `In progress` (T41, T42); TFP-13 segue `In progress` (T39).
 
 ---
 
 #### T38: Variáveis de `envs/prod`
 
-**What**: Criar `variables.tf` com `project_id`, `billing_account_id`, `allowed_ssh_cidr`, `repo_url`, `repo_ref` (`main`), `db_name`, `db_user`, `db_password` (`sensitive`), `cron_schedule`, `swap_size_mb` e demais padrões do Design.
+**What**: Completar o `variables.tf` (já criado na T37 só com `project_id`) acrescentando `billing_account_id`, `allowed_ssh_cidr`, `repo_url`, `repo_ref` (`main`), `db_name`, `db_user`, `db_password` (`sensitive`), `cron_schedule`, `swap_size_mb` e demais padrões do Design.
 **Where**: `terraform/envs/prod/variables.tf`
 **Depends on**: T37
 **Reuses**: Variáveis dos módulos
