@@ -1208,14 +1208,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `terraform test` sobre o plano com `mock_provider`: conjunto de tipos de recurso é exatamente {`google_project_service`, `google_compute_network`, `google_compute_subnetwork`, `google_compute_firewall`, `google_service_account`, `google_compute_instance`, `google_billing_budget`} (lista fechada; qualquer NAT, LB, IP estático, snapshot, Cloud SQL, Pub/Sub, Artifact Registry ou Secret Manager reprova)
-- [ ] Exatamente 1 instância; as 3 APIs; todas com `disable_on_destroy == false`
-- [ ] Gate check passes: Infra
-- [ ] Test count: ≥ 6 asserções passam
+- [x] `terraform test` sobre o plano com `mock_provider`: conjunto de tipos de recurso é exatamente {`google_project_service`, `google_compute_network`, `google_compute_subnetwork`, `google_compute_firewall`, `google_service_account`, `google_compute_instance`, `google_billing_budget`} (lista fechada; qualquer NAT, LB, IP estático, snapshot, Cloud SQL, Pub/Sub, Artifact Registry ou Secret Manager reprova)
+- [x] Exatamente 1 instância; as 3 APIs; todas com `disable_on_destroy == false`
+- [x] Gate check passes: Infra
+- [x] Test count: ≥ 6 asserções passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-prod): compõe os módulos no ambiente prod`
+**Status**: ✅ Concluída (4 `run` blocks novos com 5 asserções em `terraform/envs/prod/tests/main.tftest.hcl`; 15 no `terraform test` do `envs/prod`; 18 testes em `tests/infra/test_prod_composition.py`). Gate Infra executado pelo autor (AD-006): `fmt -check -recursive terraform` sem saída, `init -backend=false` (5 módulos locais e provider v7.46.2), `validate` com `Success!` e `terraform test` com `15 passed, 0 failed`. `main.tf` compõe `apis` (compute, iam, billingbudgets) e, com `depends_on = [module.apis]`, `network`, `identity`, `compute_vm` (recebe `subnetwork`, `network_tag` e `email` das saídas) e `budget`; nenhum recurso no próprio `envs/prod`. Como o `terraform test` não enumera o plano (achado da Fase 5), a lista fechada de 7 tipos, os 8 tipos proibidos, a instância única (sem `count`/`for_each`), as 3 APIs, o `disable_on_destroy = false` e o `depends_on` são garantidos por pytest estático; o `terraform test` cobre as APIs, o nome/zona da VM e a tag de rede por saídas dos módulos. `override_data` em `module.budget.data.google_project.this` (`override_during = plan`) funciona em módulo filho. O `init -backend=false` desta task desfez o backend GCS da T37: a T42 repete o `init "-backend-config=backend.hcl"`. Quick: 109 unit, ruff limpo. Spec: sem mudança de status (TFP-01, 03, 04, 06, 07, 08, 09, 12 e 13 seguem `In progress`; completam nas tasks operacionais T42, T51 e T55).
 
 ---
 
