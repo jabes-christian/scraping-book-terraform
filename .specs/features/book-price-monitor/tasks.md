@@ -56,7 +56,7 @@ Regras do projeto que valem em toda a execução (do autor):
 | Quick | Tasks com apenas unit tests | `.venv\Scripts\python.exe -m pytest -m "not integration and not docker and not infra and not e2e"` + `.venv\Scripts\python.exe -m ruff check .` |
 | Full | Tasks com integration (exige Docker Desktop ligado) | Quick + `.venv\Scripts\python.exe -m pytest -m integration`. O `conftest.py` sobe e remove sozinho um projeto Compose isolado (`bookmonitor_it`, volume próprio, `127.0.0.1` em porta livre, credenciais de teste): não usa o `.env`, o `docker-compose.override.yml` nem o volume de desenvolvimento, e não exige `docker compose up` prévio |
 | Docker | Tasks de Dockerfile/Compose | `docker compose build` + `.venv\Scripts\python.exe -m pytest -m docker` |
-| Infra | Tasks de Terraform e startup script | **Executado pelo autor (AD-006)**, com o agente fornecendo os comandos, a explicação e a análise da saída: `terraform fmt -check -recursive terraform` + por stack/módulo alterado: `terraform -chdir=<dir> init -backend=false`, `terraform -chdir=<dir> validate`, `terraform -chdir=<dir> test`. O `pytest -m infra` (quando houver) continua com o agente: `.venv\Scripts\python.exe -m pytest -m infra`. O gate só passa com a saída do autor confirmando. **Tasks do startup script (T32-T34) e Build da Fase 7:** antes do `pytest -m infra`, o autor reexecuta a renderização (`init`, `apply -auto-approve` e `output -json script` em `terraform/modules/compute_vm/tests/render`, ver T32). O gate Infra dessas tasks (e o Build da fase) só é cumprido se o teste de renderização PASSAR; `skip` (arquivo renderizado ausente) significa gate NÃO cumprido |
+| Infra | Tasks de Terraform e startup script | **Executado pelo autor (AD-006)**, com o agente fornecendo os comandos, a explicação e a análise da saída: `terraform fmt -check -recursive terraform` + por stack/módulo alterado: `terraform -chdir=<dir> init -backend=false`, `terraform -chdir=<dir> validate`, `terraform -chdir=<dir> test`. O `pytest -m infra` (quando houver) continua com o agente: `.venv\Scripts\python.exe -m pytest -m infra`. O gate só passa com a saída do autor confirmando. **Tasks do startup script (T32-T34) e Build da Fase 7:** antes do `pytest -m infra`, o autor reexecuta a renderização (`init`, `apply -auto-approve` e `output -json | Set-Content -Encoding ascii .rendered-startup.json` em `terraform/modules/compute_vm/tests/render`, ver T32; o pytest valida o JSON pelo SHA-256 do template, não pela data). O gate Infra dessas tasks (e o Build da fase) só é cumprido se o teste de renderização PASSAR; `skip` (arquivo renderizado ausente) significa gate NÃO cumprido |
 | E2E | T21 e antes do Verifier | `.venv\Scripts\python.exe -m pytest -m e2e -s` (site real; ~3-4 min; projeto Compose isolado `bookmonitor_e2e`, credenciais do `.env`). Em rede com inspeção TLS: `E2E_BASE_URL=http://books.toscrape.com/` (repassado ao robô como `BASE_URL`) |
 | Build | Fim de cada fase | Quick + os níveis aplicáveis à fase (Full / Docker / Infra) + `terraform fmt -check -recursive terraform` (os comandos `terraform` são executados pelo autor, AD-006) |
 
@@ -1028,6 +1028,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 **Gate**: infra
 **Commit**: `feat(tf-compute-vm): adiciona swap e instalação do Docker ao startup script`
 **Status**: ✅ Concluída (4 `run` blocks novos, 10 no `terraform test`; 10 testes novos em `tests/infra/test_startup_script.py`, 16 no `pytest -m infra`, todos PASSANDO, 0 skip). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `validate` com `Success!`, `terraform test` com `10 passed, 0 failed`, renderização (`init`, `apply -auto-approve` com 0 recursos, `output -json script | Set-Content -Encoding ascii .rendered-startup.json`; arquivo ignorado pelo git). `bash -n` com o bash do Git sobre o script renderizado: OK. `locals.tf` já passa as 6 chaves do template (`swap_size_mb`, `repo_url`, `repo_ref`, `db_name`, `db_user`, `cron_schedule`) para as T33/T34 não alterarem a assinatura; `tests/render/main.tf` usa as mesmas. O template é só ASCII (o `Set-Content -Encoding ascii` trocaria acentos por `?`). Quick: 109 unit, ruff limpo. Spec: VM-02 e VM-01 `In progress` (T33, T52).
+**Ajuste do mecanismo de renderização (aprovado pelo autor, feito na Fase 8, commit `test(tf-compute-vm)`)**: a checagem de data (`mtime`) do `.rendered-startup.json` invalidava o JSON a cada troca de branch. Agora `tests/render/main.tf` expõe também `template_sha256` (`filesha256` do `startup.sh.tftpl`), o autor grava `terraform output -json` (todos os outputs, formato `{"script": {"value": ...}, "template_sha256": {"value": ...}}`) e o pytest compara o hash com o SHA-256 do template atual: só uma mudança real no conteúdo do template invalida o JSON. JSON ausente continua sendo `skip` (gate não cumprido); JSON em formato antigo ou com hash diferente falha com a dica de regeneração. 3 testes novos (hash igual aceito, hash diferente reprova, formato antigo reprova).
 
 ---
 
@@ -1181,13 +1182,14 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `terraform test`: `allowed_ssh_cidr = "0.0.0.0/0"` falha; `db_password` é `sensitive`; faltando `project_id`/`billing_account_id` não há valor padrão
-- [ ] Gate check passes: Infra
-- [ ] Test count: ≥ 3 `run` blocks passam
+- [x] `terraform test`: `allowed_ssh_cidr = "0.0.0.0/0"` falha; `db_password` é `sensitive`; faltando `project_id`/`billing_account_id` não há valor padrão
+- [x] Gate check passes: Infra
+- [x] Test count: ≥ 3 `run` blocks passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-prod): adiciona variáveis de entrada com validações`
+**Status**: ✅ Concluída (11 `run` blocks em `terraform/envs/prod/tests/variables.tftest.hcl`; 6 testes em `tests/infra/test_prod_variables.py`). Gate Infra executado pelo autor (AD-006): `fmt -check -recursive terraform` sem saída, `validate` com `Success!` e `terraform test` com `11 passed, 0 failed` (o `init -backend=false` não foi repetido: o `.terraform` da T37 já tinha o provider). `variables.tf` completo: `project_id`, `billing_account_id` (formato `XXXXXX-XXXXXX-XXXXXX`), `region` e `zone` (Free Tier; a zona deve pertencer à região), `allowed_ssh_cidr` (CIDR válido, não `0.0.0.0/0`, prefixo ≥ /24), `repo_url` (HTTPS), `repo_ref` (`main`), `db_name`, `db_user`, `db_password` (`sensitive`; `[A-Za-z0-9_.-]`, mínimo 16), `cron_schedule`, `swap_size_mb`, `boot_disk_size_gb` (≤ 30). Sem `budget_alert_email` (o módulo `budget` usa os destinatários IAM da conta de faturamento, T30). `issensitive(var.db_password)` funciona em `assert`. As variáveis sem `default` (`project_id`, `billing_account_id`, `allowed_ssh_cidr`, `repo_url`, `db_password`) e o `sensitive` são garantidos também por pytest estático (o `terraform test` não enumera "sem default"). Quick: ruff limpo; `pytest` do arquivo novo com 6 passed. Spec: TFP-05 e TFP-10 seguem `In progress` (T41, T51 para o TFP-10; validação real na T42).
 
 ---
 
