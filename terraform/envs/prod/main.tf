@@ -12,6 +12,7 @@ module "apis" {
     "compute.googleapis.com",
     "iam.googleapis.com",
     "billingbudgets.googleapis.com",
+    "iap.googleapis.com",
   ]
 }
 
@@ -21,8 +22,7 @@ module "apis" {
 module "network" {
   source = "../../modules/network"
 
-  region           = var.region
-  allowed_ssh_cidr = var.allowed_ssh_cidr
+  region = var.region
 
   depends_on = [module.apis]
 }

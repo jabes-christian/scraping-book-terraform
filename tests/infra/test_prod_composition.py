@@ -24,6 +24,7 @@ EXPECTED_APIS = {
     "compute.googleapis.com",
     "iam.googleapis.com",
     "billingbudgets.googleapis.com",
+    "iap.googleapis.com",
 }
 
 
@@ -98,8 +99,8 @@ def test_exactly_one_instance():
     assert not re.search(r"^\s*(count|for_each)\s*=", _module_block("compute_vm"), re.MULTILINE)
 
 
-def test_prod_enables_exactly_the_three_apis():
-    # TFP-01: compute, iam e billingbudgets (cloudresourcemanager/serviceusage ficam de fora).
+def test_prod_enables_exactly_the_four_apis():
+    # TFP-01, AD-007: compute, iam, billingbudgets e iap (sem cloudresourcemanager/serviceusage).
     assert set(re.findall(r'"([\w.]+\.googleapis\.com)"', _module_block("apis"))) == EXPECTED_APIS
 
 

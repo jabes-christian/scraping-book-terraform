@@ -8,7 +8,6 @@ mock_provider "google" {}
 variables {
   project_id         = "projeto-teste-123"
   billing_account_id = "012345-6789AB-CDEF01"
-  allowed_ssh_cidr   = "203.0.113.10/32"
   repo_url           = "https://github.com/exemplo/repositorio.git"
   db_password        = "senha-de-teste-1234"
 }
@@ -22,17 +21,17 @@ override_data {
   }
 }
 
-run "enables_exactly_the_three_apis" {
+run "enables_exactly_the_four_apis" {
   command = plan
 
   assert {
-    condition     = toset(module.apis.services) == toset(["compute.googleapis.com", "iam.googleapis.com", "billingbudgets.googleapis.com"])
-    error_message = "As APIs habilitadas devem ser exatamente compute, iam e billingbudgets."
+    condition     = toset(module.apis.services) == toset(["compute.googleapis.com", "iam.googleapis.com", "billingbudgets.googleapis.com", "iap.googleapis.com"])
+    error_message = "As APIs habilitadas devem ser exatamente compute, iam, billingbudgets e iap."
   }
 
   assert {
-    condition     = length(module.apis.services) == 3
-    error_message = "Devem existir exatamente 3 APIs."
+    condition     = length(module.apis.services) == 4
+    error_message = "Devem existir exatamente 4 APIs."
   }
 }
 

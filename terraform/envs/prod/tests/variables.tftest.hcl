@@ -1,4 +1,4 @@
-# Testes das variaveis de envs/prod (TFP-05, TFP-10).
+# Testes das variaveis de envs/prod (TFP-10).
 # mock_provider evita qualquer chamada de API/ADC; command = plan basta, pois
 # a validacao de variaveis roda antes de qualquer recurso.
 
@@ -7,7 +7,6 @@ mock_provider "google" {}
 variables {
   project_id         = "projeto-teste-123"
   billing_account_id = "012345-6789AB-CDEF01"
-  allowed_ssh_cidr   = "203.0.113.10/32"
   repo_url           = "https://github.com/exemplo/repositorio.git"
   db_password        = "senha-de-teste-1234"
 }
@@ -38,26 +37,6 @@ run "db_password_is_sensitive" {
     condition     = issensitive(var.db_password)
     error_message = "db_password deve ser sensitive."
   }
-}
-
-run "ssh_open_to_internet_fails" {
-  command = plan
-
-  variables {
-    allowed_ssh_cidr = "0.0.0.0/0"
-  }
-
-  expect_failures = [var.allowed_ssh_cidr]
-}
-
-run "ssh_wide_prefix_fails" {
-  command = plan
-
-  variables {
-    allowed_ssh_cidr = "10.0.0.0/16"
-  }
-
-  expect_failures = [var.allowed_ssh_cidr]
 }
 
 run "invalid_billing_account_id_fails" {

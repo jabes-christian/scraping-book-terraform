@@ -7,9 +7,6 @@ project_id = "your-project-id"
 # ID da conta de faturamento (formato XXXXXX-XXXXXX-XXXXXX), usado pelo orcamento.
 billing_account_id = "XXXXXX-XXXXXX-XXXXXX"
 
-# Seu IP publico de saida com /32 (nunca 0.0.0.0/0; prefixo minimo /24).
-allowed_ssh_cidr = "203.0.113.10/32"
-
 # Repositorio PUBLICO que a VM clona a cada boot (URL HTTPS) e a branch ou tag.
 repo_url = "https://github.com/your-user/your-repo.git"
 repo_ref = "main"

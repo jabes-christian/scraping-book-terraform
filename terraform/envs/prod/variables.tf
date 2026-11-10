@@ -47,28 +47,6 @@ variable "zone" {
   }
 }
 
-variable "allowed_ssh_cidr" {
-  type        = string
-  description = "CIDR IPv4 autorizado a acessar a VM por SSH (tcp:22). Use o seu IP público com /32."
-
-  validation {
-    condition     = can(cidrnetmask(var.allowed_ssh_cidr))
-    error_message = "allowed_ssh_cidr deve ser um CIDR IPv4 válido (ex.: 203.0.113.10/32)."
-  }
-
-  validation {
-    condition     = var.allowed_ssh_cidr != "0.0.0.0/0"
-    error_message = "allowed_ssh_cidr não pode ser 0.0.0.0/0: o SSH ficaria aberto para a internet inteira."
-  }
-
-  # Prefixo mínimo /24 (no máximo 256 endereços). try() evita erro de avaliação
-  # quando o valor não tem "/".
-  validation {
-    condition     = try(tonumber(split("/", var.allowed_ssh_cidr)[1]) >= 24, false)
-    error_message = "allowed_ssh_cidr deve ter prefixo /24 ou mais específico (até /32); redes maiores, como /8 e /16, expõem o SSH a faixas amplas demais."
-  }
-}
-
 variable "repo_url" {
   type        = string
   description = "URL HTTPS do repositório público que a VM clona (AD-001)."

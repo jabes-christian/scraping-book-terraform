@@ -23,7 +23,7 @@ def _variable_block(name: str) -> str:
 
 @pytest.mark.parametrize(
     "name",
-    ["project_id", "billing_account_id", "allowed_ssh_cidr", "repo_url", "db_password"],
+    ["project_id", "billing_account_id", "repo_url", "db_password"],
 )
 def test_required_variables_have_no_default(name):
     # TFP-10: valores do ambiente do autor e a senha nunca têm padrão no código.
