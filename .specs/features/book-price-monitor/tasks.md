@@ -920,6 +920,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 **Gate**: infra
 **Commit**: `feat(tf-modules): adiciona módulo network com SSH restrito`
 **Status**: ✅ Concluída (9 `run` blocks: 11 asserções e 4 `expect_failures`). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `init -backend=false` (provider `google` v7.46.2, `.terraform.lock.hcl` gerado), `validate` com `Success!`, `terraform test` com `9 passed, 0 failed` (`terraform/modules/network/tests/main.tftest.hcl`, `mock_provider "google"`). Cobertura: VPC custom, sub-rede `10.10.0.0/24` em `us-central1`, firewall INGRESS só `tcp:22` com `source_ranges == [allowed_ssh_cidr]` e `target_tags == [book-monitor]`, output `network_tag`; `0.0.0.0/0`, `abc`, `/33` e `/8` falham na validação; `/24` e `/32` passam. **Adição ao escopo (aprovada explicitamente pelo autor):** terceira `validation` exige prefixo ≥ `/24`, com `try()` para valores sem `/`. A ausência de NAT, LB e IP estático não é verificada por `terraform test`; fica para o pytest estático de `envs/prod`. Spec: TFP-03, TFP-04 e TFP-05 `In progress` (composição em `envs/prod`: T38, T39, T51); TFP-12 segue `In progress`.
+**Mudança de escopo (AD-007, 2026-11-09, aprovada pelo autor)**: o SSH passou a ser só por túnel IAP. A variável `allowed_ssh_cidr`, suas 3 `validation` (incluindo a adição `/24`) e os `expect_failures` foram removidos; o firewall `book-monitor-allow-iap-ssh` libera `tcp:22` somente de `35.235.240.0/20` e o teste afirma esse `source_ranges` exato (TFP-04, TFP-05). Feito na Fase 8, antes da T42.
 
 ---
 
@@ -1136,6 +1137,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 **Gate**: infra
 **Commit**: `feat(tf-compute-vm): expõe nome da instância, zona e comando SSH`
 **Status**: ✅ Concluída (2 `run` blocks novos, 3 asserções; 27 no `terraform test` do `compute_vm`). `outputs.tf` com `instance_name`, `zone` e `ssh_command` (`gcloud compute ssh <vm> --zone <zone> --project <id>`, com o project vindo de `google_compute_instance.this.project`, sem variável nova); os testes usam `override_resource` com `override_during = plan` para o `project` e afirmam o texto exato. Spec: TFP-11 `In progress` (T40, T51); TFP-12 segue `In progress` (T39, T49). **Gate Build da Fase 7** (Quick: 109 unit e ruff limpo; `pytest -m infra`: 32, 0 skip; executado pelo autor: `fmt -check -recursive terraform` sem saída e `validate` + `test` verdes nos 5 módulos e no bootstrap: compute_vm 27, apis 4, network 9, identity 3, budget 6, bootstrap 17): fase concluída.
+**Mudança de escopo (AD-007)**: o `ssh_command` do `compute_vm` passou a terminar em `--tunnel-through-iap`; os testes do output afirmam o texto novo.
 
 ---
 
@@ -1190,6 +1192,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 **Gate**: infra
 **Commit**: `feat(tf-prod): adiciona variáveis de entrada com validações`
 **Status**: ✅ Concluída (11 `run` blocks em `terraform/envs/prod/tests/variables.tftest.hcl`; 6 testes em `tests/infra/test_prod_variables.py`). Gate Infra executado pelo autor (AD-006): `fmt -check -recursive terraform` sem saída, `validate` com `Success!` e `terraform test` com `11 passed, 0 failed` (o `init -backend=false` não foi repetido: o `.terraform` da T37 já tinha o provider). `variables.tf` completo: `project_id`, `billing_account_id` (formato `XXXXXX-XXXXXX-XXXXXX`), `region` e `zone` (Free Tier; a zona deve pertencer à região), `allowed_ssh_cidr` (CIDR válido, não `0.0.0.0/0`, prefixo ≥ /24), `repo_url` (HTTPS), `repo_ref` (`main`), `db_name`, `db_user`, `db_password` (`sensitive`; `[A-Za-z0-9_.-]`, mínimo 16), `cron_schedule`, `swap_size_mb`, `boot_disk_size_gb` (≤ 30). Sem `budget_alert_email` (o módulo `budget` usa os destinatários IAM da conta de faturamento, T30). `issensitive(var.db_password)` funciona em `assert`. As variáveis sem `default` (`project_id`, `billing_account_id`, `allowed_ssh_cidr`, `repo_url`, `db_password`) e o `sensitive` são garantidos também por pytest estático (o `terraform test` não enumera "sem default"). Quick: ruff limpo; `pytest` do arquivo novo com 6 passed. Spec: TFP-05 e TFP-10 seguem `In progress` (T41, T51 para o TFP-10; validação real na T42).
+**Mudança de escopo (AD-007)**: `allowed_ssh_cidr` foi removida do `variables.tf` de `envs/prod` e os 2 `run` de SSH (`0.0.0.0/0` e `/16`) saíram dos testes; `variables.tftest.hcl` passa a ter 9 `run` blocks.
 
 ---
 
@@ -1217,6 +1220,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 **Gate**: infra
 **Commit**: `feat(tf-prod): compõe os módulos no ambiente prod`
 **Status**: ✅ Concluída (4 `run` blocks novos com 5 asserções em `terraform/envs/prod/tests/main.tftest.hcl`; 15 no `terraform test` do `envs/prod`; 18 testes em `tests/infra/test_prod_composition.py`). Gate Infra executado pelo autor (AD-006): `fmt -check -recursive terraform` sem saída, `init -backend=false` (5 módulos locais e provider v7.46.2), `validate` com `Success!` e `terraform test` com `15 passed, 0 failed`. `main.tf` compõe `apis` (compute, iam, billingbudgets) e, com `depends_on = [module.apis]`, `network`, `identity`, `compute_vm` (recebe `subnetwork`, `network_tag` e `email` das saídas) e `budget`; nenhum recurso no próprio `envs/prod`. Como o `terraform test` não enumera o plano (achado da Fase 5), a lista fechada de 7 tipos, os 8 tipos proibidos, a instância única (sem `count`/`for_each`), as 3 APIs, o `disable_on_destroy = false` e o `depends_on` são garantidos por pytest estático; o `terraform test` cobre as APIs, o nome/zona da VM e a tag de rede por saídas dos módulos. `override_data` em `module.budget.data.google_project.this` (`override_during = plan`) funciona em módulo filho. O `init -backend=false` desta task desfez o backend GCS da T37: a T42 repete o `init "-backend-config=backend.hcl"`. Quick: 109 unit, ruff limpo. Spec: sem mudança de status (TFP-01, 03, 04, 06, 07, 08, 09, 12 e 13 seguem `In progress`; completam nas tasks operacionais T42, T51 e T55).
+**Mudança de escopo (AD-007)**: `iap.googleapis.com` entra na lista de APIs (agora 4); os testes (terraform test e pytest estático) passam de 3 para 4 APIs e o módulo `network` deixa de receber `allowed_ssh_cidr`.
 
 ---
 
@@ -1243,6 +1247,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 **Gate**: infra
 **Commit**: `feat(tf-prod): expõe comando SSH e outputs da instância`
 **Status**: ✅ Concluída (2 `run` blocks novos com 4 asserções em `terraform/envs/prod/tests/outputs.tftest.hcl`; 17 `run` blocks no `terraform test` do `envs/prod`). Gate Infra executado pelo autor (AD-006): `fmt -check -recursive terraform` sem saída, `validate` com `Success!` e `terraform test` com `17 passed, 0 failed`. `outputs.tf` repassa `instance_name`, `zone` e `ssh_command` do módulo `compute_vm`; o teste afirma o texto exato `gcloud compute ssh book-monitor --zone us-central1-a --project projeto-teste-123` e que o comando segue a zona informada (`us-east1-b`). `override_resource` em escopo de arquivo sobre `module.compute_vm.google_compute_instance.this` (`override_during = plan`) simula o `project` computado; `override_data` do budget como na T39. Sem pytest novo nesta task. Spec: TFP-11 segue `In progress` (T51).
+**Mudança de escopo (AD-007)**: o `ssh_command` esperado nos testes de `envs/prod` termina em `--tunnel-through-iap`.
 
 ---
 
@@ -1270,6 +1275,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 **Gate**: quick
 **Commit**: `chore(tf-prod): adiciona exemplos de tfvars e backend com teste de higiene do repositório`
 **Status**: ✅ Concluída (6 testes em `tests/unit/test_repo_hygiene.py`). Gate: Quick com 115 passed (109 + 6), ruff limpo, `pytest -m infra` com 59 passed (0 skip) e `terraform fmt -check -recursive terraform` executado pelo autor (AD-006) sem saída. `terraform.tfvars.example` (só placeholders; opcionais comentados; `db_password` fora do arquivo, com a orientação de `$env:TF_VAR_db_password`) e `backend.hcl.example` (`bucket = "your-project-id-tfstate"`, `prefix = "envs/prod"`). O teste de higiene reprova, numa lista sintética, `.env`, `*.tfvars`, `backend.hcl`, `*.tfstate`, `*.tfstate.*`, `*-sa-key.json` e `credentials*.json`, aceita os `*.example` e passa no `git ls-files` real. Spec: OPS-05 `In progress` (T43); TFP-02 e TFP-10 seguem `In progress` (T42, T51).
+**Mudança de escopo (AD-007)**: `allowed_ssh_cidr` foi removida do `terraform.tfvars.example`; o teste de higiene não muda (ele deriva as variáveis obrigatórias do `variables.tf`).
 
 ---
 
@@ -1290,7 +1296,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 **Done when**:
 
 - [ ] Autor deu OK para o `init`/`plan` (acessam o bucket e a API GCP em modo leitura)
-- [ ] O plano lista somente os recursos esperados (3 APIs, rede, subnet, firewall, SA, 1 e2-micro, budget); nenhum recurso proibido; senha não aparece em texto no plano
+- [ ] O plano lista somente os recursos esperados (4 APIs: compute, iam, billingbudgets e iap; rede, subnet, firewall `book-monitor-allow-iap-ssh`, SA, 1 e2-micro, budget; AD-007); nenhum recurso proibido; senha não aparece em texto no plano
 - [ ] Conclusão marcada em `tasks.md` e commit próprio contendo somente esse arquivo (mensagem abaixo)
 
 **Tests**: none

@@ -227,7 +227,7 @@ State do bootstrap é local (`terraform.tfstate` já ignorado no `.gitignore`).
 | Módulo | Recursos | Entradas principais | Saídas |
 | --- | --- | --- | --- |
 | `apis` | `google_project_service` (`for_each`), `disable_on_destroy = false`, `disable_dependent_services = false` | `project_id`, `services` | `services` (para `depends_on`) |
-| `network` | `google_compute_network` (`auto_create_subnetworks = false`), `google_compute_subnetwork` (`10.10.0.0/24`), `google_compute_firewall` ingress `tcp:22` de `allowed_ssh_cidr` para a tag `book-monitor` | `region`, `allowed_ssh_cidr` (**validation**: CIDR válido e diferente de `0.0.0.0/0`) | `network`, `subnetwork`, `network_tag` |
+| `network` | `google_compute_network` (`auto_create_subnetworks = false`), `google_compute_subnetwork` (`10.10.0.0/24`), `google_compute_firewall` `book-monitor-allow-iap-ssh`: ingress `tcp:22` somente da faixa do IAP `35.235.240.0/20` (fixa no módulo, AD-007) para a tag `book-monitor` | `region` (sem variável de CIDR de SSH) | `network`, `subnetwork`, `network_tag` |
 | `identity` | `google_service_account` (**sem** binding de IAM) | `account_id` | `email` |
 | `compute_vm` | `google_compute_instance` `e2-micro`, imagem `debian-cloud/debian-12`, disco `pd-standard`, IP externo efêmero (`access_config {}`), não-preemptível, `shielded_instance_config`, `deletion_protection = false`; metadata `startup-script` (via `templatefile`, sem segredo) e `book-db-password` | `zone`, `subnetwork`, `network_tag`, `service_account_email`, `repo_url`, `repo_ref`, `db_name`, `db_user`, `db_password` (sensitive), `cron_schedule`, `swap_size_mb`, `boot_disk_size_gb` | `instance_name`, `zone`, `ssh_command` |
 | `budget` | `google_billing_budget` filtrado por `projects/<número>` (data `google_project`), `amount.specified_amount` `currency_code = var.currency_code` (`BRL`), `units = 5`, três `threshold_rules` (0.5, 0.9, 1.0) | `billing_account_id`, `project_id`, `amount_units`, `currency_code`, `thresholds` | `budget_name` |
@@ -238,9 +238,9 @@ State do bootstrap é local (`terraform.tfstate` já ignorado no `.gitignore`).
 
 ### `envs/prod/` (TFP-01..04, 10, 11)
 
-`versions.tf`, `backend.tf` (`terraform { backend "gcs" { prefix = "envs/prod" } }`, bucket via `-backend-config=backend.hcl`), `providers.tf`, `main.tf` (compõe `apis` → demais módulos com `depends_on = [module.apis]`), `variables.tf`, `outputs.tf`, `terraform.tfvars.example`, `backend.hcl.example`. APIs habilitadas: `compute.googleapis.com`, `iam.googleapis.com`, `billingbudgets.googleapis.com` (`cloudresourcemanager` e `serviceusage` já estão ativas fora do Terraform e **não** são gerenciadas aqui, por isso `disable_on_destroy = false` em tudo).
+`versions.tf`, `backend.tf` (`terraform { backend "gcs" { prefix = "envs/prod" } }`, bucket via `-backend-config=backend.hcl`), `providers.tf`, `main.tf` (compõe `apis` → demais módulos com `depends_on = [module.apis]`), `variables.tf`, `outputs.tf`, `terraform.tfvars.example`, `backend.hcl.example`. APIs habilitadas: `compute.googleapis.com`, `iam.googleapis.com`, `billingbudgets.googleapis.com` e `iap.googleapis.com` (AD-007; `cloudresourcemanager` e `serviceusage` já estão ativas fora do Terraform e **não** são gerenciadas aqui, por isso `disable_on_destroy = false` em tudo).
 
-Outputs: `instance_name`, `zone`, `ssh_command` (`gcloud compute ssh <vm> --zone <zone> --project <id>`).
+Outputs: `instance_name`, `zone`, `ssh_command` (`gcloud compute ssh <vm> --zone <zone> --project <id> --tunnel-through-iap`; o acesso SSH é só por túnel IAP, AD-007).
 
 ### Startup script da VM (`modules/compute_vm/startup.sh.tftpl`)
 
@@ -338,4 +338,4 @@ Roda como root a cada boot e é idempotente. Variáveis do template não incluem
 | Budget e-mail | Destinatários IAM padrão | Mais simples; ADC-compatível |
 | Validação de Free Tier | Em `validation` de variáveis | Falha no `plan`, antes de gastar |
 | Retry | 3 repetições, 2/4/8 s | Spec |
-| SSH | Chaves em metadata via `gcloud compute ssh` (OS Login fica como evolução) | Funciona com o papel Owner sem IAM extra |
+| SSH | Chaves em metadata via `gcloud compute ssh --tunnel-through-iap` (OS Login fica como evolução; AD-007) | Esperado funcionar com o papel Owner sem IAM extra; a permissão `iap.tunnelInstances.accessViaIAP` do Owner e a necessidade de `iap.googleapis.com` são validadas na T52 |

@@ -162,17 +162,17 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 
 **Acceptance Criteria**:
 
-1. WHEN o autor executa `terraform apply` em `envs/prod` THEN the system SHALL habilitar via `google_project_service` as APIs `compute.googleapis.com`, `iam.googleapis.com`, `billingbudgets.googleapis.com` e as demais necessárias, antes de criar os recursos que dependem delas <!-- TFP-01 -->
+1. WHEN o autor executa `terraform apply` em `envs/prod` THEN the system SHALL habilitar via `google_project_service` as APIs `compute.googleapis.com`, `iam.googleapis.com`, `billingbudgets.googleapis.com`, `iap.googleapis.com` e as demais necessárias, antes de criar os recursos que dependem delas <!-- TFP-01 -->
 2. The system SHALL declarar `backend "gcs"` com configuração parcial (sem variáveis) e receber o nome do bucket por `backend.hcl` via `terraform init -backend-config=backend.hcl`, versionando apenas `backend.hcl.example` <!-- TFP-02 -->
 3. The system SHALL criar uma VPC customizada e uma subnet em `us-central1` <!-- TFP-03 -->
-4. The system SHALL criar regras de firewall que permitem ingress somente TCP 22 a partir de `allowed_ssh_cidr` <!-- TFP-04 -->
-5. IF `allowed_ssh_cidr` é `0.0.0.0/0` THEN the system SHALL falhar a validação da variável <!-- TFP-05 -->
+4. The system SHALL criar regras de firewall que permitem ingress somente TCP 22 a partir da faixa do IAP `35.235.240.0/20` (AD-007) <!-- TFP-04 -->
+5. The system SHALL NOT expor variável de CIDR de SSH do usuário: o `source_ranges` da regra de firewall SSH é exatamente `["35.235.240.0/20"]`, nunca `0.0.0.0/0` (AD-007) <!-- TFP-05 -->
 6. The system SHALL criar uma service account dedicada para a VM, sem nenhuma role de projeto e sem chave JSON <!-- TFP-06 -->
 7. The system SHALL criar exatamente uma VM `e2-micro` não-preemptível em `us-central1-a`, com disco de boot `pd-standard` de no máximo 30 GB <!-- TFP-07 -->
 8. The system SHALL NOT criar Cloud NAT, load balancer, IP estático reservado, snapshot, Cloud SQL, Pub/Sub, Artifact Registry nem Secret Manager <!-- TFP-08 -->
 9. The system SHALL criar um budget alert de R$ 5 (moeda da conta) filtrado pelo projeto, com notificação por e-mail aos destinatários IAM padrão da conta de faturamento em 50%, 90% e 100%, sem Pub/Sub <!-- TFP-09 -->
-10. The system SHALL receber `project_id`, `billing_account_id`, `allowed_ssh_cidr`, `repo_url`, `repo_ref` (padrão `main`) e a senha do banco por variáveis, com `sensitive = true` na senha, e fornecer `terraform.tfvars.example` sem valores reais <!-- TFP-10 -->
-11. WHEN o `apply` termina THEN the system SHALL expor em `outputs` o nome da VM, a zona e o comando `gcloud compute ssh` pronto <!-- TFP-11 -->
+10. The system SHALL receber `project_id`, `billing_account_id`, `repo_url`, `repo_ref` (padrão `main`) e a senha do banco por variáveis, com `sensitive = true` na senha, e fornecer `terraform.tfvars.example` sem valores reais <!-- TFP-10 -->
+11. WHEN o `apply` termina THEN the system SHALL expor em `outputs` o nome da VM, a zona e o comando `gcloud compute ssh ... --tunnel-through-iap` pronto <!-- TFP-11 -->
 12. The system SHALL organizar o código em `modules/` reutilizáveis (`apis`, `network`, `identity`, `compute_vm`, `budget`) e `envs/prod` que apenas os compõe <!-- TFP-12 -->
 13. The system SHALL definir `disable_on_destroy = false` nos `google_project_service` <!-- TFP-13 -->
 

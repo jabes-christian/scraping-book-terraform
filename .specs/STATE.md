@@ -50,6 +50,14 @@
 - **Date**: 2026-11-03
 - **Status**: active
 
+### AD-007
+- **Decision**: O acesso SSH à VM é feito exclusivamente por túnel IAP (`gcloud compute ssh --tunnel-through-iap`). O firewall libera `tcp:22` somente da faixa do IAP `35.235.240.0/20` para a tag `book-monitor` (regra `book-monitor-allow-iap-ssh`); a variável `allowed_ssh_cidr` deixa de existir (módulo `network` e `envs/prod`); `iap.googleapis.com` entra na lista de APIs de `envs/prod` (4 APIs); o output `ssh_command` passa a incluir `--tunnel-through-iap`. Nenhuma role IAM nova no Terraform: se o túnel falhar por permissão, decide-se na T52 com o erro em mãos.
+- **Reason**: A máquina do autor fica numa rede corporativa com Netskope (o IP de saída, 163.116.228.50, é do proxy, compartilhado e possivelmente diferente do IP real da conexão na porta 22) e o IP residencial é dinâmico; um `/32` não é confiável.
+- **Trade-off**: Depende do IAP e do `gcloud` para qualquer acesso à VM; a VM mantém o IP externo efêmero (precisa de saída para a internet, sem NAT), mas a porta 22 deixa de aceitar origens fora da faixa do IAP. Substitui o CIDR do usuário e o ajuste de escopo `/24` da T28. Não confirmado por documentação: se o papel Owner já tem `iap.tunnelInstances.accessViaIAP` e se `iap.googleapis.com` é obrigatória para o túnel TCP.
+- **Scope**: Spec (TFP-01, TFP-04, TFP-05, TFP-10, TFP-11), Design (rede, APIs, outputs), módulos `network` e `compute_vm`, `envs/prod`, T42 e tasks operacionais T51-T52.
+- **Date**: 2026-11-09
+- **Status**: active
+
 ## Handoff
 
 - **Feature**: .specs/features/book-price-monitor
