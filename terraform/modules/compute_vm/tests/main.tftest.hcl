@@ -431,8 +431,8 @@ run "outputs_expose_name_zone_and_ssh_command" {
   }
 
   assert {
-    condition     = output.ssh_command == "gcloud compute ssh book-monitor --zone us-central1-a --project projeto-teste-123"
-    error_message = "ssh_command deve ser exatamente: gcloud compute ssh <vm> --zone <zone> --project <id>."
+    condition     = output.ssh_command == "gcloud compute ssh book-monitor --zone us-central1-a --project projeto-teste-123 --tunnel-through-iap"
+    error_message = "ssh_command deve ser exatamente: gcloud compute ssh <vm> --zone <zone> --project <id> --tunnel-through-iap."
   }
 }
 
@@ -452,7 +452,7 @@ run "ssh_command_follows_the_zone_variable" {
   }
 
   assert {
-    condition     = output.ssh_command == "gcloud compute ssh book-monitor --zone us-east1-b --project projeto-teste-123"
+    condition     = output.ssh_command == "gcloud compute ssh book-monitor --zone us-east1-b --project projeto-teste-123 --tunnel-through-iap"
     error_message = "ssh_command deve usar a zona informada."
   }
 }

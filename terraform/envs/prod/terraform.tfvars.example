@@ -1,0 +1,26 @@
+# Copie para terraform.tfvars (gitignored) e preencha. Nunca versione o arquivo real.
+#   Copy-Item terraform/envs/prod/terraform.tfvars.example terraform/envs/prod/terraform.tfvars
+
+# ID do projeto GCP (6 a 30 caracteres: minusculas, digitos e hifens).
+project_id = "your-project-id"
+
+# ID da conta de faturamento (formato XXXXXX-XXXXXX-XXXXXX), usado pelo orcamento.
+billing_account_id = "XXXXXX-XXXXXX-XXXXXX"
+
+# Repositorio PUBLICO que a VM clona a cada boot (URL HTTPS) e a branch ou tag.
+repo_url = "https://github.com/your-user/your-repo.git"
+repo_ref = "main"
+
+# A senha do banco NAO vai neste arquivo (db_password). Informe por variavel de
+# ambiente na mesma sessao do PowerShell, antes do plan/apply (16+ caracteres de
+# [A-Za-z0-9_.-]):
+#   $env:TF_VAR_db_password = "change-me"
+
+# Opcionais (valores padrao mostrados):
+# region            = "us-central1"
+# zone              = "us-central1-a"
+# db_name           = "books"
+# db_user           = "books"
+# cron_schedule     = "0 6 * * *"
+# swap_size_mb      = 1024
+# boot_disk_size_gb = 30

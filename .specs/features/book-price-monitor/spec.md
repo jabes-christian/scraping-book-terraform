@@ -162,17 +162,17 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 
 **Acceptance Criteria**:
 
-1. WHEN o autor executa `terraform apply` em `envs/prod` THEN the system SHALL habilitar via `google_project_service` as APIs `compute.googleapis.com`, `iam.googleapis.com`, `billingbudgets.googleapis.com` e as demais necessárias, antes de criar os recursos que dependem delas <!-- TFP-01 -->
+1. WHEN o autor executa `terraform apply` em `envs/prod` THEN the system SHALL habilitar via `google_project_service` as APIs `compute.googleapis.com`, `iam.googleapis.com`, `billingbudgets.googleapis.com`, `iap.googleapis.com` e as demais necessárias, antes de criar os recursos que dependem delas <!-- TFP-01 -->
 2. The system SHALL declarar `backend "gcs"` com configuração parcial (sem variáveis) e receber o nome do bucket por `backend.hcl` via `terraform init -backend-config=backend.hcl`, versionando apenas `backend.hcl.example` <!-- TFP-02 -->
 3. The system SHALL criar uma VPC customizada e uma subnet em `us-central1` <!-- TFP-03 -->
-4. The system SHALL criar regras de firewall que permitem ingress somente TCP 22 a partir de `allowed_ssh_cidr` <!-- TFP-04 -->
-5. IF `allowed_ssh_cidr` é `0.0.0.0/0` THEN the system SHALL falhar a validação da variável <!-- TFP-05 -->
+4. The system SHALL criar regras de firewall que permitem ingress somente TCP 22 a partir da faixa do IAP `35.235.240.0/20` (AD-007) <!-- TFP-04 -->
+5. The system SHALL NOT expor variável de CIDR de SSH do usuário: o `source_ranges` da regra de firewall SSH é exatamente `["35.235.240.0/20"]`, nunca `0.0.0.0/0` (AD-007) <!-- TFP-05 -->
 6. The system SHALL criar uma service account dedicada para a VM, sem nenhuma role de projeto e sem chave JSON <!-- TFP-06 -->
 7. The system SHALL criar exatamente uma VM `e2-micro` não-preemptível em `us-central1-a`, com disco de boot `pd-standard` de no máximo 30 GB <!-- TFP-07 -->
 8. The system SHALL NOT criar Cloud NAT, load balancer, IP estático reservado, snapshot, Cloud SQL, Pub/Sub, Artifact Registry nem Secret Manager <!-- TFP-08 -->
 9. The system SHALL criar um budget alert de R$ 5 (moeda da conta) filtrado pelo projeto, com notificação por e-mail aos destinatários IAM padrão da conta de faturamento em 50%, 90% e 100%, sem Pub/Sub <!-- TFP-09 -->
-10. The system SHALL receber `project_id`, `billing_account_id`, `allowed_ssh_cidr`, `repo_url`, `repo_ref` (padrão `main`) e a senha do banco por variáveis, com `sensitive = true` na senha, e fornecer `terraform.tfvars.example` sem valores reais <!-- TFP-10 -->
-11. WHEN o `apply` termina THEN the system SHALL expor em `outputs` o nome da VM, a zona e o comando `gcloud compute ssh` pronto <!-- TFP-11 -->
+10. The system SHALL receber `project_id`, `billing_account_id`, `repo_url`, `repo_ref` (padrão `main`) e a senha do banco por variáveis, com `sensitive = true` na senha, e fornecer `terraform.tfvars.example` sem valores reais <!-- TFP-10 -->
+11. WHEN o `apply` termina THEN the system SHALL expor em `outputs` o nome da VM, a zona e o comando `gcloud compute ssh ... --tunnel-through-iap` pronto <!-- TFP-11 -->
 12. The system SHALL organizar o código em `modules/` reutilizáveis (`apis`, `network`, `identity`, `compute_vm`, `budget`) e `envs/prod` que apenas os compõe <!-- TFP-12 -->
 13. The system SHALL definir `disable_on_destroy = false` nos `google_project_service` <!-- TFP-13 -->
 
@@ -300,18 +300,18 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | TFB-04 | P1: Bootstrap do remote state | Tasks | T25, T26 | Implemented |
 | TFB-05 | P1: Bootstrap do remote state | Tasks | T23 | Implemented |
 | TFP-01 | P1: Infraestrutura de produção | Tasks | T27, T39, T42, T51 | In progress |
-| TFP-02 | P1: Infraestrutura de produção | Tasks | T37, T41, T42 | Planned |
+| TFP-02 | P1: Infraestrutura de produção | Tasks | T37, T41, T42 | Implemented |
 | TFP-03 | P1: Infraestrutura de produção | Tasks | T28, T39, T51 | In progress |
 | TFP-04 | P1: Infraestrutura de produção | Tasks | T28, T39, T51 | In progress |
-| TFP-05 | P1: Infraestrutura de produção | Tasks | T28, T38 | In progress |
+| TFP-05 | P1: Infraestrutura de produção | Tasks | T28, T38 | Implemented |
 | TFP-06 | P1: Infraestrutura de produção | Tasks | T29, T39, T51 | In progress |
 | TFP-07 | P1: Infraestrutura de produção | Tasks | T31, T35, T39, T51 | In progress |
-| TFP-08 | P1: Infraestrutura de produção | Tasks | T35, T39, T42 | In progress |
+| TFP-08 | P1: Infraestrutura de produção | Tasks | T35, T39, T42 | Implemented |
 | TFP-09 | P1: Infraestrutura de produção | Tasks | T30, T39, T51, T55 | In progress |
-| TFP-10 | P1: Infraestrutura de produção | Tasks | T31, T38, T41 | In progress |
+| TFP-10 | P1: Infraestrutura de produção | Tasks | T31, T38, T41 | Implemented |
 | TFP-11 | P1: Infraestrutura de produção | Tasks | T36, T40, T51 | In progress |
 | TFP-12 | P1: Infraestrutura de produção | Tasks | T27-T31, T35, T36, T39, T49 | In progress |
-| TFP-13 | P1: Infraestrutura de produção | Tasks | T22, T24, T27, T37, T39 | In progress |
+| TFP-13 | P1: Infraestrutura de produção | Tasks | T22, T24, T27, T37, T39 | Implemented |
 | VM-01 | P1: Runtime da VM | Tasks | T32, T33, T52 | In progress |
 | VM-02 | P1: Runtime da VM | Tasks | T32, T52 | In progress |
 | VM-03 | P1: Runtime da VM | Tasks | T34, T52, T54 | In progress |
@@ -326,7 +326,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | OPS-02 | P2: Operação, custo e destruição | Tasks | T45, T50, T55 | Planned |
 | OPS-03 | P2: Operação, custo e destruição | Tasks | T45, T50 | Planned |
 | OPS-04 | P2: Operação, custo e destruição | Tasks | T43, T50 | Planned |
-| OPS-05 | P2: Operação, custo e destruição | Tasks | T41, T43 | Planned |
+| OPS-05 | P2: Operação, custo e destruição | Tasks | T41, T43 | In progress |
 | OPS-06 | P2: Operação, custo e destruição | Tasks | T46, T50 | Planned |
 | AZR-01 | P3: Reaproveitamento para Azure | Tasks | T47, T49, T50 | Planned |
 | EDG-01 | Edge Cases | Tasks | T10, T12 | Implemented |

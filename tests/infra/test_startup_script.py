@@ -1,3 +1,4 @@
+import hashlib
 import json
 import re
 import shutil
@@ -19,7 +20,7 @@ RENDER_HINT = (
     "Gate Infra NAO cumprido: gere o script renderizado (a partir da raiz): "
     "terraform -chdir=terraform/modules/compute_vm/tests/render init; "
     "terraform -chdir=terraform/modules/compute_vm/tests/render apply -auto-approve; "
-    "terraform -chdir=terraform/modules/compute_vm/tests/render output -json script "
+    "terraform -chdir=terraform/modules/compute_vm/tests/render output -json "
     "| Set-Content -Encoding ascii .rendered-startup.json"
 )
 GIT_BASH = (
@@ -61,15 +62,32 @@ def _first_index(lines: list[str], needle: str) -> int:
     raise AssertionError(f"linha com {needle!r} não encontrada")
 
 
+def _load_rendered(path: Path, expected_sha256: str) -> str:
+    # Checagem por conteudo (nao por data): o JSON vale enquanto o hash do
+    # template usado na renderizacao for o do startup.sh.tftpl atual.
+    data = json.loads(path.read_text(encoding="ascii"))
+    try:
+        rendered_sha256 = data["template_sha256"]["value"]
+        script = data["script"]["value"]
+    except (KeyError, TypeError):
+        pytest.fail(
+            "O JSON renderizado esta em formato antigo (sem script/template_sha256). "
+            + RENDER_HINT
+        )
+    if rendered_sha256 != expected_sha256:
+        pytest.fail(
+            "O script renderizado nao corresponde ao template atual (SHA-256 diferente). "
+            + RENDER_HINT
+        )
+    assert isinstance(script, str)
+    return script
+
+
 @pytest.fixture(scope="module")
 def script() -> str:
     if not RENDERED_JSON.exists():
         pytest.skip(RENDER_HINT)
-    if RENDERED_JSON.stat().st_mtime < TEMPLATE.stat().st_mtime:
-        pytest.fail("O script renderizado está mais velho que o template. " + RENDER_HINT)
-    rendered = json.loads(RENDERED_JSON.read_text(encoding="ascii"))
-    assert isinstance(rendered, str)
-    return rendered
+    return _load_rendered(RENDERED_JSON, hashlib.sha256(TEMPLATE.read_bytes()).hexdigest())
 
 
 # --- Estáticos (não dependem do arquivo renderizado) ---
@@ -87,6 +105,34 @@ def test_locals_and_render_config_pass_the_same_keys():
 def test_every_template_variable_is_passed_to_templatefile():
     used = set(re.findall(r"(?<!\$)\$\{(\w+)\}", TEMPLATE.read_text(encoding="ascii")))
     assert used <= _template_keys(LOCALS)
+
+
+def _write_rendered(tmp_path: Path, payload: dict) -> Path:
+    path = tmp_path / "rendered.json"
+    path.write_text(json.dumps(payload), encoding="ascii")
+    return path
+
+
+def test_rendered_json_with_matching_hash_is_accepted(tmp_path):
+    path = _write_rendered(
+        tmp_path, {"script": {"value": "echo ok"}, "template_sha256": {"value": "abc"}}
+    )
+    assert _load_rendered(path, "abc") == "echo ok"
+
+
+def test_rendered_json_with_different_hash_fails(tmp_path):
+    path = _write_rendered(
+        tmp_path, {"script": {"value": "echo ok"}, "template_sha256": {"value": "abc"}}
+    )
+    with pytest.raises(pytest.fail.Exception, match="SHA-256 diferente"):
+        _load_rendered(path, "def")
+
+
+def test_rendered_json_in_legacy_format_fails(tmp_path):
+    path = tmp_path / "rendered.json"
+    path.write_text(json.dumps("echo ok"), encoding="ascii")
+    with pytest.raises(pytest.fail.Exception, match="formato antigo"):
+        _load_rendered(path, "abc")
 
 
 # --- Sobre o script renderizado (exigem .rendered-startup.json) ---

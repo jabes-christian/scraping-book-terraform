@@ -56,7 +56,7 @@ Regras do projeto que valem em toda a execução (do autor):
 | Quick | Tasks com apenas unit tests | `.venv\Scripts\python.exe -m pytest -m "not integration and not docker and not infra and not e2e"` + `.venv\Scripts\python.exe -m ruff check .` |
 | Full | Tasks com integration (exige Docker Desktop ligado) | Quick + `.venv\Scripts\python.exe -m pytest -m integration`. O `conftest.py` sobe e remove sozinho um projeto Compose isolado (`bookmonitor_it`, volume próprio, `127.0.0.1` em porta livre, credenciais de teste): não usa o `.env`, o `docker-compose.override.yml` nem o volume de desenvolvimento, e não exige `docker compose up` prévio |
 | Docker | Tasks de Dockerfile/Compose | `docker compose build` + `.venv\Scripts\python.exe -m pytest -m docker` |
-| Infra | Tasks de Terraform e startup script | **Executado pelo autor (AD-006)**, com o agente fornecendo os comandos, a explicação e a análise da saída: `terraform fmt -check -recursive terraform` + por stack/módulo alterado: `terraform -chdir=<dir> init -backend=false`, `terraform -chdir=<dir> validate`, `terraform -chdir=<dir> test`. O `pytest -m infra` (quando houver) continua com o agente: `.venv\Scripts\python.exe -m pytest -m infra`. O gate só passa com a saída do autor confirmando. **Tasks do startup script (T32-T34) e Build da Fase 7:** antes do `pytest -m infra`, o autor reexecuta a renderização (`init`, `apply -auto-approve` e `output -json script` em `terraform/modules/compute_vm/tests/render`, ver T32). O gate Infra dessas tasks (e o Build da fase) só é cumprido se o teste de renderização PASSAR; `skip` (arquivo renderizado ausente) significa gate NÃO cumprido |
+| Infra | Tasks de Terraform e startup script | **Executado pelo autor (AD-006)**, com o agente fornecendo os comandos, a explicação e a análise da saída: `terraform fmt -check -recursive terraform` + por stack/módulo alterado: `terraform -chdir=<dir> init -backend=false`, `terraform -chdir=<dir> validate`, `terraform -chdir=<dir> test`. O `pytest -m infra` (quando houver) continua com o agente: `.venv\Scripts\python.exe -m pytest -m infra`. O gate só passa com a saída do autor confirmando. **Tasks do startup script (T32-T34) e Build da Fase 7:** antes do `pytest -m infra`, o autor reexecuta a renderização (`init`, `apply -auto-approve` e `output -json | Set-Content -Encoding ascii .rendered-startup.json` em `terraform/modules/compute_vm/tests/render`, ver T32; o pytest valida o JSON pelo SHA-256 do template, não pela data). O gate Infra dessas tasks (e o Build da fase) só é cumprido se o teste de renderização PASSAR; `skip` (arquivo renderizado ausente) significa gate NÃO cumprido |
 | E2E | T21 e antes do Verifier | `.venv\Scripts\python.exe -m pytest -m e2e -s` (site real; ~3-4 min; projeto Compose isolado `bookmonitor_e2e`, credenciais do `.env`). Em rede com inspeção TLS: `E2E_BASE_URL=http://books.toscrape.com/` (repassado ao robô como `BASE_URL`) |
 | Build | Fim de cada fase | Quick + os níveis aplicáveis à fase (Full / Docker / Infra) + `terraform fmt -check -recursive terraform` (os comandos `terraform` são executados pelo autor, AD-006) |
 
@@ -920,6 +920,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 **Gate**: infra
 **Commit**: `feat(tf-modules): adiciona módulo network com SSH restrito`
 **Status**: ✅ Concluída (9 `run` blocks: 11 asserções e 4 `expect_failures`). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `init -backend=false` (provider `google` v7.46.2, `.terraform.lock.hcl` gerado), `validate` com `Success!`, `terraform test` com `9 passed, 0 failed` (`terraform/modules/network/tests/main.tftest.hcl`, `mock_provider "google"`). Cobertura: VPC custom, sub-rede `10.10.0.0/24` em `us-central1`, firewall INGRESS só `tcp:22` com `source_ranges == [allowed_ssh_cidr]` e `target_tags == [book-monitor]`, output `network_tag`; `0.0.0.0/0`, `abc`, `/33` e `/8` falham na validação; `/24` e `/32` passam. **Adição ao escopo (aprovada explicitamente pelo autor):** terceira `validation` exige prefixo ≥ `/24`, com `try()` para valores sem `/`. A ausência de NAT, LB e IP estático não é verificada por `terraform test`; fica para o pytest estático de `envs/prod`. Spec: TFP-03, TFP-04 e TFP-05 `In progress` (composição em `envs/prod`: T38, T39, T51); TFP-12 segue `In progress`.
+**Mudança de escopo (AD-007, 2026-11-09, aprovada pelo autor)**: o SSH passou a ser só por túnel IAP. A variável `allowed_ssh_cidr`, suas 3 `validation` (incluindo a adição `/24`) e os `expect_failures` foram removidos; o firewall `book-monitor-allow-iap-ssh` libera `tcp:22` somente de `35.235.240.0/20` e o teste afirma esse `source_ranges` exato (TFP-04, TFP-05). Feito na Fase 8, antes da T42.
 
 ---
 
@@ -1028,6 +1029,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 **Gate**: infra
 **Commit**: `feat(tf-compute-vm): adiciona swap e instalação do Docker ao startup script`
 **Status**: ✅ Concluída (4 `run` blocks novos, 10 no `terraform test`; 10 testes novos em `tests/infra/test_startup_script.py`, 16 no `pytest -m infra`, todos PASSANDO, 0 skip). Gate Infra executado pelo autor (AD-006): `fmt -check` sem saída, `validate` com `Success!`, `terraform test` com `10 passed, 0 failed`, renderização (`init`, `apply -auto-approve` com 0 recursos, `output -json script | Set-Content -Encoding ascii .rendered-startup.json`; arquivo ignorado pelo git). `bash -n` com o bash do Git sobre o script renderizado: OK. `locals.tf` já passa as 6 chaves do template (`swap_size_mb`, `repo_url`, `repo_ref`, `db_name`, `db_user`, `cron_schedule`) para as T33/T34 não alterarem a assinatura; `tests/render/main.tf` usa as mesmas. O template é só ASCII (o `Set-Content -Encoding ascii` trocaria acentos por `?`). Quick: 109 unit, ruff limpo. Spec: VM-02 e VM-01 `In progress` (T33, T52).
+**Ajuste do mecanismo de renderização (aprovado pelo autor, feito na Fase 8, commit `test(tf-compute-vm)`)**: a checagem de data (`mtime`) do `.rendered-startup.json` invalidava o JSON a cada troca de branch. Agora `tests/render/main.tf` expõe também `template_sha256` (`filesha256` do `startup.sh.tftpl`), o autor grava `terraform output -json` (todos os outputs, formato `{"script": {"value": ...}, "template_sha256": {"value": ...}}`) e o pytest compara o hash com o SHA-256 do template atual: só uma mudança real no conteúdo do template invalida o JSON. JSON ausente continua sendo `skip` (gate não cumprido); JSON em formato antigo ou com hash diferente falha com a dica de regeneração. 3 testes novos (hash igual aceito, hash diferente reprova, formato antigo reprova).
 
 ---
 
@@ -1135,6 +1137,7 @@ T51 → T52 → T53 → T54 → T55 → T56
 **Gate**: infra
 **Commit**: `feat(tf-compute-vm): expõe nome da instância, zona e comando SSH`
 **Status**: ✅ Concluída (2 `run` blocks novos, 3 asserções; 27 no `terraform test` do `compute_vm`). `outputs.tf` com `instance_name`, `zone` e `ssh_command` (`gcloud compute ssh <vm> --zone <zone> --project <id>`, com o project vindo de `google_compute_instance.this.project`, sem variável nova); os testes usam `override_resource` com `override_during = plan` para o `project` e afirmam o texto exato. Spec: TFP-11 `In progress` (T40, T51); TFP-12 segue `In progress` (T39, T49). **Gate Build da Fase 7** (Quick: 109 unit e ruff limpo; `pytest -m infra`: 32, 0 skip; executado pelo autor: `fmt -check -recursive terraform` sem saída e `validate` + `test` verdes nos 5 módulos e no bootstrap: compute_vm 27, apis 4, network 9, identity 3, budget 6, bootstrap 17): fase concluída.
+**Mudança de escopo (AD-007)**: o `ssh_command` do `compute_vm` passou a terminar em `--tunnel-through-iap`; os testes do output afirmam o texto novo.
 
 ---
 
@@ -1142,8 +1145,8 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 #### T37: Esqueleto de `envs/prod`
 
-**What**: Criar `versions.tf`, `providers.tf` (`user_project_override`, `billing_project`) e `backend.tf` (`backend "gcs" { prefix = "envs/prod" }`, bucket por configuração parcial).
-**Where**: `terraform/envs/prod/`
+**What**: Criar `versions.tf`, `providers.tf` (`user_project_override`, `billing_project`), `backend.tf` (`backend "gcs" { prefix = "envs/prod" }`, bucket por configuração parcial) e um `variables.tf` mínimo só com `project_id` (o `providers.tf` o referencia; mesmo precedente da T22). A T38 completa o arquivo.
+**Where**: `terraform/envs/prod/` (`versions.tf`, `providers.tf`, `backend.tf`, `variables.tf`)
 **Depends on**: T36
 **Reuses**: Esqueleto do bootstrap (T22)
 **Requirement**: TFP-02, TFP-13 (convenção)
@@ -1155,19 +1158,20 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `terraform -chdir=terraform/envs/prod init -backend=false` e `validate` passam; o bloco `backend "gcs"` não contém `bucket` nem variáveis
-- [ ] `.terraform.lock.hcl` gerado para versionar
-- [ ] Gate check passes: Infra
+- [x] `terraform -chdir=terraform/envs/prod init -backend=false` e `validate` passam; o bloco `backend "gcs"` não contém `bucket` nem variáveis
+- [x] `.terraform.lock.hcl` gerado para versionar
+- [x] Gate check passes: Infra
 
 **Tests**: none
 **Gate**: infra
 **Commit**: `feat(tf-prod): adiciona providers e backend gcs parcial`
+**Status**: ✅ Concluída. Gate Infra executado pelo autor (AD-006): `fmt -check -recursive terraform` sem saída, `init -backend=false` com `successfully initialized` (`hashicorp/google v7.46.2`, lock gerado) e `validate` com `Success!`. Arquivos em `terraform/envs/prod/`: `versions.tf`, `providers.tf` (`user_project_override`, `billing_project`), `backend.tf` (`backend "gcs"` só com `prefix = "envs/prod"`, sem `bucket`) e `variables.tf` mínimo com `project_id` (precedente da T22; a T38 completa). **Evidência antecipada da T42** (o autor rodou `init "-backend-config=backend.hcl"` na T37; sem `plan` nem `apply`): `Successfully configured the backend "gcs"!`, o que confirma ADC, `backend.hcl` real e acesso ao bucket do state pela rede corporativa (inspeção TLS) sem erro de certificado. O `plan` real segue pendente na T42. Spec: TFP-02 `In progress` (T41, T42); TFP-13 segue `In progress` (T39).
 
 ---
 
 #### T38: Variáveis de `envs/prod`
 
-**What**: Criar `variables.tf` com `project_id`, `billing_account_id`, `allowed_ssh_cidr`, `repo_url`, `repo_ref` (`main`), `db_name`, `db_user`, `db_password` (`sensitive`), `cron_schedule`, `swap_size_mb` e demais padrões do Design.
+**What**: Completar o `variables.tf` (já criado na T37 só com `project_id`) acrescentando `billing_account_id`, `allowed_ssh_cidr`, `repo_url`, `repo_ref` (`main`), `db_name`, `db_user`, `db_password` (`sensitive`), `cron_schedule`, `swap_size_mb` e demais padrões do Design.
 **Where**: `terraform/envs/prod/variables.tf`
 **Depends on**: T37
 **Reuses**: Variáveis dos módulos
@@ -1180,13 +1184,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `terraform test`: `allowed_ssh_cidr = "0.0.0.0/0"` falha; `db_password` é `sensitive`; faltando `project_id`/`billing_account_id` não há valor padrão
-- [ ] Gate check passes: Infra
-- [ ] Test count: ≥ 3 `run` blocks passam
+- [x] `terraform test`: `allowed_ssh_cidr = "0.0.0.0/0"` falha; `db_password` é `sensitive`; faltando `project_id`/`billing_account_id` não há valor padrão
+- [x] Gate check passes: Infra
+- [x] Test count: ≥ 3 `run` blocks passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-prod): adiciona variáveis de entrada com validações`
+**Status**: ✅ Concluída (11 `run` blocks em `terraform/envs/prod/tests/variables.tftest.hcl`; 6 testes em `tests/infra/test_prod_variables.py`). Gate Infra executado pelo autor (AD-006): `fmt -check -recursive terraform` sem saída, `validate` com `Success!` e `terraform test` com `11 passed, 0 failed` (o `init -backend=false` não foi repetido: o `.terraform` da T37 já tinha o provider). `variables.tf` completo: `project_id`, `billing_account_id` (formato `XXXXXX-XXXXXX-XXXXXX`), `region` e `zone` (Free Tier; a zona deve pertencer à região), `allowed_ssh_cidr` (CIDR válido, não `0.0.0.0/0`, prefixo ≥ /24), `repo_url` (HTTPS), `repo_ref` (`main`), `db_name`, `db_user`, `db_password` (`sensitive`; `[A-Za-z0-9_.-]`, mínimo 16), `cron_schedule`, `swap_size_mb`, `boot_disk_size_gb` (≤ 30). Sem `budget_alert_email` (o módulo `budget` usa os destinatários IAM da conta de faturamento, T30). `issensitive(var.db_password)` funciona em `assert`. As variáveis sem `default` (`project_id`, `billing_account_id`, `allowed_ssh_cidr`, `repo_url`, `db_password`) e o `sensitive` são garantidos também por pytest estático (o `terraform test` não enumera "sem default"). Quick: ruff limpo; `pytest` do arquivo novo com 6 passed. Spec: TFP-05 e TFP-10 seguem `In progress` (T41, T51 para o TFP-10; validação real na T42).
+**Mudança de escopo (AD-007)**: `allowed_ssh_cidr` foi removida do `variables.tf` de `envs/prod` e os 2 `run` de SSH (`0.0.0.0/0` e `/16`) saíram dos testes; `variables.tftest.hcl` passa a ter 9 `run` blocks.
 
 ---
 
@@ -1205,14 +1211,16 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `terraform test` sobre o plano com `mock_provider`: conjunto de tipos de recurso é exatamente {`google_project_service`, `google_compute_network`, `google_compute_subnetwork`, `google_compute_firewall`, `google_service_account`, `google_compute_instance`, `google_billing_budget`} (lista fechada; qualquer NAT, LB, IP estático, snapshot, Cloud SQL, Pub/Sub, Artifact Registry ou Secret Manager reprova)
-- [ ] Exatamente 1 instância; as 3 APIs; todas com `disable_on_destroy == false`
-- [ ] Gate check passes: Infra
-- [ ] Test count: ≥ 6 asserções passam
+- [x] `terraform test` sobre o plano com `mock_provider`: conjunto de tipos de recurso é exatamente {`google_project_service`, `google_compute_network`, `google_compute_subnetwork`, `google_compute_firewall`, `google_service_account`, `google_compute_instance`, `google_billing_budget`} (lista fechada; qualquer NAT, LB, IP estático, snapshot, Cloud SQL, Pub/Sub, Artifact Registry ou Secret Manager reprova)
+- [x] Exatamente 1 instância; as 3 APIs; todas com `disable_on_destroy == false`
+- [x] Gate check passes: Infra
+- [x] Test count: ≥ 6 asserções passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-prod): compõe os módulos no ambiente prod`
+**Status**: ✅ Concluída (4 `run` blocks novos com 5 asserções em `terraform/envs/prod/tests/main.tftest.hcl`; 15 no `terraform test` do `envs/prod`; 18 testes em `tests/infra/test_prod_composition.py`). Gate Infra executado pelo autor (AD-006): `fmt -check -recursive terraform` sem saída, `init -backend=false` (5 módulos locais e provider v7.46.2), `validate` com `Success!` e `terraform test` com `15 passed, 0 failed`. `main.tf` compõe `apis` (compute, iam, billingbudgets) e, com `depends_on = [module.apis]`, `network`, `identity`, `compute_vm` (recebe `subnetwork`, `network_tag` e `email` das saídas) e `budget`; nenhum recurso no próprio `envs/prod`. Como o `terraform test` não enumera o plano (achado da Fase 5), a lista fechada de 7 tipos, os 8 tipos proibidos, a instância única (sem `count`/`for_each`), as 3 APIs, o `disable_on_destroy = false` e o `depends_on` são garantidos por pytest estático; o `terraform test` cobre as APIs, o nome/zona da VM e a tag de rede por saídas dos módulos. `override_data` em `module.budget.data.google_project.this` (`override_during = plan`) funciona em módulo filho. O `init -backend=false` desta task desfez o backend GCS da T37: a T42 repete o `init "-backend-config=backend.hcl"`. Quick: 109 unit, ruff limpo. Spec: sem mudança de status (TFP-01, 03, 04, 06, 07, 08, 09, 12 e 13 seguem `In progress`; completam nas tasks operacionais T42, T51 e T55).
+**Mudança de escopo (AD-007)**: `iap.googleapis.com` entra na lista de APIs (agora 4); os testes (terraform test e pytest estático) passam de 3 para 4 APIs e o módulo `network` deixa de receber `allowed_ssh_cidr`.
 
 ---
 
@@ -1231,13 +1239,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `terraform test` afirma os três outputs e o texto do `ssh_command`
-- [ ] Gate check passes: Infra
-- [ ] Test count: ≥ 2 asserções passam
+- [x] `terraform test` afirma os três outputs e o texto do `ssh_command`
+- [x] Gate check passes: Infra
+- [x] Test count: ≥ 2 asserções passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-prod): expõe comando SSH e outputs da instância`
+**Status**: ✅ Concluída (2 `run` blocks novos com 4 asserções em `terraform/envs/prod/tests/outputs.tftest.hcl`; 17 `run` blocks no `terraform test` do `envs/prod`). Gate Infra executado pelo autor (AD-006): `fmt -check -recursive terraform` sem saída, `validate` com `Success!` e `terraform test` com `17 passed, 0 failed`. `outputs.tf` repassa `instance_name`, `zone` e `ssh_command` do módulo `compute_vm`; o teste afirma o texto exato `gcloud compute ssh book-monitor --zone us-central1-a --project projeto-teste-123` e que o comando segue a zona informada (`us-east1-b`). `override_resource` em escopo de arquivo sobre `module.compute_vm.google_compute_instance.this` (`override_during = plan`) simula o `project` computado; `override_data` do budget como na T39. Sem pytest novo nesta task. Spec: TFP-11 segue `In progress` (T51).
+**Mudança de escopo (AD-007)**: o `ssh_command` esperado nos testes de `envs/prod` termina em `--tunnel-through-iap`.
 
 ---
 
@@ -1256,14 +1266,16 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Os `.example` não contêm valores reais (placeholders como `your-project-id`, `change-me`) e cobrem todas as variáveis obrigatórias
-- [ ] Teste de higiene falha se um arquivo proibido estiver rastreado (cenário positivo e negativo com lista sintética) e passa no repositório atual
-- [ ] Gate check passes: Quick + Infra
-- [ ] Test count: ≥ 4 testes passam
+- [x] Os `.example` não contêm valores reais (placeholders como `your-project-id`, `change-me`) e cobrem todas as variáveis obrigatórias
+- [x] Teste de higiene falha se um arquivo proibido estiver rastreado (cenário positivo e negativo com lista sintética) e passa no repositório atual
+- [x] Gate check passes: Quick + Infra
+- [x] Test count: ≥ 4 testes passam
 
 **Tests**: unit
 **Gate**: quick
 **Commit**: `chore(tf-prod): adiciona exemplos de tfvars e backend com teste de higiene do repositório`
+**Status**: ✅ Concluída (6 testes em `tests/unit/test_repo_hygiene.py`). Gate: Quick com 115 passed (109 + 6), ruff limpo, `pytest -m infra` com 59 passed (0 skip) e `terraform fmt -check -recursive terraform` executado pelo autor (AD-006) sem saída. `terraform.tfvars.example` (só placeholders; opcionais comentados; `db_password` fora do arquivo, com a orientação de `$env:TF_VAR_db_password`) e `backend.hcl.example` (`bucket = "your-project-id-tfstate"`, `prefix = "envs/prod"`). O teste de higiene reprova, numa lista sintética, `.env`, `*.tfvars`, `backend.hcl`, `*.tfstate`, `*.tfstate.*`, `*-sa-key.json` e `credentials*.json`, aceita os `*.example` e passa no `git ls-files` real. Spec: OPS-05 `In progress` (T43); TFP-02 e TFP-10 seguem `In progress` (T42, T51).
+**Mudança de escopo (AD-007)**: `allowed_ssh_cidr` foi removida do `terraform.tfvars.example`; o teste de higiene não muda (ele deriva as variáveis obrigatórias do `variables.tf`).
 
 ---
 
@@ -1283,13 +1295,14 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Autor deu OK para o `init`/`plan` (acessam o bucket e a API GCP em modo leitura)
-- [ ] O plano lista somente os recursos esperados (3 APIs, rede, subnet, firewall, SA, 1 e2-micro, budget); nenhum recurso proibido; senha não aparece em texto no plano
-- [ ] Conclusão marcada em `tasks.md` e commit próprio contendo somente esse arquivo (mensagem abaixo)
+- [x] Autor deu OK para o `init`/`plan` (acessam o bucket e a API GCP em modo leitura)
+- [x] O plano lista somente os recursos esperados (4 APIs: compute, iam, billingbudgets e iap; rede, subnet, firewall `book-monitor-allow-iap-ssh`, SA, 1 e2-micro, budget; AD-007); nenhum recurso proibido; senha não aparece em texto no plano
+- [x] Conclusão marcada em `tasks.md` e commit próprio contendo somente esse arquivo (mensagem abaixo)
 
 **Tests**: none
 **Gate**: infra
 **Commit**: `docs(tasks): registra plan real de envs/prod (T42)` (só `tasks.md`, na própria branch da fase, antes do merge)
+**Status**: ✅ Concluída (operacional, executada pelo autor; AD-006). O autor rodou `init -reconfigure "-backend-config=backend.hcl"` (backend `gcs` configurado) e `plan "-out=prod.tfplan"` com `terraform.tfvars` local (`project_id`, `billing_account_id`, `repo_url`, `repo_ref`) e a senha em `$env:TF_VAR_db_password` (24 caracteres `[A-Za-z0-9]`, só na sessão). Resultado: `Plan: 10 to add, 0 to change, 0 to destroy.` Recursos: 4 `google_project_service` (compute, iam, billingbudgets, iap; `disable_on_destroy = false`), `google_compute_network` (`auto_create_subnetworks = false`), `google_compute_subnetwork` (`10.10.0.0/24`, `us-central1`), `google_compute_firewall` `book-monitor-allow-iap-ssh` (`tcp:22`, `source_ranges = ["35.235.240.0/20"]`, tag `book-monitor`), `google_service_account` `book-monitor-vm`, `google_compute_instance` `book-monitor` (`e2-micro`, `debian-12`, `pd-standard` 30 GB, IP efêmero sem `nat_ip`, não-preemptível, shielded VM, `deletion_protection = false`) e `google_billing_budget` (BRL 5; 0,5/0,9/1). Nenhum NAT, LB, IP estático, snapshot, Cloud SQL, Pub/Sub, Artifact Registry ou Secret Manager; `book-db-password` aparece como `(sensitive value)` e o startup script renderizado não contém a senha. Outputs: `instance_name = "book-monitor"`, `zone = "us-central1-a"` e `ssh_command = "gcloud compute ssh book-monitor --zone us-central1-a --project book-price-monitor-jc --tunnel-through-iap"`. Observações: (1) `data.google_project` do budget é lido "during apply" porque depende do `module.apis` (efeito esperado do `depends_on`); (2) as 4 APIs aparecem como criação, ou seja, nenhuma estava gerenciada ainda; (3) o `display_name` do budget fica `book-price-monitor-book-price-monitor-jc` (repetição cosmética, não bloqueia). Nenhum `apply` foi feito. O `prod.tfplan` (contém a senha em texto) é apagado após a análise. **Gate Build da Fase 8** (Quick: 115 unit e ruff limpo; `pytest -m infra`: 58, 0 skip; executado pelo autor: `fmt -check -recursive terraform`, `validate` e `test` verdes: network 3, compute_vm 27, envs/prod 15): fase concluída. Spec: TFP-01, TFP-03, TFP-04, TFP-06, TFP-07, TFP-09, TFP-11 e TFP-12 seguem `In progress` (T49 e T51); TFP-02, TFP-05, TFP-08, TFP-10 e TFP-13 passam a `Implemented`.
 
 ---
 

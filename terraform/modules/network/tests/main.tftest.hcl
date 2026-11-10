@@ -3,10 +3,6 @@
 
 mock_provider "google" {}
 
-variables {
-  allowed_ssh_cidr = "203.0.113.10/32"
-}
-
 run "vpc_and_subnet" {
   command = plan
 
@@ -26,8 +22,13 @@ run "vpc_and_subnet" {
   }
 }
 
-run "ssh_firewall_only_tcp_22_from_allowed_cidr" {
+run "ssh_firewall_only_tcp_22_from_iap_range" {
   command = plan
+
+  assert {
+    condition     = google_compute_firewall.ssh.name == "book-monitor-allow-iap-ssh"
+    error_message = "A regra deve se chamar book-monitor-allow-iap-ssh."
+  }
 
   assert {
     condition     = google_compute_firewall.ssh.direction == "INGRESS"
@@ -45,8 +46,8 @@ run "ssh_firewall_only_tcp_22_from_allowed_cidr" {
   }
 
   assert {
-    condition     = google_compute_firewall.ssh.source_ranges == toset(["203.0.113.10/32"])
-    error_message = "source_ranges deve ser exatamente [allowed_ssh_cidr]."
+    condition     = google_compute_firewall.ssh.source_ranges == toset(["35.235.240.0/20"])
+    error_message = "source_ranges deve ser exatamente a faixa do IAP [35.235.240.0/20]."
   }
 
   assert {
@@ -62,70 +63,4 @@ run "output_network_tag" {
     condition     = output.network_tag == "book-monitor"
     error_message = "O output network_tag deve ser book-monitor."
   }
-}
-
-run "source_range_follows_input" {
-  command = plan
-
-  variables {
-    allowed_ssh_cidr = "198.51.100.0/24"
-  }
-
-  assert {
-    condition     = google_compute_firewall.ssh.source_ranges == toset(["198.51.100.0/24"])
-    error_message = "source_ranges deve acompanhar allowed_ssh_cidr."
-  }
-}
-
-run "accepts_single_host_slash_32" {
-  command = plan
-
-  variables {
-    allowed_ssh_cidr = "203.0.113.10/32"
-  }
-
-  assert {
-    condition     = google_compute_firewall.ssh.source_ranges == toset(["203.0.113.10/32"])
-    error_message = "Um CIDR /32 deve ser aceito e usado em source_ranges."
-  }
-}
-
-run "rejects_prefix_wider_than_slash_24" {
-  command = plan
-
-  variables {
-    allowed_ssh_cidr = "10.0.0.0/8"
-  }
-
-  expect_failures = [var.allowed_ssh_cidr]
-}
-
-run "rejects_open_to_the_world" {
-  command = plan
-
-  variables {
-    allowed_ssh_cidr = "0.0.0.0/0"
-  }
-
-  expect_failures = [var.allowed_ssh_cidr]
-}
-
-run "rejects_malformed_cidr" {
-  command = plan
-
-  variables {
-    allowed_ssh_cidr = "abc"
-  }
-
-  expect_failures = [var.allowed_ssh_cidr]
-}
-
-run "rejects_out_of_range_prefix" {
-  command = plan
-
-  variables {
-    allowed_ssh_cidr = "10.0.0.0/33"
-  }
-
-  expect_failures = [var.allowed_ssh_cidr]
 }
