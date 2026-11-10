@@ -1295,13 +1295,14 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Autor deu OK para o `init`/`plan` (acessam o bucket e a API GCP em modo leitura)
-- [ ] O plano lista somente os recursos esperados (4 APIs: compute, iam, billingbudgets e iap; rede, subnet, firewall `book-monitor-allow-iap-ssh`, SA, 1 e2-micro, budget; AD-007); nenhum recurso proibido; senha não aparece em texto no plano
-- [ ] Conclusão marcada em `tasks.md` e commit próprio contendo somente esse arquivo (mensagem abaixo)
+- [x] Autor deu OK para o `init`/`plan` (acessam o bucket e a API GCP em modo leitura)
+- [x] O plano lista somente os recursos esperados (4 APIs: compute, iam, billingbudgets e iap; rede, subnet, firewall `book-monitor-allow-iap-ssh`, SA, 1 e2-micro, budget; AD-007); nenhum recurso proibido; senha não aparece em texto no plano
+- [x] Conclusão marcada em `tasks.md` e commit próprio contendo somente esse arquivo (mensagem abaixo)
 
 **Tests**: none
 **Gate**: infra
 **Commit**: `docs(tasks): registra plan real de envs/prod (T42)` (só `tasks.md`, na própria branch da fase, antes do merge)
+**Status**: ✅ Concluída (operacional, executada pelo autor; AD-006). O autor rodou `init -reconfigure "-backend-config=backend.hcl"` (backend `gcs` configurado) e `plan "-out=prod.tfplan"` com `terraform.tfvars` local (`project_id`, `billing_account_id`, `repo_url`, `repo_ref`) e a senha em `$env:TF_VAR_db_password` (24 caracteres `[A-Za-z0-9]`, só na sessão). Resultado: `Plan: 10 to add, 0 to change, 0 to destroy.` Recursos: 4 `google_project_service` (compute, iam, billingbudgets, iap; `disable_on_destroy = false`), `google_compute_network` (`auto_create_subnetworks = false`), `google_compute_subnetwork` (`10.10.0.0/24`, `us-central1`), `google_compute_firewall` `book-monitor-allow-iap-ssh` (`tcp:22`, `source_ranges = ["35.235.240.0/20"]`, tag `book-monitor`), `google_service_account` `book-monitor-vm`, `google_compute_instance` `book-monitor` (`e2-micro`, `debian-12`, `pd-standard` 30 GB, IP efêmero sem `nat_ip`, não-preemptível, shielded VM, `deletion_protection = false`) e `google_billing_budget` (BRL 5; 0,5/0,9/1). Nenhum NAT, LB, IP estático, snapshot, Cloud SQL, Pub/Sub, Artifact Registry ou Secret Manager; `book-db-password` aparece como `(sensitive value)` e o startup script renderizado não contém a senha. Outputs: `instance_name = "book-monitor"`, `zone = "us-central1-a"` e `ssh_command = "gcloud compute ssh book-monitor --zone us-central1-a --project book-price-monitor-jc --tunnel-through-iap"`. Observações: (1) `data.google_project` do budget é lido "during apply" porque depende do `module.apis` (efeito esperado do `depends_on`); (2) as 4 APIs aparecem como criação, ou seja, nenhuma estava gerenciada ainda; (3) o `display_name` do budget fica `book-price-monitor-book-price-monitor-jc` (repetição cosmética, não bloqueia). Nenhum `apply` foi feito. O `prod.tfplan` (contém a senha em texto) é apagado após a análise. **Gate Build da Fase 8** (Quick: 115 unit e ruff limpo; `pytest -m infra`: 58, 0 skip; executado pelo autor: `fmt -check -recursive terraform`, `validate` e `test` verdes: network 3, compute_vm 27, envs/prod 15): fase concluída. Spec: TFP-01, TFP-03, TFP-04, TFP-06, TFP-07, TFP-09, TFP-11 e TFP-12 seguem `In progress` (T49 e T51); TFP-02, TFP-05, TFP-08, TFP-10 e TFP-13 passam a `Implemented`.
 
 ---
 
