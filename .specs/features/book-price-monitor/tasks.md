@@ -1261,14 +1261,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Os `.example` não contêm valores reais (placeholders como `your-project-id`, `change-me`) e cobrem todas as variáveis obrigatórias
-- [ ] Teste de higiene falha se um arquivo proibido estiver rastreado (cenário positivo e negativo com lista sintética) e passa no repositório atual
-- [ ] Gate check passes: Quick + Infra
-- [ ] Test count: ≥ 4 testes passam
+- [x] Os `.example` não contêm valores reais (placeholders como `your-project-id`, `change-me`) e cobrem todas as variáveis obrigatórias
+- [x] Teste de higiene falha se um arquivo proibido estiver rastreado (cenário positivo e negativo com lista sintética) e passa no repositório atual
+- [x] Gate check passes: Quick + Infra
+- [x] Test count: ≥ 4 testes passam
 
 **Tests**: unit
 **Gate**: quick
 **Commit**: `chore(tf-prod): adiciona exemplos de tfvars e backend com teste de higiene do repositório`
+**Status**: ✅ Concluída (6 testes em `tests/unit/test_repo_hygiene.py`). Gate: Quick com 115 passed (109 + 6), ruff limpo, `pytest -m infra` com 59 passed (0 skip) e `terraform fmt -check -recursive terraform` executado pelo autor (AD-006) sem saída. `terraform.tfvars.example` (só placeholders; opcionais comentados; `db_password` fora do arquivo, com a orientação de `$env:TF_VAR_db_password`) e `backend.hcl.example` (`bucket = "your-project-id-tfstate"`, `prefix = "envs/prod"`). O teste de higiene reprova, numa lista sintética, `.env`, `*.tfvars`, `backend.hcl`, `*.tfstate`, `*.tfstate.*`, `*-sa-key.json` e `credentials*.json`, aceita os `*.example` e passa no `git ls-files` real. Spec: OPS-05 `In progress` (T43); TFP-02 e TFP-10 seguem `In progress` (T42, T51).
 
 ---
 

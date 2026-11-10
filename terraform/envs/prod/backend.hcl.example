@@ -1,0 +1,5 @@
+# Copie para backend.hcl (gitignored). O bucket e a saida backend_hcl_snippet do
+# bootstrap (terraform output). Uso:
+#   terraform -chdir=terraform/envs/prod init "-backend-config=backend.hcl"
+bucket = "your-project-id-tfstate"
+prefix = "envs/prod"
