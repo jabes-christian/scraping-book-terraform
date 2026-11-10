@@ -1235,13 +1235,14 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] `terraform test` afirma os três outputs e o texto do `ssh_command`
-- [ ] Gate check passes: Infra
-- [ ] Test count: ≥ 2 asserções passam
+- [x] `terraform test` afirma os três outputs e o texto do `ssh_command`
+- [x] Gate check passes: Infra
+- [x] Test count: ≥ 2 asserções passam
 
 **Tests**: infra-test
 **Gate**: infra
 **Commit**: `feat(tf-prod): expõe comando SSH e outputs da instância`
+**Status**: ✅ Concluída (2 `run` blocks novos com 4 asserções em `terraform/envs/prod/tests/outputs.tftest.hcl`; 17 `run` blocks no `terraform test` do `envs/prod`). Gate Infra executado pelo autor (AD-006): `fmt -check -recursive terraform` sem saída, `validate` com `Success!` e `terraform test` com `17 passed, 0 failed`. `outputs.tf` repassa `instance_name`, `zone` e `ssh_command` do módulo `compute_vm`; o teste afirma o texto exato `gcloud compute ssh book-monitor --zone us-central1-a --project projeto-teste-123` e que o comando segue a zona informada (`us-east1-b`). `override_resource` em escopo de arquivo sobre `module.compute_vm.google_compute_instance.this` (`override_during = plan`) simula o `project` computado; `override_data` do budget como na T39. Sem pytest novo nesta task. Spec: TFP-11 segue `In progress` (T51).
 
 ---
 
