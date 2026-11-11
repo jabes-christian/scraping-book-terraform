@@ -1323,12 +1323,13 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Passo a passo executável do zero, com comandos PowerShell exatos e sem valores reais
-- [ ] Gate check passes: Quick (suíte anterior intacta)
+- [x] Passo a passo executável do zero, com comandos PowerShell exatos e sem valores reais
+- [x] Gate check passes: Quick (suíte anterior intacta)
 
 **Tests**: none
 **Gate**: quick
 **Commit**: `docs(ops): adiciona runbook de preparação do GCP e ADC`
+**Status**: ✅ Concluída. `docs/gcp-setup.md`: pré-requisitos; ADC (`gcloud auth application-default login`) e `billing_project` com `user_project_override`; o que é versionado (`*.example`) e o que fica local; lições do PowerShell 5.1 (aspas em `"-out=..."`/`"-backend-config=..."`, `-Encoding ascii`, `.tfvars` pelo editor); fluxo bootstrap → `backend.hcl` → `envs/prod` (`init -reconfigure`, `plan "-out=prod.tfplan"`, esperado `10 to add`); senha só por `$env:TF_VAR_db_password` (`[A-Za-z0-9_.-]`, mínimo 16, gerada com `secrets` pelo `.venv` por causa do Constrained Language Mode, fixada no primeiro boot do volume); remoção do `*.tfplan` (contém a senha); backup do `terraform.tfstate` do bootstrap; setup inicial do `gcloud` em ordem (`init`, `config set compute/region|zone`, ADC login e `set-quota-project`, `services enable`, `billing projects describe`); `apply` de plano salvo não pede confirmação; SSH por IAP (AD-007); Netskope/`x509` e timeout no `registry.terraform.io` (T30); state lock preso (sem `force-unlock` sem conferir o Lock ID). Validados pelo autor (usados no setup inicial, T26 e T42): `gcloud auth application-default set-quota-project`, o pipe `output -raw backend_hcl_snippet | Set-Content -Path ... -Encoding ascii` e a linha de geração da senha (`$env:TF_VAR_db_password = .venv\Scripts\python.exe -c "import secrets, string; ..."`). Único comando ainda marcado **[a validar]** no doc: `terraform force-unlock <LOCK_ID>`. Gate Quick: 115 testes unit passam, `ruff` limpo. Spec: OPS-05 `Implemented`; OPS-04 `In progress` (completa na T50).
 
 ---
 

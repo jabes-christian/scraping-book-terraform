@@ -325,8 +325,8 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | OPS-01 | P2: Operação, custo e destruição | Tasks | T44, T50, T56 | Planned |
 | OPS-02 | P2: Operação, custo e destruição | Tasks | T45, T50, T55 | Planned |
 | OPS-03 | P2: Operação, custo e destruição | Tasks | T45, T50 | Planned |
-| OPS-04 | P2: Operação, custo e destruição | Tasks | T43, T50 | Planned |
-| OPS-05 | P2: Operação, custo e destruição | Tasks | T41, T43 | In progress |
+| OPS-04 | P2: Operação, custo e destruição | Tasks | T43, T50 | In progress |
+| OPS-05 | P2: Operação, custo e destruição | Tasks | T41, T43 | Implemented |
 | OPS-06 | P2: Operação, custo e destruição | Tasks | T46, T50 | Planned |
 | AZR-01 | P3: Reaproveitamento para Azure | Tasks | T47, T49, T50 | Planned |
 | EDG-01 | Edge Cases | Tasks | T10, T12 | Implemented |
