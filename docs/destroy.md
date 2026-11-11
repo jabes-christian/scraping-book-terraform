@@ -130,7 +130,7 @@ Esperado:
 - `gcloud storage buckets list`: nenhum bucket do projeto (sem `<project_id>-tfstate`).
 - `gcloud services list --enabled`: `cloudresourcemanager.googleapis.com` e `serviceusage.googleapis.com` continuam na lista (junto com as APIs do passo 1.4, que também permanecem).
 
-O orçamento (`google_billing_budget`) é destruído junto com `envs/prod`. Para conferir no console: Billing > Budgets & alerts, na conta de faturamento.
+O orçamento (`google_billing_budget`) é destruído junto com `envs/prod`. Para conferir no console: Faturamento → Cost control → Budgets & caps, na conta de faturamento.
 
 ## 4. Aviso: a rede `default`
 

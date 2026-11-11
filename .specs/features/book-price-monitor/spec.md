@@ -323,8 +323,8 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | VM-09 | P1: Runtime da VM | Tasks | T33, T54 | In progress |
 | VM-10 | P1: Runtime da VM | Tasks | T33, T54 | In progress |
 | OPS-01 | P2: Operação, custo e destruição | Tasks | T44, T50, T56 | In progress |
-| OPS-02 | P2: Operação, custo e destruição | Tasks | T45, T50, T55 | Planned |
-| OPS-03 | P2: Operação, custo e destruição | Tasks | T45, T50 | Planned |
+| OPS-02 | P2: Operação, custo e destruição | Tasks | T45, T50, T55 | In progress |
+| OPS-03 | P2: Operação, custo e destruição | Tasks | T45, T50 | In progress |
 | OPS-04 | P2: Operação, custo e destruição | Tasks | T43, T50 | In progress |
 | OPS-05 | P2: Operação, custo e destruição | Tasks | T41, T43 | Implemented |
 | OPS-06 | P2: Operação, custo e destruição | Tasks | T46, T50 | Planned |
@@ -333,7 +333,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | EDG-02 | Edge Cases | Tasks | T12 | Implemented |
 | EDG-03 | Edge Cases | Tasks | T10, T19 | Implemented |
 | EDG-04 | Edge Cases | Tasks | T19, T20 | Implemented |
-| EDG-05 | Edge Cases | Tasks | T45 | Planned |
+| EDG-05 | Edge Cases | Tasks | T45 | Implemented |
 
 **Coverage:** 72 total, 72 mapped to tasks, 0 unmapped ✅
 

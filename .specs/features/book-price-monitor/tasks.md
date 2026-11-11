@@ -1373,12 +1373,13 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Três tópicos presentes: IPv4/Billing Report, budget não limita gasto, disco 90%
-- [ ] Gate check passes: Quick
+- [x] Três tópicos presentes: IPv4/Billing Report, budget não limita gasto, disco 90%
+- [x] Gate check passes: Quick
 
 **Tests**: none
 **Gate**: quick
 **Commit**: `docs(ops): adiciona guia de custo e verificação de billing`
+**Status**: ✅ Concluída. `docs/cost-and-billing.md`: o que cabe no Free Tier e o que o projeto cria (e os recursos proibidos); verificação do IPv4 externo no Billing Report (cobrança não confirmada; caminho Faturamento → Gerenciamento de custo → Relatórios, filtro por projeto, agrupar por SKU; orçamento em Faturamento → Cost control → Budgets & caps; nome do SKU fica para a T55), com o atraso dos dados de billing; o orçamento de R$ 5 (50/90/100%) só notifica e não limita nem é em tempo real, e o corte real é o `terraform destroy`; disco: `df -h /` pela sessão SSH via IAP (AD-007), alerta manual aos 90% e opções. Marcados **[a validar]** no doc: `gcloud billing budgets list --billing-account=...`, `docker system df`, `du` em `/var` e `docker image prune -f` manual. Gate Quick: 115 testes unit passam, `ruff` limpo. Spec: EDG-05 `Implemented`; OPS-02 e OPS-03 `In progress` (completam em T50 e T55).
 
 ---
 
