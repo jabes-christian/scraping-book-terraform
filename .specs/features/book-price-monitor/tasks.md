@@ -1398,12 +1398,13 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Fluxo manual com comandos exatos e as ressalvas de `repo_ref=main`
-- [ ] Gate check passes: Quick
+- [x] Fluxo manual com comandos exatos e as ressalvas de `repo_ref=main`
+- [x] Gate check passes: Quick
 
 **Tests**: none
 **Gate**: quick
 **Commit**: `docs(ops): adiciona runbook de atualização do código`
+**Status**: ✅ Concluída. `docs/update-code.md`: ciclo de atualização do startup script a cada boot (clone/`fetch --depth 1` + `reset --hard FETCH_HEAD`, `build`, `prune`, `up -d --wait postgres`, sob o mesmo `flock` do cron; `fetch` falho mantém o checkout); escolha do `repo_ref` (branch ou tag; `main` implanta qualquer commit no próximo boot; repositório público sem segredos); atualização manual via `ssh_command` (IAP, AD-007) com os mesmos passos do script; verificação (`git log -1`, `compose ps`, `run.log`); troca de `repo_ref` por `plan`/`apply "prod.tfplan"` (deve aparecer como `update in-place` porque o script vai em `metadata["startup-script"]`; se o plano mostrar recriação da VM, parar, pois apagaria o volume do banco; só vale no próximo boot, então reiniciar com `sudo systemctl reboot` via SSH, ou `gcloud compute instances reset` (abrupto) se a VM não responder, ou usar o fluxo manual; apagar o `.tfplan`); senha do Postgres fixada na primeira inicialização do volume; perda das edições manuais em arquivos versionados (`.env` e volume preservados). Todos os comandos de dentro da VM, o `systemctl reboot` e o `instances reset` estão marcados **[a validar]** (T54). Gate Quick: 115 testes unit passam, `ruff` limpo. **Inconsistência corrigida em commit separado** (`docs(terraform): corrige a descrição de repo_ref`): a descrição de `repo_ref` em `envs/prod/variables.tf` e `modules/compute_vm/variables.tf`, o Design e o `docs/gcp-setup.md` diziam "tag ou commit", mas o clone usa `--branch`, que não aceita hash de commit; agora dizem "branch ou tag". Spec: OPS-06 `In progress` (completa na T50).
 
 ---
 
