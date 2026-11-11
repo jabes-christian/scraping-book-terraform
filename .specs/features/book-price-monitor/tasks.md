@@ -1348,12 +1348,13 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Cobre prod e bootstrap, ordem, esvaziamento do bucket e verificação final (`gcloud compute instances list` vazio)
-- [ ] Gate check passes: Quick
+- [x] Cobre prod e bootstrap, ordem, esvaziamento do bucket e verificação final (`gcloud compute instances list` vazio)
+- [x] Gate check passes: Quick
 
 **Tests**: none
 **Gate**: quick
 **Commit**: `docs(ops): adiciona runbook de terraform destroy`
+**Status**: ✅ Concluída. `docs/destroy.md`: avisos prévios (perda dos dados do banco, ordem prod → bootstrap, state local do bootstrap); destroy de `envs/prod` (`init -reconfigure`, `state list`, `plan -destroy "-out=destroy.tfplan"` + `apply "destroy.tfplan"`, esperado `10 to destroy`, apagar o `.tfplan`; usar sempre a `db_password` guardada, para um eventual `apply` de restauração não divergir do banco); o que `disable_on_destroy = false` preserva (APIs continuam habilitadas); destroy do bootstrap com `force_destroy = true` aplicado antes (bucket versionado); limpeza dos arquivos locais (inclusive `terraform.tfstate.backup`) e remoção do `force_destroy = true` antes de reaplicar; verificação final (`gcloud compute instances list`, `storage buckets list`, `services list --enabled`); aviso sobre a rede `default`. Os comandos de `destroy` e de verificação estão marcados **[a validar]** no doc e serão validados na T56. Gate Quick: 115 testes unit passam, `ruff` limpo. Spec: OPS-01 `In progress` (completa em T50 e T56).
 
 ---
 

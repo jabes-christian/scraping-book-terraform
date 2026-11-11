@@ -322,7 +322,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | VM-08 | P1: Runtime da VM | Tasks | T53 | Planned |
 | VM-09 | P1: Runtime da VM | Tasks | T33, T54 | In progress |
 | VM-10 | P1: Runtime da VM | Tasks | T33, T54 | In progress |
-| OPS-01 | P2: Operação, custo e destruição | Tasks | T44, T50, T56 | Planned |
+| OPS-01 | P2: Operação, custo e destruição | Tasks | T44, T50, T56 | In progress |
 | OPS-02 | P2: Operação, custo e destruição | Tasks | T45, T50, T55 | Planned |
 | OPS-03 | P2: Operação, custo e destruição | Tasks | T45, T50 | Planned |
 | OPS-04 | P2: Operação, custo e destruição | Tasks | T43, T50 | In progress |
