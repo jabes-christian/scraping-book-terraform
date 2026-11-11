@@ -59,7 +59,7 @@ variable "repo_url" {
 
 variable "repo_ref" {
   type        = string
-  description = "Branch ou tag do repositório que a VM implanta a cada boot. Prefira uma tag ou commit para estabilidade."
+  description = "Branch ou tag do repositório que a VM implanta a cada boot. Prefira uma tag para estabilidade (hash de commit não funciona: o clone usa --branch)."
   default     = "main"
 }
 

@@ -188,7 +188,7 @@ terraform -chdir=terraform/bootstrap output -raw backend_hcl_snippet | Set-Conte
    Copy-Item terraform\envs\prod\terraform.tfvars.example terraform\envs\prod\terraform.tfvars
    ```
 
-   Obrigatórios: `project_id`, `billing_account_id`, `repo_url` (HTTPS de um repositório **público**: a VM clona sem credenciais) e `repo_ref` (padrão `main`; prefira uma tag ou commit para estabilidade). Os demais têm padrão: `region`, `zone`, `db_name`, `db_user`, `cron_schedule`, `swap_size_mb` e `boot_disk_size_gb` (máximo 30, limite do Free Tier).
+   Obrigatórios: `project_id`, `billing_account_id`, `repo_url` (HTTPS de um repositório **público**: a VM clona sem credenciais) e `repo_ref` (padrão `main`; branch ou tag; prefira uma tag para estabilidade, hash de commit não funciona). Os demais têm padrão: `region`, `zone`, `db_name`, `db_user`, `cron_schedule`, `swap_size_mb` e `boot_disk_size_gb` (máximo 30, limite do Free Tier).
 
 2. **A senha do banco não vai no `terraform.tfvars`.** Ela entra só por variável de ambiente, na janela do PowerShell em que você roda o Terraform.
 
