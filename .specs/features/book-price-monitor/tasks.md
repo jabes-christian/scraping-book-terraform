@@ -1323,12 +1323,13 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Passo a passo executável do zero, com comandos PowerShell exatos e sem valores reais
-- [ ] Gate check passes: Quick (suíte anterior intacta)
+- [x] Passo a passo executável do zero, com comandos PowerShell exatos e sem valores reais
+- [x] Gate check passes: Quick (suíte anterior intacta)
 
 **Tests**: none
 **Gate**: quick
 **Commit**: `docs(ops): adiciona runbook de preparação do GCP e ADC`
+**Status**: ✅ Concluída. `docs/gcp-setup.md`: pré-requisitos; ADC (`gcloud auth application-default login`) e `billing_project` com `user_project_override`; o que é versionado (`*.example`) e o que fica local; lições do PowerShell 5.1 (aspas em `"-out=..."`/`"-backend-config=..."`, `-Encoding ascii`, `.tfvars` pelo editor); fluxo bootstrap → `backend.hcl` → `envs/prod` (`init -reconfigure`, `plan "-out=prod.tfplan"`, esperado `10 to add`); senha só por `$env:TF_VAR_db_password` (`[A-Za-z0-9_.-]`, mínimo 16, gerada com `secrets` pelo `.venv` por causa do Constrained Language Mode, fixada no primeiro boot do volume); remoção do `*.tfplan` (contém a senha); backup do `terraform.tfstate` do bootstrap; setup inicial do `gcloud` em ordem (`init`, `config set compute/region|zone`, ADC login e `set-quota-project`, `services enable`, `billing projects describe`); `apply` de plano salvo não pede confirmação; SSH por IAP (AD-007); Netskope/`x509` e timeout no `registry.terraform.io` (T30); state lock preso (sem `force-unlock` sem conferir o Lock ID). Validados pelo autor (usados no setup inicial, T26 e T42): `gcloud auth application-default set-quota-project`, o pipe `output -raw backend_hcl_snippet | Set-Content -Path ... -Encoding ascii` e a linha de geração da senha (`$env:TF_VAR_db_password = .venv\Scripts\python.exe -c "import secrets, string; ..."`). Único comando ainda marcado **[a validar]** no doc: `terraform force-unlock <LOCK_ID>`. Gate Quick: 115 testes unit passam, `ruff` limpo. Spec: OPS-05 `Implemented`; OPS-04 `In progress` (completa na T50).
 
 ---
 
@@ -1347,12 +1348,13 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Cobre prod e bootstrap, ordem, esvaziamento do bucket e verificação final (`gcloud compute instances list` vazio)
-- [ ] Gate check passes: Quick
+- [x] Cobre prod e bootstrap, ordem, esvaziamento do bucket e verificação final (`gcloud compute instances list` vazio)
+- [x] Gate check passes: Quick
 
 **Tests**: none
 **Gate**: quick
 **Commit**: `docs(ops): adiciona runbook de terraform destroy`
+**Status**: ✅ Concluída. `docs/destroy.md`: avisos prévios (perda dos dados do banco, ordem prod → bootstrap, state local do bootstrap); destroy de `envs/prod` (`init -reconfigure`, `state list`, `plan -destroy "-out=destroy.tfplan"` + `apply "destroy.tfplan"`, esperado `10 to destroy`, apagar o `.tfplan`; usar sempre a `db_password` guardada, para um eventual `apply` de restauração não divergir do banco); o que `disable_on_destroy = false` preserva (APIs continuam habilitadas); destroy do bootstrap com `force_destroy = true` aplicado antes (bucket versionado); limpeza dos arquivos locais (inclusive `terraform.tfstate.backup`) e remoção do `force_destroy = true` antes de reaplicar; verificação final (`gcloud compute instances list`, `storage buckets list`, `services list --enabled`); aviso sobre a rede `default`. Os comandos de `destroy` e de verificação estão marcados **[a validar]** no doc e serão validados na T56. Gate Quick: 115 testes unit passam, `ruff` limpo. Spec: OPS-01 `In progress` (completa em T50 e T56).
 
 ---
 
@@ -1371,12 +1373,13 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Três tópicos presentes: IPv4/Billing Report, budget não limita gasto, disco 90%
-- [ ] Gate check passes: Quick
+- [x] Três tópicos presentes: IPv4/Billing Report, budget não limita gasto, disco 90%
+- [x] Gate check passes: Quick
 
 **Tests**: none
 **Gate**: quick
 **Commit**: `docs(ops): adiciona guia de custo e verificação de billing`
+**Status**: ✅ Concluída. `docs/cost-and-billing.md`: o que cabe no Free Tier e o que o projeto cria (e os recursos proibidos); verificação do IPv4 externo no Billing Report (cobrança não confirmada; caminho Faturamento → Gerenciamento de custo → Relatórios, filtro por projeto, agrupar por SKU; orçamento em Faturamento → Cost control → Budgets & caps; nome do SKU fica para a T55), com o atraso dos dados de billing; o orçamento de R$ 5 (50/90/100%) só notifica e não limita nem é em tempo real, e o corte real é o `terraform destroy`; disco: `df -h /` pela sessão SSH via IAP (AD-007), alerta manual aos 90% e opções. Marcados **[a validar]** no doc: `gcloud billing budgets list --billing-account=...`, `docker system df`, `du` em `/var` e `docker image prune -f` manual. Gate Quick: 115 testes unit passam, `ruff` limpo. Spec: EDG-05 `Implemented`; OPS-02 e OPS-03 `In progress` (completam em T50 e T55).
 
 ---
 
@@ -1395,12 +1398,13 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Fluxo manual com comandos exatos e as ressalvas de `repo_ref=main`
-- [ ] Gate check passes: Quick
+- [x] Fluxo manual com comandos exatos e as ressalvas de `repo_ref=main`
+- [x] Gate check passes: Quick
 
 **Tests**: none
 **Gate**: quick
 **Commit**: `docs(ops): adiciona runbook de atualização do código`
+**Status**: ✅ Concluída. `docs/update-code.md`: ciclo de atualização do startup script a cada boot (clone/`fetch --depth 1` + `reset --hard FETCH_HEAD`, `build`, `prune`, `up -d --wait postgres`, sob o mesmo `flock` do cron; `fetch` falho mantém o checkout); escolha do `repo_ref` (branch ou tag; `main` implanta qualquer commit no próximo boot; repositório público sem segredos); atualização manual via `ssh_command` (IAP, AD-007) com os mesmos passos do script; verificação (`git log -1`, `compose ps`, `run.log`); troca de `repo_ref` por `plan`/`apply "prod.tfplan"` (deve aparecer como `update in-place` porque o script vai em `metadata["startup-script"]`; se o plano mostrar recriação da VM, parar, pois apagaria o volume do banco; só vale no próximo boot, então reiniciar com `sudo systemctl reboot` via SSH, ou `gcloud compute instances reset` (abrupto) se a VM não responder, ou usar o fluxo manual; apagar o `.tfplan`); senha do Postgres fixada na primeira inicialização do volume; perda das edições manuais em arquivos versionados (`.env` e volume preservados). Todos os comandos de dentro da VM, o `systemctl reboot` e o `instances reset` estão marcados **[a validar]** (T54). Gate Quick: 115 testes unit passam, `ruff` limpo. **Inconsistência corrigida em commit separado** (`docs(terraform): corrige a descrição de repo_ref`): a descrição de `repo_ref` em `envs/prod/variables.tf` e `modules/compute_vm/variables.tf`, o Design e o `docs/gcp-setup.md` diziam "tag ou commit", mas o clone usa `--branch`, que não aceita hash de commit; agora dizem "branch ou tag". Spec: OPS-06 `In progress` (completa na T50).
 
 ---
 
@@ -1419,12 +1423,13 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Tabela cobre os cinco itens (rede, compute, identidade, orçamento, state) com o recurso Azure correspondente e as diferenças relevantes
-- [ ] Gate check passes: Quick
+- [x] Tabela cobre os cinco itens (rede, compute, identidade, orçamento, state) com o recurso Azure correspondente e as diferenças relevantes
+- [x] Gate check passes: Quick
 
 **Tests**: none
 **Gate**: quick
 **Commit**: `docs(azure): mapeia módulos GCP para equivalentes no Azure`
+**Status**: ✅ Concluída. `docs/azure-mapping.md`, com os nomes de recursos e argumentos conferidos no Context7 (`hashicorp/terraform-provider-azurerm`): `apis` → registro de resource providers (`resource_providers_to_register`); `network` → `azurerm_virtual_network`, `azurerm_subnet`, `azurerm_network_security_group` + associação à sub-rede; `identity` → `identity` `SystemAssigned` ou `azurerm_user_assigned_identity`; `compute_vm` → `azurerm_linux_virtual_machine`, NIC e `azurerm_public_ip`; `budget` → `azurerm_consumption_budget_subscription`/`_resource_group`; state → `azurerm_storage_account` (`blob_properties`) + container + backend `azurerm`. Diferenças registradas: `custom_data` é `ForceNew` (trocar o script ou o `repo_ref` recria a VM e apaga o volume do banco), IP público não é efêmero (Standard exige `Static`), sem equivalente direto confirmado do IAP (Bastion `Basic`/`Standard`/`Premium` pagos; o nível `Developer` existe no provider e é apontado como possível alternativa gratuita, com limitações a verificar), orçamento sem destinatário padrão; Resource Group como primeiro recurso (sem equivalente no GCP); alternativas para o script a cada boot (serviço `systemd` via cloud-init ou `azurerm_virtual_machine_extension` CustomScript); custo como principal risco ao portar (VM gratuita só por 12 meses em contas novas e IP público Standard cobrado). Itens marcados **[não verificado]**: `custom_data` rodar só no primeiro boot (cloud-init), onde o segredo fica gravado na VM, comportamento do registro de providers no destroy, preço do Bastion, Free Tier do Azure e atributos do backend `azurerm`. Gate Quick: 115 testes unit passam, `ruff` limpo. Spec: AZR-01 `In progress` (completa em T49 e T50).
 
 ---
 
@@ -1443,12 +1448,13 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Comandos copiados e validados contra o ambiente real (mesmos usados no T21)
-- [ ] Gate check passes: Quick
+- [x] Comandos copiados e validados contra o ambiente real (mesmos usados no T21)
+- [x] Gate check passes: Quick
 
 **Tests**: none
 **Gate**: quick
 **Commit**: `docs(local): adiciona guia de desenvolvimento local`
+**Status**: ✅ Concluída. `docs/local-development.md`: pré-requisitos (Docker Desktop ligado, `.venv`); `.env` a partir do `.env.example` (variáveis e a senha fixada na primeira inicialização do volume `pgdata`); `docker compose up -d --wait postgres`, `build robo` e `run --rm -T robo` (exit codes 0/1/2; 80-95 s por coleta, 82 s na validação do autor com 1.000 itens); contorno da inspeção TLS da Netskope com `-e BASE_URL=http://books.toscrape.com/` e `E2E_BASE_URL` no e2e; consulta das tabelas (`executions`, `books`, `price_history`) com `docker compose exec postgres psql -U books -d books -c "\dt"` (validado pelo autor; o banco de desenvolvimento começa vazio, `Did not find any relations.`, até a primeira coleta); override `127.0.0.1:5432` opcional; markers do pytest (`integration`, `docker`, `infra`, `e2e`) com os comandos do gate; projetos Compose isolados (`bookmonitor_it`, `bookmonitor_e2e`); limpeza (`stop`, `down`, `down -v`). Os comandos vêm dos testes e das tasks T13-T21; nenhum fica marcado **[a validar]** no doc (a consulta às tabelas foi validada pelo autor). Gate Quick: 115 testes unit passam, `ruff` limpo. Spec: LOC-01 e LOC-05 `Implemented`.
 
 ---
 
@@ -1467,12 +1473,13 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Lista cada módulo com entradas/saídas principais e liga aos runbooks de `docs/`
-- [ ] Gate check passes: Quick
+- [x] Lista cada módulo com entradas/saídas principais e liga aos runbooks de `docs/`
+- [x] Gate check passes: Quick
 
 **Tests**: none
 **Gate**: quick
 **Commit**: `docs(terraform): adiciona README de infraestrutura`
+**Status**: ✅ Concluída. `terraform/README.md`: estrutura `bootstrap` / `modules` / `envs/prod`; ordem de aplicação (bootstrap com state local, `backend.hcl`, `envs/prod`); cada módulo com entradas e saídas (`bootstrap`, `apis`, `network`, `identity`, `compute_vm`, `budget`, `envs/prod`) lidas dos `variables.tf`/`outputs.tf`; guardas de Free Tier (região, zona, `e2-micro`, disco ≤ 30 GB, senha) e recursos proibidos; AD-001, AD-002, AD-003 e AD-007; comandos de teste (`fmt`, `init -backend=false`, `validate`, `test`) e a renderização do startup script (`-auto-approve` só nela); reaproveitamento no Azure; links relativos para os 6 runbooks de `docs/` (todos resolvem). Gate Quick: 115 testes unit passam, `ruff` limpo. Spec: TFP-12 `Implemented`; AZR-01 segue `In progress` (completa na T50).
 
 ---
 
@@ -1491,14 +1498,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] README aponta para todos os documentos de `docs/` e `terraform/README.md`
-- [ ] Teste de links falha com link quebrado sintético e passa no repositório
-- [ ] Gate check passes: Build (Quick + Infra + `fmt`)
-- [ ] Test count: ≥ 2 testes novos passam
+- [x] README aponta para todos os documentos de `docs/` e `terraform/README.md`
+- [x] Teste de links falha com link quebrado sintético e passa no repositório
+- [x] Gate check passes: Build (Quick + Infra + `fmt`)
+- [x] Test count: ≥ 2 testes novos passam
 
 **Tests**: unit
 **Gate**: build
 **Commit**: `docs(readme): adiciona visão geral do projeto e teste de links`
+**Status**: ✅ Concluída. `README.md` reescrito como porta de entrada: visão geral e diagrama, pré-requisitos, caminho local → produção (5 passos), índice de `docs/` e `terraform/README.md`, estrutura do repositório, segurança e custo, e link para `.specs/`. `tests/unit/test_markdown_links.py` (3 testes novos): (1) todo link relativo de `README.md`, `docs/*.md` e `terraform/**/README.md` resolve (ignora URLs, âncoras, blocos e trechos de código); (2) um link quebrado sintético é detectado (`page.md -> missing.md`) e links válidos, com âncora, externos e em código passam; (3) o README raiz aponta para todos os `docs/*.md` e para `terraform/README.md` (o teste falhou antes da reescrita do README e passou depois). Gate Build: Quick (118 testes unit, `ruff` limpo) e `pytest -m infra` (58, 0 skip) pelo agente; `terraform fmt -check -recursive terraform` pelo autor (nenhum `.tf` mudou além das descrições de `repo_ref`). Spec: OPS-03, OPS-04, OPS-06 e AZR-01 `Implemented`; OPS-01 e OPS-02 seguem `In progress` (T55 e T56).
 
 ---
 

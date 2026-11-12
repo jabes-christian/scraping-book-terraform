@@ -288,11 +288,11 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | CFG-06 | P1: Configuração e agnóstico de nuvem | Tasks | T5 | Implemented |
 | CFG-07 | P1: Configuração e agnóstico de nuvem | Tasks | T1 | Implemented |
 | CFG-08 | P1: Configuração e agnóstico de nuvem | Tasks | T4 | Implemented |
-| LOC-01 | P1: Ambiente local Docker Compose | Tasks | T15, T21, T48 | In progress (T15, T21) |
+| LOC-01 | P1: Ambiente local Docker Compose | Tasks | T15, T21, T48 | Implemented |
 | LOC-02 | P1: Ambiente local Docker Compose | Tasks | T13, T21 | Implemented |
 | LOC-03 | P1: Ambiente local Docker Compose | Tasks | T15 | Implemented |
 | LOC-04 | P1: Ambiente local Docker Compose | Tasks | T15 | Implemented |
-| LOC-05 | P1: Ambiente local Docker Compose | Tasks | T14, T15, T48 | In progress (T14, T15) |
+| LOC-05 | P1: Ambiente local Docker Compose | Tasks | T14, T15, T48 | Implemented |
 | LOC-06 | P1: Ambiente local Docker Compose | Tasks | T11, T21 | Implemented |
 | TFB-01 | P1: Bootstrap do remote state | Tasks | T22, T24, T26 | Implemented |
 | TFB-02 | P1: Bootstrap do remote state | Tasks | T24, T26 | Implemented |
@@ -310,7 +310,7 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | TFP-09 | P1: Infraestrutura de produção | Tasks | T30, T39, T51, T55 | In progress |
 | TFP-10 | P1: Infraestrutura de produção | Tasks | T31, T38, T41 | Implemented |
 | TFP-11 | P1: Infraestrutura de produção | Tasks | T36, T40, T51 | In progress |
-| TFP-12 | P1: Infraestrutura de produção | Tasks | T27-T31, T35, T36, T39, T49 | In progress |
+| TFP-12 | P1: Infraestrutura de produção | Tasks | T27-T31, T35, T36, T39, T49 | Implemented |
 | TFP-13 | P1: Infraestrutura de produção | Tasks | T22, T24, T27, T37, T39 | Implemented |
 | VM-01 | P1: Runtime da VM | Tasks | T32, T33, T52 | In progress |
 | VM-02 | P1: Runtime da VM | Tasks | T32, T52 | In progress |
@@ -322,18 +322,18 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | VM-08 | P1: Runtime da VM | Tasks | T53 | Planned |
 | VM-09 | P1: Runtime da VM | Tasks | T33, T54 | In progress |
 | VM-10 | P1: Runtime da VM | Tasks | T33, T54 | In progress |
-| OPS-01 | P2: Operação, custo e destruição | Tasks | T44, T50, T56 | Planned |
-| OPS-02 | P2: Operação, custo e destruição | Tasks | T45, T50, T55 | Planned |
-| OPS-03 | P2: Operação, custo e destruição | Tasks | T45, T50 | Planned |
-| OPS-04 | P2: Operação, custo e destruição | Tasks | T43, T50 | Planned |
-| OPS-05 | P2: Operação, custo e destruição | Tasks | T41, T43 | In progress |
-| OPS-06 | P2: Operação, custo e destruição | Tasks | T46, T50 | Planned |
-| AZR-01 | P3: Reaproveitamento para Azure | Tasks | T47, T49, T50 | Planned |
+| OPS-01 | P2: Operação, custo e destruição | Tasks | T44, T50, T56 | In progress |
+| OPS-02 | P2: Operação, custo e destruição | Tasks | T45, T50, T55 | In progress |
+| OPS-03 | P2: Operação, custo e destruição | Tasks | T45, T50 | Implemented |
+| OPS-04 | P2: Operação, custo e destruição | Tasks | T43, T50 | Implemented |
+| OPS-05 | P2: Operação, custo e destruição | Tasks | T41, T43 | Implemented |
+| OPS-06 | P2: Operação, custo e destruição | Tasks | T46, T50 | Implemented |
+| AZR-01 | P3: Reaproveitamento para Azure | Tasks | T47, T49, T50 | Implemented |
 | EDG-01 | Edge Cases | Tasks | T10, T12 | Implemented |
 | EDG-02 | Edge Cases | Tasks | T12 | Implemented |
 | EDG-03 | Edge Cases | Tasks | T10, T19 | Implemented |
 | EDG-04 | Edge Cases | Tasks | T19, T20 | Implemented |
-| EDG-05 | Edge Cases | Tasks | T45 | Planned |
+| EDG-05 | Edge Cases | Tasks | T45 | Implemented |
 
 **Coverage:** 72 total, 72 mapped to tasks, 0 unmapped ✅
 
