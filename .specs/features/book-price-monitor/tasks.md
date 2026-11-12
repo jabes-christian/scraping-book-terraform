@@ -1448,12 +1448,13 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Comandos copiados e validados contra o ambiente real (mesmos usados no T21)
-- [ ] Gate check passes: Quick
+- [x] Comandos copiados e validados contra o ambiente real (mesmos usados no T21)
+- [x] Gate check passes: Quick
 
 **Tests**: none
 **Gate**: quick
 **Commit**: `docs(local): adiciona guia de desenvolvimento local`
+**Status**: ✅ Concluída. `docs/local-development.md`: pré-requisitos (Docker Desktop ligado, `.venv`); `.env` a partir do `.env.example` (variáveis e a senha fixada na primeira inicialização do volume `pgdata`); `docker compose up -d --wait postgres`, `build robo` e `run --rm -T robo` (exit codes 0/1/2; 80-95 s por coleta, 82 s na validação do autor com 1.000 itens); contorno da inspeção TLS da Netskope com `-e BASE_URL=http://books.toscrape.com/` e `E2E_BASE_URL` no e2e; consulta das tabelas (`executions`, `books`, `price_history`) com `docker compose exec postgres psql -U books -d books -c "\dt"` (validado pelo autor; o banco de desenvolvimento começa vazio, `Did not find any relations.`, até a primeira coleta); override `127.0.0.1:5432` opcional; markers do pytest (`integration`, `docker`, `infra`, `e2e`) com os comandos do gate; projetos Compose isolados (`bookmonitor_it`, `bookmonitor_e2e`); limpeza (`stop`, `down`, `down -v`). Os comandos vêm dos testes e das tasks T13-T21; nenhum fica marcado **[a validar]** no doc (a consulta às tabelas foi validada pelo autor). Gate Quick: 115 testes unit passam, `ruff` limpo. Spec: LOC-01 e LOC-05 `Implemented`.
 
 ---
 

@@ -288,11 +288,11 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | CFG-06 | P1: Configuração e agnóstico de nuvem | Tasks | T5 | Implemented |
 | CFG-07 | P1: Configuração e agnóstico de nuvem | Tasks | T1 | Implemented |
 | CFG-08 | P1: Configuração e agnóstico de nuvem | Tasks | T4 | Implemented |
-| LOC-01 | P1: Ambiente local Docker Compose | Tasks | T15, T21, T48 | In progress (T15, T21) |
+| LOC-01 | P1: Ambiente local Docker Compose | Tasks | T15, T21, T48 | Implemented |
 | LOC-02 | P1: Ambiente local Docker Compose | Tasks | T13, T21 | Implemented |
 | LOC-03 | P1: Ambiente local Docker Compose | Tasks | T15 | Implemented |
 | LOC-04 | P1: Ambiente local Docker Compose | Tasks | T15 | Implemented |
-| LOC-05 | P1: Ambiente local Docker Compose | Tasks | T14, T15, T48 | In progress (T14, T15) |
+| LOC-05 | P1: Ambiente local Docker Compose | Tasks | T14, T15, T48 | Implemented |
 | LOC-06 | P1: Ambiente local Docker Compose | Tasks | T11, T21 | Implemented |
 | TFB-01 | P1: Bootstrap do remote state | Tasks | T22, T24, T26 | Implemented |
 | TFB-02 | P1: Bootstrap do remote state | Tasks | T24, T26 | Implemented |
