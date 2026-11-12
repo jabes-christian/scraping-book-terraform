@@ -1423,12 +1423,13 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Tabela cobre os cinco itens (rede, compute, identidade, orçamento, state) com o recurso Azure correspondente e as diferenças relevantes
-- [ ] Gate check passes: Quick
+- [x] Tabela cobre os cinco itens (rede, compute, identidade, orçamento, state) com o recurso Azure correspondente e as diferenças relevantes
+- [x] Gate check passes: Quick
 
 **Tests**: none
 **Gate**: quick
 **Commit**: `docs(azure): mapeia módulos GCP para equivalentes no Azure`
+**Status**: ✅ Concluída. `docs/azure-mapping.md`, com os nomes de recursos e argumentos conferidos no Context7 (`hashicorp/terraform-provider-azurerm`): `apis` → registro de resource providers (`resource_providers_to_register`); `network` → `azurerm_virtual_network`, `azurerm_subnet`, `azurerm_network_security_group` + associação à sub-rede; `identity` → `identity` `SystemAssigned` ou `azurerm_user_assigned_identity`; `compute_vm` → `azurerm_linux_virtual_machine`, NIC e `azurerm_public_ip`; `budget` → `azurerm_consumption_budget_subscription`/`_resource_group`; state → `azurerm_storage_account` (`blob_properties`) + container + backend `azurerm`. Diferenças registradas: `custom_data` é `ForceNew` (trocar o script ou o `repo_ref` recria a VM e apaga o volume do banco), IP público não é efêmero (Standard exige `Static`), sem equivalente direto confirmado do IAP (Bastion `Basic`/`Standard`/`Premium` pagos; o nível `Developer` existe no provider e é apontado como possível alternativa gratuita, com limitações a verificar), orçamento sem destinatário padrão; Resource Group como primeiro recurso (sem equivalente no GCP); alternativas para o script a cada boot (serviço `systemd` via cloud-init ou `azurerm_virtual_machine_extension` CustomScript); custo como principal risco ao portar (VM gratuita só por 12 meses em contas novas e IP público Standard cobrado). Itens marcados **[não verificado]**: `custom_data` rodar só no primeiro boot (cloud-init), onde o segredo fica gravado na VM, comportamento do registro de providers no destroy, preço do Bastion, Free Tier do Azure e atributos do backend `azurerm`. Gate Quick: 115 testes unit passam, `ruff` limpo. Spec: AZR-01 `In progress` (completa em T49 e T50).
 
 ---
 
