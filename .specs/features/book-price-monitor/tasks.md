@@ -1473,12 +1473,13 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] Lista cada módulo com entradas/saídas principais e liga aos runbooks de `docs/`
-- [ ] Gate check passes: Quick
+- [x] Lista cada módulo com entradas/saídas principais e liga aos runbooks de `docs/`
+- [x] Gate check passes: Quick
 
 **Tests**: none
 **Gate**: quick
 **Commit**: `docs(terraform): adiciona README de infraestrutura`
+**Status**: ✅ Concluída. `terraform/README.md`: estrutura `bootstrap` / `modules` / `envs/prod`; ordem de aplicação (bootstrap com state local, `backend.hcl`, `envs/prod`); cada módulo com entradas e saídas (`bootstrap`, `apis`, `network`, `identity`, `compute_vm`, `budget`, `envs/prod`) lidas dos `variables.tf`/`outputs.tf`; guardas de Free Tier (região, zona, `e2-micro`, disco ≤ 30 GB, senha) e recursos proibidos; AD-001, AD-002, AD-003 e AD-007; comandos de teste (`fmt`, `init -backend=false`, `validate`, `test`) e a renderização do startup script (`-auto-approve` só nela); reaproveitamento no Azure; links relativos para os 6 runbooks de `docs/` (todos resolvem). Gate Quick: 115 testes unit passam, `ruff` limpo. Spec: TFP-12 `Implemented`; AZR-01 segue `In progress` (completa na T50).
 
 ---
 
