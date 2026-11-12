@@ -324,11 +324,11 @@ O autor quer aprender Terraform + GCP na prática, levando um mini RPA do desenv
 | VM-10 | P1: Runtime da VM | Tasks | T33, T54 | In progress |
 | OPS-01 | P2: Operação, custo e destruição | Tasks | T44, T50, T56 | In progress |
 | OPS-02 | P2: Operação, custo e destruição | Tasks | T45, T50, T55 | In progress |
-| OPS-03 | P2: Operação, custo e destruição | Tasks | T45, T50 | In progress |
-| OPS-04 | P2: Operação, custo e destruição | Tasks | T43, T50 | In progress |
+| OPS-03 | P2: Operação, custo e destruição | Tasks | T45, T50 | Implemented |
+| OPS-04 | P2: Operação, custo e destruição | Tasks | T43, T50 | Implemented |
 | OPS-05 | P2: Operação, custo e destruição | Tasks | T41, T43 | Implemented |
-| OPS-06 | P2: Operação, custo e destruição | Tasks | T46, T50 | In progress |
-| AZR-01 | P3: Reaproveitamento para Azure | Tasks | T47, T49, T50 | In progress |
+| OPS-06 | P2: Operação, custo e destruição | Tasks | T46, T50 | Implemented |
+| AZR-01 | P3: Reaproveitamento para Azure | Tasks | T47, T49, T50 | Implemented |
 | EDG-01 | Edge Cases | Tasks | T10, T12 | Implemented |
 | EDG-02 | Edge Cases | Tasks | T12 | Implemented |
 | EDG-03 | Edge Cases | Tasks | T10, T19 | Implemented |

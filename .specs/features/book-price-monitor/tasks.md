@@ -1498,14 +1498,15 @@ T51 → T52 → T53 → T54 → T55 → T56
 
 **Done when**:
 
-- [ ] README aponta para todos os documentos de `docs/` e `terraform/README.md`
-- [ ] Teste de links falha com link quebrado sintético e passa no repositório
-- [ ] Gate check passes: Build (Quick + Infra + `fmt`)
-- [ ] Test count: ≥ 2 testes novos passam
+- [x] README aponta para todos os documentos de `docs/` e `terraform/README.md`
+- [x] Teste de links falha com link quebrado sintético e passa no repositório
+- [x] Gate check passes: Build (Quick + Infra + `fmt`)
+- [x] Test count: ≥ 2 testes novos passam
 
 **Tests**: unit
 **Gate**: build
 **Commit**: `docs(readme): adiciona visão geral do projeto e teste de links`
+**Status**: ✅ Concluída. `README.md` reescrito como porta de entrada: visão geral e diagrama, pré-requisitos, caminho local → produção (5 passos), índice de `docs/` e `terraform/README.md`, estrutura do repositório, segurança e custo, e link para `.specs/`. `tests/unit/test_markdown_links.py` (3 testes novos): (1) todo link relativo de `README.md`, `docs/*.md` e `terraform/**/README.md` resolve (ignora URLs, âncoras, blocos e trechos de código); (2) um link quebrado sintético é detectado (`page.md -> missing.md`) e links válidos, com âncora, externos e em código passam; (3) o README raiz aponta para todos os `docs/*.md` e para `terraform/README.md` (o teste falhou antes da reescrita do README e passou depois). Gate Build: Quick (118 testes unit, `ruff` limpo) e `pytest -m infra` (58, 0 skip) pelo agente; `terraform fmt -check -recursive terraform` pelo autor (nenhum `.tf` mudou além das descrições de `repo_ref`). Spec: OPS-03, OPS-04, OPS-06 e AZR-01 `Implemented`; OPS-01 e OPS-02 seguem `In progress` (T55 e T56).
 
 ---
 
